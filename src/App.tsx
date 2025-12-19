@@ -90,19 +90,35 @@ const DocumentUploadForm: React.FC = () => {
         formData.append('recibo', files.recibo.file);
         formData.append('id', urlId);
 
-        const response = await fetch(import.meta.env.VITE_API_URL, {
-          method: 'POST',
-          body: formData
+        // Log para depuración
+        console.log('Enviando datos al webhook:', {
+          id: urlId,
+          frontal: files.frontal.file.name,
+          trasera: files.trasera.file.name,
+          recibo: files.recibo.file.name
         });
 
-        if (response.ok) {
-          alert('Documentos enviados correctamente');
-        } else {
-          alert('Error al enviar los documentos. Por favor, intenta de nuevo.');
+        const response = await fetch(import.meta.env.VITE_API_URL, {
+          method: 'POST',
+          body: formData,
+          // No establecer Content-Type manualmente, el navegador lo hará con el boundary correcto
+        });
+
+        const responseData = await response.json().catch(() => ({}));
+        
+        if (!response.ok) {
+          throw new Error(responseData.message || 'Error en el servidor');
         }
+
+        console.log('Respuesta del servidor:', responseData);
+        alert('Documentos enviados correctamente');
+        
+        // Opcional: Redirigir o limpiar el formulario
+        // window.location.href = '/exito';
+
       } catch (error) {
         console.error('Error al enviar documentos:', error);
-        alert('Error al enviar los documentos. Por favor, intenta de nuevo.');
+        alert(`Error al enviar los documentos: ${error.message || 'Por favor, intenta de nuevo.'}`);
       } finally {
         setIsSubmitting(false);
       }
