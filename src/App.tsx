@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import UploadBox from './components/UploadBox';
 
 interface FileUpload {
@@ -7,6 +7,15 @@ interface FileUpload {
 }
 
 const DocumentUploadForm: React.FC = () => {
+  const [urlId, setUrlId] = useState<string | null>(null);
+
+  // Obtener el ID de la URL cuando el componente se monte
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    setUrlId(id);
+  }, []);
+
   const [files, setFiles] = useState<{
     frontal: FileUpload;
     trasera: FileUpload;
@@ -67,6 +76,11 @@ const DocumentUploadForm: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    if (!urlId) {
+      alert('No se pudo obtener el ID de la URL. Por favor, asegúrate de acceder al formulario desde el enlace correcto.');
+      return;
+    }
+
     if (files.frontal.file && files.trasera.file && files.recibo.file) {
       setIsSubmitting(true);
       try {
@@ -74,6 +88,7 @@ const DocumentUploadForm: React.FC = () => {
         formData.append('frontal', files.frontal.file);
         formData.append('trasera', files.trasera.file);
         formData.append('recibo', files.recibo.file);
+        formData.append('id', urlId);
 
         const response = await fetch(import.meta.env.VITE_API_URL, {
           method: 'POST',
