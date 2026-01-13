@@ -1,24 +1,46 @@
 import React, { useState, useEffect } from 'react';
-import UploadBox from './components/UploadBox';
+import UploadBox from '../components/UploadBox';
+import { useParams } from 'react-router-dom';
+
 
 interface FileUpload {
   file: File | null;
   preview: string | null;
 }
 
-const DocumentUploadForm: React.FC = () => {
+const Cierre: React.FC = () => {
+  const { id } = useParams();
   const [urlId, setUrlId] = useState<string | null>(null);
+  const [nameclient, setName] = useState<string>('');
+  const [autorizacionesEspeciales, setAutorizacionesEspeciales] = useState<boolean>(false);
+
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
-    setUrlId(id);
-  }, []);
+    setUrlId(id || null);
+
+    const formData = new FormData();
+    formData.append('id', id || '');
+
+    if (id) {
+      fetch(`${import.meta.env.VITE_API_URL}/bravantegetusers`, {
+        method: 'POST',
+        body: formData,
+      })
+      .then(response => response.json())
+      .then(data => {
+        setName(data.Nombre || '');
+      })
+      .catch(error => {
+        console.error('Error al verificar el usuario:', error);
+      });
+    }
+    
+  }, [id]);
 
   const [files, setFiles] = useState<Record<string, FileUpload>>({
-    frontal: { file: null, preview: null },
-    trasera: { file: null, preview: null },
-    recibo: { file: null, preview: null }
+    cheque: { file: null, preview: null },
+    formato_apartado: { file: null, preview: null },
+    contrato: { file: null, preview: null }
   });
 
   const [dragOver, setDragOver] = useState<string | null>(null);
@@ -53,6 +75,10 @@ const DocumentUploadForm: React.FC = () => {
     setDragOver(null);
   };
 
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAutorizacionesEspeciales(e.target.checked);
+  }
+
   const isValidFile = (file: File, type: string) => {
     const validImageTypes = ['image/png', 'image/jpeg', 'image/jpg'];
     const validDocTypes = [...validImageTypes, 'application/pdf'];
@@ -76,23 +102,17 @@ const DocumentUploadForm: React.FC = () => {
       return;
     }
 
-    if (files.frontal.file && files.trasera.file && files.recibo.file) {
+    if (files.cheque.file && files.formato_apartado.file && files.contrato.file) {
       setIsSubmitting(true);
       try {
         const formData = new FormData();
-        formData.append('frontal', files.frontal.file);
-        formData.append('trasera', files.trasera.file);
-        formData.append('recibo', files.recibo.file);
+        formData.append('cheque', files.cheque.file);
+        formData.append('formato_apartado', files.formato_apartado.file);
+        formData.append('contrato', files.contrato.file);
+        formData.append('autorizaciones_especiales', autorizacionesEspeciales ? '1' : '0');
         formData.append('id', urlId);
 
-        console.log('Enviando datos al webhook:', {
-          id: urlId,
-          frontal: files.frontal.file.name,
-          trasera: files.trasera.file.name,
-          recibo: files.recibo.file.name
-        });
-
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/id-documents`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/phase4`, {
           method: 'POST',
           body: formData,
         });
@@ -105,10 +125,14 @@ const DocumentUploadForm: React.FC = () => {
 
         console.log('Respuesta del servidor:', responseData);
         alert('Documentos enviados correctamente. Por favor revise su correo electrónico, ya que se le notificará una vez los documentos hayan sido procesados.');
+        const resetFiles: Record<string, FileUpload> = {
+          cheque: { file: null, preview: null },
+          formato_apartado: { file: null, preview: null },
+          contrato: { file: null, preview: null }
+        };
+        setFiles(resetFiles);
+        setAutorizacionesEspeciales(false);
         
-        // Opcional: Redirigir o limpiar el formulario
-        // window.location.href = '/exito';
-
       } catch (error) {
         console.error('Error al enviar documentos:', error);
         const errorMessage = error instanceof Error 
@@ -123,8 +147,8 @@ const DocumentUploadForm: React.FC = () => {
     }
   };
 
-  const allFilesUploaded = files.frontal.file && files.trasera.file && files.recibo.file;
-  const uploadedCount = Object.values(files).filter(f => f.file).length;
+  const allFilesUploaded = files.cheque.file && files.formato_apartado.file && files.contrato.file;
+  const uploadedCount = Object.values(files).filter(f => f.file).length + (autorizacionesEspeciales ? 1 : 0);
 
   return (
     <div className="min-h-screen bg-white p-6">
@@ -144,19 +168,19 @@ const DocumentUploadForm: React.FC = () => {
         <div className="card bg-base-200 shadow-2xl">
           <div className="card-body">
             <h2 className="card-title md:text-2xl text-xl mb-2">
-              Documentos de Identificación
+              Documentos de Cierre de {nameclient}
             </h2>
             <p className="text-base-content/70 mb-6">
-              Por favor, sube los siguientes documentos para completar tu registro
+              Por favor, sube los siguientes documentos para completar el proceso de cierre:
             </p>
 
             <div className="space-y-6">
               <UploadBox
-                type="frontal"
-                title="Imagen Frontal del Documento de Identificación (DPI ó Pasaporte)"
-                subtitle="Sube una foto clara del frente de tu documento de identidad"
+                type="cheque"
+                title="Imagen del cheque"
+                subtitle="Sube una foto clara del cheque"
                 acceptedFormats="image/png,image/jpeg,image/jpg"
-                fileData={files.frontal}
+                fileData={files.cheque}
                 dragOver={dragOver}
                 onFileChange={handleFileChange}
                 onRemoveFile={removeFile}
@@ -166,25 +190,25 @@ const DocumentUploadForm: React.FC = () => {
               />
 
               <UploadBox
-                type="trasera"
-                title="Imagen Trasera del Documento de Identificación (DPI ó Pasaporte)"
-                subtitle="Sube una foto clara del reverso de tu documento de identidad"
-                acceptedFormats="image/png,image/jpeg,image/jpg"
-                fileData={files.trasera}
-                dragOver={dragOver}
-                onFileChange={handleFileChange}
-                onRemoveFile={removeFile}
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-              />
-
-              <UploadBox
-                type="recibo"
-                title="Recibo de Servicios"
-                subtitle="Sube una imagen o PDF de un recibo de servicios reciente (luz ó agua)"
+                type="formato_apartado"
+                title="Formato de Apartado"
+                subtitle="Sube una imagen o PDF del formato de apartado"
                 acceptedFormats="image/png,image/jpeg,image/jpg,application/pdf"
-                fileData={files.recibo}
+                fileData={files.formato_apartado}
+                dragOver={dragOver}
+                onFileChange={handleFileChange}
+                onRemoveFile={removeFile}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+              />
+
+              <UploadBox
+                type="contrato"
+                title="Contrato"
+                subtitle="Sube una imagen o PDF del contrato"
+                acceptedFormats="image/png,image/jpeg,image/jpg,application/pdf"
+                fileData={files.contrato}
                 dragOver={dragOver}
                 onFileChange={handleFileChange}
                 onRemoveFile={removeFile}
@@ -194,16 +218,24 @@ const DocumentUploadForm: React.FC = () => {
               />
             </div>
 
+            <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4">
+                <legend className="fieldset-legend">Hay autorizaciones especiales?</legend>
+                <label className="label">
+                    <input type="checkbox"  className="toggle" onChange={handleCheckboxChange} checked={autorizacionesEspeciales} />
+                    <span className="label-text ml-2">Sí, hay autorizaciones especiales</span>
+                </label>
+            </fieldset>
+
             {/* Progress */}
             <div className="mt-8 mb-6">
               <div className="flex items-center justify-between text-sm mb-2">
                 <span className="font-medium">Progreso de carga</span>
-                <span className="badge badge-outline ">{uploadedCount} de 3</span>
+                <span className="badge badge-outline ">{uploadedCount} de 4</span>
               </div>
               <progress 
                 className="progress progress w-full " 
                 value={uploadedCount} 
-                max="3"
+                max="4"
               ></progress>
             </div>
 
@@ -244,4 +276,4 @@ const DocumentUploadForm: React.FC = () => {
   );
 };
 
-export default DocumentUploadForm;
+export default Cierre;

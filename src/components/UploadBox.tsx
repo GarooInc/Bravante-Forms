@@ -10,15 +10,15 @@ interface FileUpload {
 }
 
 interface UploadBoxProps {
-  type: 'frontal' | 'trasera' | 'recibo'; 
+  type: string; 
   title: string;
   subtitle: string;
   acceptedFormats: string;
   fileData: FileUpload;
   dragOver: string | null;
-  onFileChange: (type: 'frontal' | 'trasera' | 'recibo', file: File) => void; 
-  onRemoveFile: (type: 'frontal' | 'trasera' | 'recibo') => void; 
-  onDrop: (e: React.DragEvent, type: 'frontal' | 'trasera' | 'recibo') => void; 
+  onFileChange: (type: string, file: File) => void; 
+  onRemoveFile: (type: string) => void; 
+  onDrop: (e: React.DragEvent, type: string) => void; 
   onDragOver: (e: React.DragEvent, type: string) => void;
   onDragLeave: () => void;
 }
