@@ -16,6 +16,7 @@ interface UploadBoxProps {
   acceptedFormats: string;
   fileData: FileUpload;
   dragOver: string | null;
+  formatPdfUrl?: string;
   onFileChange: (type: string, file: File) => void; 
   onRemoveFile: (type: string) => void; 
   onDrop: (e: React.DragEvent, type: string) => void; 
@@ -30,6 +31,7 @@ const UploadBox: React.FC<UploadBoxProps> = ({
   acceptedFormats,
   fileData,
   dragOver,
+  formatPdfUrl,
   onFileChange,
   onRemoveFile,
   onDrop,
@@ -46,7 +48,22 @@ const UploadBox: React.FC<UploadBoxProps> = ({
           {title} <span className="text-error">*</span>
         </span>
       </label>
-      <p className="text-xs text-base-content/60 mb-3">{subtitle}</p>
+      <p className="text-xs text-base-content/60 mb-3">
+        {subtitle}
+        {formatPdfUrl && (
+          <>
+            {' - '}
+            <a 
+              href={formatPdfUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-green-300 hover:text-green-400 underline font-medium"
+            >
+              Descargar formato
+            </a>
+          </>
+        )}
+      </p>
       
       {!fileData.file ? (
         <div
@@ -72,7 +89,7 @@ const UploadBox: React.FC<UploadBoxProps> = ({
           <label htmlFor={`file-${type}`} className="cursor-pointer">
             <IoCloudUpload className="mx-auto mb-4 h-12 w-12 text-base-content/50" />
             <p className="text-sm mb-1">
-              <span className="text-orange-100 font-semibold">Haz clic para seleccionar</span> o arrastra el archivo aquí
+              <span className="text-green-300 font-semibold">Haz clic para seleccionar</span> o arrastra el archivo aquí
             </p>
             <p className="text-xs text-base-content/50">
               Formatos: {acceptedFormats.replace(/image\//g, '').replace(/application\//g, '').toUpperCase()}

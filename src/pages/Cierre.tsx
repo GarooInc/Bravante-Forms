@@ -112,7 +112,7 @@ const Cierre: React.FC = () => {
         formData.append('autorizaciones_especiales', autorizacionesEspeciales ? '1' : '0');
         formData.append('id', urlId);
 
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/phase4`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/cierre`, {
           method: 'POST',
           body: formData,
         });
@@ -233,7 +233,7 @@ const Cierre: React.FC = () => {
                 <span className="badge badge-outline ">{uploadedCount} de 4</span>
               </div>
               <progress 
-                className="progress progress w-full " 
+                className=" progress w-full " 
                 value={uploadedCount} 
                 max="4"
               ></progress>
