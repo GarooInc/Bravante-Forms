@@ -58,7 +58,7 @@ const PromesaFirma: React.FC = () => {
     e.preventDefault();
     setDragOver(null);
     const file = e.dataTransfer.files[0];
-    if (file && isValidFile(file, type)) {
+    if (file && isValidFile(file)) {
       handleFileChange(type, file);
     }
   };
@@ -72,7 +72,7 @@ const PromesaFirma: React.FC = () => {
     setDragOver(null);
   };
 
-  const isValidFile = (file: File, type: string) => {
+  const isValidFile = (file: File) => {
     const validDocTypes = ['application/pdf'];
     return validDocTypes.includes(file.type);
   };
