@@ -326,7 +326,7 @@ const Promesa: React.FC = () => {
                   />
 
                   <UploadBox
-                    type="rtu"
+                    type="rtu_replegal"
                     title="RTU actualizado del representante legal"
                     subtitle="Sube un pdf del RTU del representante legal"
                     acceptedFormats="application/pdf"
@@ -340,7 +340,7 @@ const Promesa: React.FC = () => {
                   />
 
                   <UploadBox
-                    type="rtu"
+                    type="rtu_pjuridica"
                     title="RTU actualizado de la persona jurídica"
                     subtitle="Sube un pdf del RTU de la persona jurídica"
                     acceptedFormats="application/pdf"
