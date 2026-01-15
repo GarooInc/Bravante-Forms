@@ -41,6 +41,8 @@ const Promesa: React.FC = () => {
   const [files, setFiles] = useState<Record<string, FileUpload>>({
     carta_investigacion: { file: null, preview: null },
     ive: { file: null, preview: null },
+    dpi_replegal: { file: null, preview: null },
+    nombramiento_replegal: { file: null, preview: null },
     rtu_replegal: { file: null, preview: null },
     rtu_pjuridica: { file: null, preview: null },
     escritura_empresa: { file: null, preview: null },
@@ -146,9 +148,24 @@ const Promesa: React.FC = () => {
         console.log('Respuesta del servidor:', responseData);
         alert('Documentos enviados correctamente. Por favor revise su correo electrónico, ya que se le notificará una vez los documentos hayan sido procesados.');
         const resetFiles: Record<string, FileUpload> = {
-          cheque: { file: null, preview: null },
-          formato_apartado: { file: null, preview: null },
-          contrato: { file: null, preview: null }
+          carta_investigacion: { file: null, preview: null },
+          ive: { file: null, preview: null },
+          dpi_replegal: { file: null, preview: null },
+          nombramiento_replegal: { file: null, preview: null },
+          rtu_replegal: { file: null, preview: null },
+          rtu_pjuridica: { file: null, preview: null },
+          escritura_empresa: { file: null, preview: null },
+          patente_sociedad: { file: null, preview: null },
+          patente_empresa: { file: null, preview: null },
+          recibo_replegal: { file: null, preview: null },
+          recibo_empresa: { file: null, preview: null },
+          estados_financieros: { file: null, preview: null },
+          rtu_individual: { file: null, preview: null },
+          recibo_individual: { file: null, preview: null },
+          carta_ingresos: { file: null, preview: null },
+          estado_cuenta1: { file: null, preview: null },
+          estado_cuenta2: { file: null, preview: null },
+          estado_cuenta3: { file: null, preview: null }
         };
         setFiles(resetFiles);
         setContado(false);
@@ -169,6 +186,8 @@ const Promesa: React.FC = () => {
 
   const allFilesUploaded = typePerson === 0
     ? files.carta_investigacion.file &&
+      files.dpi_replegal.file &&
+      files.nombramiento_replegal.file &&
       files.ive.file &&
       files.rtu_replegal.file &&
       files.rtu_pjuridica.file &&
@@ -249,6 +268,34 @@ const Promesa: React.FC = () => {
             </div>              
               { typePerson === 0 && (
                 <div className="space-y-6 mt-4">
+                  <UploadBox
+                    type="dpi_replegal"
+                    title="Imagen del DPI del representante legal"
+                    subtitle="Sube una foto clara del documento de identidad"
+                    acceptedFormats="image/png,image/jpeg,image/jpg"
+                    fileData={files.dpi_replegal}
+                    dragOver={dragOver}
+                    onFileChange={handleFileChange}
+                    onRemoveFile={removeFile}
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                  />
+
+                  <UploadBox
+                    type="nombramiento_replegal"
+                    title="Nombramiento del representante legal"
+                    subtitle="Sube un PDF del nombramiento del representante legal"
+                    acceptedFormats="application/pdf"
+                    fileData={files.nombramiento_replegal}
+                    dragOver={dragOver}
+                    onFileChange={handleFileChange}
+                    onRemoveFile={removeFile}
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                  />
+
                   <UploadBox
                     type="carta_investigacion"
                     title="Carta de Investigación firmada por el representante legal"
