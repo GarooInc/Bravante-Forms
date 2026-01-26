@@ -3,10 +3,11 @@ import { useParams } from 'react-router-dom';
 
 const DocumentoPromesa: React.FC = () => {
   const { id } = useParams();
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<unknown>(null);
 
   useEffect(() => {
     if (id) {
+      console.log('Realizando llamada al webhook con id:', id);
       fetch('https://agentsprod.redtec.ai/webhook/promesa-document', {
         method: 'POST',
         headers: {
@@ -16,17 +17,64 @@ const DocumentoPromesa: React.FC = () => {
       })
         .then(response => response.json())
         .then(jsonData => {
-          setData(jsonData);
+          console.log('Datos recibidos del webhook:', jsonData);
+          // Soporta dos formatos:
+          // 1) { status: 'success', data: {...} }
+          // 2) { data: {...} }
+          let payload: any = null;
+
+          if (jsonData && typeof jsonData === 'object') {
+            if ('data' in jsonData) {
+              // Nuevo formato (o el antiguo con status)
+              if (!('status' in jsonData) || jsonData.status === 'success') {
+                payload = (jsonData as any).data;
+              } else {
+                console.error('Webhook returned error status:', jsonData);
+              }
+            } else if ('status' in jsonData) {
+              // Formato antiguo sin data anidado (por compatibilidad defensiva)
+              if (jsonData.status === 'success') {
+                payload = jsonData;
+              } else {
+                console.error('Webhook returned error status sin data:', jsonData);
+              }
+            }
+          }
+
+          if (payload) {
+            console.log('Datos del documento (payload):', payload);
+            setData(payload);
+          }
         })
         .catch(error => {
           console.error('Error fetching document data:', error);
         });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [id]);
 
-  const getVal = (key: string, fallback: string = '_______') => {
-    return data && data[key] ? data[key] : fallback;
+  const getVal = (path: string, fallback: string = '_______') => {
+    if (!data) return fallback;
+    
+    const keys = path.split('.');
+    let value: any = data;
+    
+    for (const key of keys) {
+      if (value && typeof value === 'object' && key in value) {
+        value = value[key];
+      } else {
+        return fallback;
+      }
+    }
+    
+    return value || fallback;
+  };
+
+  const getComprador = (index: number, field: string, fallback: string = '_______') => {
+    const compradores = getVal('compradores', []);
+    if (Array.isArray(compradores) && compradores[index] && compradores[index][field]) {
+      return compradores[index][field];
+    }
+    return fallback;
   };
 
   return (
@@ -113,39 +161,37 @@ const DocumentoPromesa: React.FC = () => {
       {/* Título del Documento */}
       <div className="document-title">
         PROMESA DE COMPRAVENTA<br />
-        APARTAMENTO {getVal('Apartamento')}<br />
+        APARTAMENTO {getVal('2_Descripcion_del_Inmueble.Apartamento')}<br />
         COMPLEJO DE APARTAMENTOS "BRAVANTE"
       </div>
 
-      {/* Contenido Principal */}
+      {/* Contenido Principal - Compradores */}
       <div className="section-spacing">
+        {/* Primer Comprador */}
         <p>
-          Yo, <span className="party-name">VENANCIO GÓMEZ</span> (único apellido), quien declaro ser de cincuenta y cinco
-          años de edad, casado, Contador Público y Auditor, guatemalteco, de este domicilio, me identifico con el
-          Documento Personal de Identificación -DPI- con Código Único de Identificación -CUI- dos mil quinientos
-          cuarenta, setenta y nueve mil doscientos veintinueve, mil cuatrocientos uno (2540 79229 1401), extendido por
-          el Registro Nacional de las Personas de la República de Guatemala, comparezco en mi calidad de <span
-            className="party-name">ADMINISTRADOR ÚNICO Y REPRESENTANTE LEGAL</span> de la entidad <span
-              className="party-name">BRAVANTE, SOCIEDAD ANÓNIMA</span> calidad que acredito con mi nombramiento como tal
-          contenido en el acta notarial autorizada en esta ciudad el veintisiete de octubre de dos mil veinticinco, por
-          la Notaria Lilian Elizabeth Azurdia Pérez de Quiroz, el cual se encuentra debidamente inscrito en el
-          Registro Mercantil General de la República de Guatemala bajo el número de registro ochocientos doce mil
-          veintisiete (812027), folio quinientos cuarenta y cuatro (544), del libro ochocientos cincuenta y tres (853)
-          de Auxiliares de Comercio, entidad en adelante referida simple e indistintamente como <span
-            className="party-name">"LA PARTE PROMITENTE VENDEDORA"</span> o <span className="party-name">"LA PROMITENTE
-              VENDEDORA"</span>;
-        </p>
-
-        <p>
-          Yo, <span className="highlight-yellow">{getVal('Nombre')}</span>, quien declaro ser de <span
-            className="highlight-yellow">{getVal('Edad')}</span> años de edad, <span className="highlight-yellow">{getVal('EstadoCivil')}</span>,
-          <span className="highlight-yellow">{getVal('Profesion')}</span>, guatemalteco, de este domicilio, me identifico con el
+          Yo, <span className="highlight-yellow">{getComprador(0, 'Nombre')}</span>, quien declaro ser de <span
+            className="highlight-yellow">{getComprador(0, 'Edad_Letras')}</span> de edad, <span className="highlight-yellow">{getComprador(0, 'EstadoCivil')}</span>,
+          <span className="highlight-yellow">{getComprador(0, 'Profesion')}</span>, guatemalteco, de este domicilio, me identifico con el
           Documento Personal de Identificación -DPI-, con Código Único de Identificación -CUI- número <span
-            className="highlight-yellow">{getVal('DPI')}</span> (), extendido por el Registro Nacional de las Personas de
-          la República de Guatemala; en adelante referido simple e indistintamente como <span className="party-name">"LA
+            className="highlight-yellow">{getComprador(0, 'DPI')}</span> (<span className="highlight-yellow">{getComprador(0, 'DPI_Letras')}</span>), extendido por
+          el Registro Nacional de las Personas de la República de Guatemala; en adelante referido simple e indistintamente como <span className="party-name">"LA
             PARTE PROMITENTE COMPRADORA"</span>, <span className="party-name">"LOS PROMITENTES COMPRADORES"</span> o
           <span className="party-name">"EL PROMITENTE COMPRADOR"</span>.
         </p>
+        
+        {/* Segundo Comprador (si existe) */}
+        {getComprador(1, 'Nombre') !== '_______' && (
+          <p>
+            Yo, <span className="highlight-yellow">{getComprador(1, 'Nombre')}</span>, quien declaro ser de <span
+              className="highlight-yellow">{getComprador(1, 'Edad_Letras')}</span> de edad, <span className="highlight-yellow">{getComprador(1, 'EstadoCivil')}</span>,
+            <span className="highlight-yellow">{getComprador(1, 'Profesion')}</span>, guatemalteco, de este domicilio, me identifico con el
+            Documento Personal de Identificación -DPI-, con Código Único de Identificación -CUI- número <span
+              className="highlight-yellow">{getComprador(1, 'DPI')}</span> (<span className="highlight-yellow">{getComprador(1, 'DPI_Letras')}</span>), extendido por
+            el Registro Nacional de las Personas de la República de Guatemala; en adelante referido simple e indistintamente como <span className="party-name">"LA
+              PARTE PROMITENTE COMPRADORA"</span>, <span className="party-name">"LOS PROMITENTES COMPRADORES"</span> o
+            <span className="party-name">"EL PROMITENTE COMPRADOR"</span>.
+          </p>
+        )}
 
         <p>
           Los comparecientes, en las calidades con que actuamos de forma voluntaria manifestamos ser de los datos de
@@ -204,35 +250,49 @@ const DocumentoPromesa: React.FC = () => {
           <span className="bold">"ETEREA"</span>, los cuales serán sometidos al régimen de propiedad horizontalmente
           dividida y su respectivo reglamento, así como estarán sujetos a las servidumbres que la promitente vendedora
           considere para el proyecto, y del cual formarán parte, entre otros: El apartamento <span
-            className="highlight-yellow">_____ (__)</span> Torre <span className="highlight-yellow">_______</span>, ubicado en el
-          nivel <span className="highlight-yellow">_____ (___)</span> del Complejo; <span className="highlight-red">las _____ ( )
+            className="highlight-yellow">{getVal('2_Descripcion_del_Inmueble.Apartamento')}</span> Torre <span className="highlight-yellow">{getVal('2_Descripcion_del_Inmueble.Torre')}</span>, ubicado en el
+          nivel <span className="highlight-yellow">{getVal('2_Descripcion_del_Inmueble.Nivel')}</span> del Complejo;{' '}
+          <span className="highlight-red">las {Array.isArray(getVal('2_Descripcion_del_Inmueble.Estacionamientos', [])) ? (getVal('2_Descripcion_del_Inmueble.Estacionamientos', []) as any[]).length : '____'} ( )
             plazas de estacionamiento identificadas con los números:</span>
         </p>
 
-        <div className="letter-list" style={{ listStyleType: 'none' }}>
-          <div className="letter-item"><span className="highlight-red">o _______ (___), ubicada en el sótano número: _________
-            (__);</span></div>
-          <div className="letter-item"><span className="highlight-red">o _______ (___), ubicada en el sótano número: _________
-            (__);</span></div>
-          <div className="letter-item"><span className="highlight-red">o _______ (___), ubicada en el sótano número: _________
-            (__);</span></div>
-          <div className="letter-item"><span className="highlight-red">o _______ (___), ubicada en el sótano número: _________
-            (__);</span></div>
-        </div>
+        {(() => {
+          const estacionamientos = getVal('2_Descripcion_del_Inmueble.Estacionamientos', []) as any[];
+          if (!Array.isArray(estacionamientos) || estacionamientos.length === 0) return null;
+          return (
+            <div className="letter-list" style={{ listStyleType: 'none' }}>
+              {estacionamientos.map((p, idx) => (
+                <div key={idx} className="letter-item">
+                  <span className="highlight-red">
+                    o {p.Numero_Letras ?? '_______'} ({p.Numero ?? '___'}), ubicada en el sótano número: {p.Sotano_Letras ?? '_______'} ({p.Sotano ?? '___'});
+                  </span>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
       </div>
 
       <div className="section-spacing">
         <p>
-          y las <span className="highlight-red">____ (__)</span> bodegas, identificadas con los números:
+          y las <span className="highlight-red">{Array.isArray(getVal('2_Descripcion_del_Inmueble.Bodegas', [])) ? (getVal('2_Descripcion_del_Inmueble.Bodegas', []) as any[]).length : '____'} (__)</span> bodegas, identificadas con los números:
         </p>
-        <div className="letter-list" style={{ listStyleType: 'none' }}>
-          <div className="letter-item"><span className="highlight-red">o _______ (___), ubicada en el sótano número: _________
-            (__);</span></div>
-          <div className="letter-item"><span className="highlight-red">o _______ (___), ubicada en el sótano número: _________
-            (__);</span></div>
-          <div className="letter-item"><span className="highlight-red">o _______ (___), ubicada en el sótano número: _________
-            (__);</span></div>
-        </div>
+
+        {(() => {
+          const bodegas = getVal('2_Descripcion_del_Inmueble.Bodegas', []) as any[];
+          if (!Array.isArray(bodegas) || bodegas.length === 0) return null;
+          return (
+            <div className="letter-list" style={{ listStyleType: 'none' }}>
+              {bodegas.map((b, idx) => (
+                <div key={idx} className="letter-item">
+                  <span className="highlight-red">
+                    o {b.Numero_Letras ?? '_______'} ({b.Numero ?? '___'}), ubicada en el sótano número: {b.Sotano_Letras ?? '_______'} ({b.Sotano ?? '___'});
+                  </span>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
 
         <p>
           así como el título de acción correspondiente y relacionado al proyecto. La denominación de dicho complejo
@@ -244,21 +304,19 @@ const DocumentoPromesa: React.FC = () => {
       <div className="section-spacing">
         <p>
           <span className="clause-title">SEGUNDA: PROMESA DE COMPRAVENTA.</span> LA PARTE PROMITENTE VENDEDORA, <span
-            className="highlight-yellow">manifiesto que por el presente instrumento prometo vender a {getVal('Nombre')}</span>
+            className="highlight-yellow">manifiesto que por el presente instrumento prometo vender a {getComprador(0, 'Nombre')}</span>
           los bienes indicados en la cláusula que antecede, que se describen así: <span className="bold">a)</span> El
-          apartamento identificado como Apartamento <span className="highlight-yellow">{getVal('Apartamento')}</span> Torre <span
-            className="highlight-yellow">{getVal('Torre')}</span>, ubicado en el nivel <span className="highlight-yellow">{getVal('Nivel')}</span>
+          apartamento identificado como Apartamento <span className="highlight-yellow">{getVal('2_Descripcion_del_Inmueble.Apartamento')}</span> Torre <span
+            className="highlight-yellow">{getVal('2_Descripcion_del_Inmueble.Torre')}</span>, ubicado en el nivel <span className="highlight-yellow">{getVal('2_Descripcion_del_Inmueble.Nivel')}</span>
           del Complejo; apartamento que consta de <span
-            className="highlight-yellow">{getVal('Habitaciones')}</span> habitaciones, <span className="highlight-yellow">{getVal('DescripcionApartamento', '________________________________________________________________________')}</span>
+            className="highlight-yellow">{getVal('2_Descripcion_del_Inmueble.Habitaciones')}</span> habitaciones, <span className="highlight-yellow">{getVal('2_Descripcion_del_Inmueble.DescripcionApartamento', '________________________________________________________________________')}</span>
         </p>
 
         <p>
-          Y contará con un área aproximada de <span className="highlight-yellow">______________</span> metros cuadrados
-          (<span className="highlight-yellow">____</span> m2) de construcción; <span className="highlight-red">b) ____ plazas
-            de estacionamiento identificadas con los números ____________ (_____), __________ (____), __________(___) y ____________ (___),
-            los cuales están ubicados en los sótanos ____(___), ____(___) y _____(____), y cuentan con un área aproximada de _______ metros cuadrados
-            (___ m2); c) Una terraza o balcón , con un área aproximada de __________ punto _______ y un metros cuadrados
-            (____.__ m2); y d)</span> El bien mueble (acción) de la entidad relacionada y pertinente al proyecto.
+          Y contará con un área aproximada de <span className="highlight-yellow">{getVal('2_Descripcion_del_Inmueble.AreaConstruccionLetras')}</span> metros cuadrados
+          (<span className="highlight-yellow">{getVal('2_Descripcion_del_Inmueble.AreaConstruccionNumeros')}</span> m2) de construcción; <span className="highlight-red">b) {getVal('2_Descripcion_del_Inmueble.ParqueosDescripcion', '____ plazas de estacionamiento')};
+            c) Una terraza o balcón, con un área aproximada de {getVal('2_Descripcion_del_Inmueble.TerrazaBalconAreaLetras', '__________ punto _______')} metros cuadrados
+            ({getVal('2_Descripcion_del_Inmueble.TerrazaBalconAreaNumeros', '____.__')} m2); y d)</span> El bien mueble (acción) de la entidad relacionada y pertinente al proyecto.
         </p>
 
         <p>
@@ -325,8 +383,8 @@ const DocumentoPromesa: React.FC = () => {
           <span className="clause-title">TERCERA:</span> La promesa de compraventa que se otorga en este acto se sujetará
           a las estipulaciones siguientes: <span className="bold">I) PRECIO:</span> El precio total de la compraventa de
           los bienes prometidos en venta descritos en la cláusula que antecede es de <span
-            className="highlight-yellow">{getVal('PrecioLetras')} DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
-            {getVal('PrecioNumeros')})</span>, el cual incluye el IMPUESTO AL VALOR AGREGADO y el IMPUESTO DEL TIMBRE
+            className="highlight-yellow">{getVal('3_Condiciones_Economicas.PrecioLetras')} DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
+            {getVal('3_Condiciones_Economicas.PrecioNumeros')})</span>, el cual incluye el IMPUESTO AL VALOR AGREGADO y el IMPUESTO DEL TIMBRE
           correspondiente; para lo cual en su momento se podrán redactar dos documentos, el de la compraventa de
           inmuebles y el de la compraventa de mueble (acción), cada uno con su precio correspondiente. <span
             className="bold">II) VARIACIÓN DEL PRECIO.</span> Manifiesto como la Promitente Compradora que acepto de
@@ -347,31 +405,40 @@ const DocumentoPromesa: React.FC = () => {
         </p>
 
         <p>
-          <span className="bold">a)</span> Un primer pago por la cantidad de <span className="highlight-yellow">{getVal('ReservaLetras')}
-            DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD. {getVal('ReservaNumeros')})</span> en concepto de reserva, que Yo,
+          <span className="bold">a)</span> Un primer pago por la cantidad de <span className="highlight-yellow">{getVal('3_Condiciones_Economicas.ReservaLetras')}
+            DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD. {getVal('3_Condiciones_Economicas.ReservaNumeros')})</span> en concepto de reserva, que Yo,
           la parte Promitente Vendedora manifiesto que tengo recibido a mi entera satisfacción.
         </p>
 
         <p>
           <span className="bold">b)</span> Un segundo pago por la cantidad total de <span
-            className="highlight-yellow">{getVal('SegundoPagoLetras')} DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
-            {getVal('SegundoPagoNumeros')})</span>, que la parte Promitente Compradora entregará mediante <span className="highlight-red">{getVal('CantidadPagosLetras')} ({getVal('CantidadPagosNumeros')}) pagos a la Promitente Vendedora, de la siguiente forma:</span>
+            className="highlight-yellow">{getVal('3_Condiciones_Economicas.SegundoPagoLetras')} DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
+            {getVal('3_Condiciones_Economicas.SegundoPagoNumeros')})</span>, que la parte Promitente Compradora entregará mediante <span className="highlight-red">{getVal('3_Condiciones_Economicas.CantidadPagosLetras')} ({getVal('3_Condiciones_Economicas.CantidadPagosNumeros')}) pagos a la Promitente Vendedora, de la siguiente forma:</span>
         </p>
 
-        <p>
-          <span className="highlight-red">1) El día {getVal('Pago1_Dia', '____')} de {getVal('Pago1_Mes', '_________')} de 202{getVal('Pago1_Anio', '_')}, la cantidad de {getVal('Pago1_Monto', '______')} Dólares de los Estados Unidos de Norte América (USD.{getVal('Pago1_Monto_Num', '_______')}).</span>
-        </p>
-
-        <p>
-          <span className="highlight-red">2) El día {getVal('Pago2_Dia', '___')} de {getVal('Pago2_Mes', '_______')} de 202{getVal('Pago2_Anio', '_')}, la cantidad de {getVal('Pago2_Monto', '______')} Dólares de los Estados Unidos de Norte América (USD.{getVal('Pago2_Monto_Num', '_______')}).</span>
-        </p>
-
-        <p>
-          <span className="highlight-red">3) El día {getVal('Pago3_Dia', '___')} de {getVal('Pago3_Mes', '_______')} de 202{getVal('Pago3_Anio', '_')}, la cantidad de {getVal('Pago3_Monto', '______')} Dólares de los Estados Unidos de Norte América (USD.{getVal('Pago3_Monto_Num', '_______')}).</span>
-        </p>
+        {(() => {
+          const pagos = getVal('4_Cronograma_de_Pagos_Detallado', []) as unknown[];
+          if (!Array.isArray(pagos) || pagos.length === 0) return null;
+          return pagos.map((p, idx) => {
+            const pago = p as {
+              PagoN_Dia?: number | string;
+              PagoN_Mes?: string;
+              PagoN_Anio?: number | string;
+              PagoN_Monto?: string;
+              PagoN_Monto_Num?: number | string;
+            };
+            return (
+              <p key={idx}>
+                <span className="highlight-red">
+                  {idx + 1}) El día {pago.PagoN_Dia ?? '____'} de {pago.PagoN_Mes ?? '_________'} de {pago.PagoN_Anio ?? '____'}, la cantidad de {pago.PagoN_Monto ?? '______'} Dólares de los Estados Unidos de Norte América (USD.{pago.PagoN_Monto_Num ?? '_______'}).
+                </span>
+              </p>
+            );
+          });
+        })()}
 
         <p style={{ marginTop: '15px' }}>
-          y c) Un último pago por la cantidad de <span className="highlight-red">{getVal('UltimoPagoLetras')} DOLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.{getVal('UltimoPagoNumeros')})</span> que Yo, LA PARTE PROMITENTE COMPRADORA deberé pagar a
+          y c) Un último pago por la cantidad de <span className="highlight-red">{getVal('5_Liquidacion_Final_y_Plazos.UltimoPagoLetras')} DOLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.{getVal('5_Liquidacion_Final_y_Plazos.UltimoPagoNumeros')})</span> que Yo, LA PARTE PROMITENTE COMPRADORA deberé pagar a
           LA PARTE PROMITENTE VENDEDORA a más tardar al vencimiento del plazo de la presente promesa; pago que Yo, LA
           PARTE PROMITENTE COMPRADORA realizaré con los fondos que me serán desembolsados en virtud de un crédito
           hipotecario que gestionaré ante un Banco del sistema nacional para la adquisición de los bienes objeto de este
@@ -656,7 +723,7 @@ const DocumentoPromesa: React.FC = () => {
           con las que actuamos, los comparecientes declaramos la plena conformidad y aceptación con el contenido
           íntegro del presente contrato y luego de haberlo leído y bien enterados de su contenido, objeto, validez y
           efectos legales, lo ratificamos, aceptamos y firmamos, sin reserva alguna, el <span
-            className="highlight-red">{getVal('FechaFirmaDia', '____')} de {getVal('FechaFirmaMes', '______________')} de dos mil veinte{getVal('FechaFirmaAnio', '_____')}</span>, quedando contenido el mismo
+            className="highlight-red">{getVal('6_Datos_de_Notificacion_y_Cierre.FechaFirmaDia', '____')} de {getVal('6_Datos_de_Notificacion_y_Cierre.FechaFirmaMes', '______________')} de dos mil {getVal('6_Datos_de_Notificacion_y_Cierre.FechaFirmaAnio', '_____')}</span>, quedando contenido el mismo
           en cuatro (4) hojas de papel bond, impresas en su lado anverso y reverso.
         </p>
       </div>

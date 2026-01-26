@@ -17,24 +17,6 @@ const PromesaFirma: React.FC = () => {
 
   useEffect(() => {
     setUrlId(id || null);
-
-    const formData = new FormData();
-    formData.append('id', id || '');
-
-    if (id) {
-      fetch(`${import.meta.env.VITE_API_URL}/bravantegetusers`, {
-        method: 'POST',
-        body: formData,
-      })
-      .then(response => response.json())
-      .then(data => {
-        setName(data.Nombre || '');
-      })
-      .catch(error => {
-        console.error('Error al verificar el usuario:', error);
-      });
-    }
-    
   }, [id]);
 
   const [files, setFiles] = useState<Record<string, FileUpload>>({
