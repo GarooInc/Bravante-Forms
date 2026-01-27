@@ -31,7 +31,6 @@ const PromesaFirma: React.FC = () => {
         const element = document.querySelector(".documento-promesa");
         if (element) {
             try {
-                // @ts-expect-error - html2pdf doesn't have official types
                 const html2pdf = (await import("html2pdf.js")).default;
                 const opt = {
                     margin: 0,
