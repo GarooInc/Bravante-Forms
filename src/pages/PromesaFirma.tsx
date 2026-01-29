@@ -25,7 +25,7 @@ const PromesaFirma: React.FC = () => {
 
     const scrollToInRoot = (root: ParentNode | null, elementId: string) => {
         const css = (
-            window as unknown as { CSS?: { escape: (s: string) => string } }
+            window as unknown as { CSS?: { escape: (s: string) => string; }; }
         ).CSS;
         const escapedId = css?.escape ? css.escape(elementId) : elementId;
         const target = root?.querySelector(`#${escapedId}`);
@@ -61,51 +61,200 @@ const PromesaFirma: React.FC = () => {
         }
     };
 
+    const sanitizeElementStyles = (clone: HTMLElement) => {
+        const allElements = clone.querySelectorAll("*");
+        allElements.forEach((el) => {
+            const element = el as HTMLElement;
+            const style = window.getComputedStyle(element);
+
+            // Convertir colores oklch/color() de Tailwind 4 a RGB simple para html2canvas
+            if (style.color.includes("oklch") || style.color.includes("color(")) {
+                element.style.color = style.color;
+            }
+            if (style.backgroundColor.includes("oklch") || style.backgroundColor.includes("color(")) {
+                element.style.backgroundColor = style.backgroundColor;
+            }
+            if (style.borderColor.includes("oklch") || style.borderColor.includes("color(")) {
+                element.style.borderColor = style.borderColor;
+            }
+        });
+    };
+
+    const handlePrint = () => {
+        const printContent = getDocElement(modalDocRootRef.current);
+        if (!printContent) return;
+
+        // Crear un frame oculto para la impresión
+        const printFrame = document.createElement('iframe');
+        printFrame.style.position = 'fixed';
+        printFrame.style.right = '0';
+        printFrame.style.bottom = '0';
+        printFrame.style.width = '0';
+        printFrame.style.height = '0';
+        printFrame.style.border = '0';
+        document.body.appendChild(printFrame);
+
+        const frameDoc = printFrame.contentWindow?.document || printFrame.contentDocument;
+        if (!frameDoc) return;
+
+        // Copiar los estilos de la página principal al iframe
+        const styles = document.querySelectorAll('style, link[rel="stylesheet"]');
+        let styleHtml = '';
+        styles.forEach(style => {
+            styleHtml += style.outerHTML;
+        });
+
+        // Escribir el contenido en el iframe usando el truco de la tabla para márgenes per-page
+        frameDoc.write(`
+            <html>
+                <head>
+                    <title></title> 
+                    ${styleHtml}
+                    <style>
+                        /* Elimina cabeceras y pies de página forzando margen 0 */
+                        @page { 
+                            margin: 0; 
+                            size: A4;
+                        }
+                        body { 
+                            margin: 0 !important; 
+                            padding: 0 !important;
+                            background: white !important; 
+                        }
+
+                        /* Espaciadores que se repiten en cada página */
+                        .page-header-spacer { height: 20mm; }
+                        .page-footer-spacer { height: 20mm; }
+                        
+                        /* Contenedor principal para márgenes laterales */
+                        .print-container {
+                            width: 100%;
+                        }
+                        .content-cell {
+                            padding: 0 20mm;
+                            vertical-align: top;
+                        }
+
+                        .documento-promesa { 
+                            box-shadow: none !important; 
+                            border: none !important; 
+                            margin: 0 !important;
+                            width: 100% !important;
+                            max-width: none !important;
+                            padding: 0 !important;
+                            background: white !important;
+                            filter: none !important;
+                        }
+
+                        /* Evitar que párrafos se corten feo entre páginas */
+                        p, .clause-title, .party-name {
+                            page-break-inside: avoid;
+                            break-inside: avoid;
+                        }
+
+                        table { width: 100%; border-collapse: collapse; }
+                    </style>
+                </head>
+                <body>
+                    <table class="print-container">
+                        <thead>
+                            <tr><td><div class="page-header-spacer"></div></td></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="content-cell">
+                                    ${printContent.outerHTML}
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr><td><div class="page-footer-spacer"></div></td></tr>
+                        </tfoot>
+                    </table>
+
+                    <!-- Estilos de limpieza al final de todo para ganar por cascada -->
+                    <style>
+                        /* Forzar eliminación de sombras y bordes en cualquier nivel */
+                        * {
+                            box-shadow: none !important;
+                            text-shadow: none !important;
+                            filter: none !important;
+                        }
+
+                        /* Selector ultra-específico para el contenedor del documento */
+                        html body .print-container .content-cell .documento-promesa {
+                            box-shadow: none !important;
+                            border: none !important;
+                            outline: none !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            background: white !important;
+                            background-color: white !important;
+                        }
+
+                        /* Asegurar que el fondo del body sea blanco puro */
+                        body {
+                            background: white !important;
+                            background-color: white !important;
+                        }
+                    </style>
+
+                    <script>
+                        window.onload = function() {
+                            setTimeout(function() {
+                                window.print();
+                                setTimeout(function() {
+                                    window.frameElement.remove();
+                                }, 100);
+                            }, 200);
+                        };
+                    </script>
+                </body>
+            </html>
+        `);
+        frameDoc.close();
+    };
+
     const handleDownloadPDF = async (root?: ParentNode | null) => {
         setIsExporting(true);
         const element = getDocElement(root ?? modalDocRootRef.current);
         if (element) {
             try {
-                const jsPDF = (await import("jspdf")).default;
+                const html2pdf = (await import("html2pdf.js")).default;
 
-                const pdf = new jsPDF({
-                    orientation: "portrait",
-                    unit: "mm",
-                    format: "a4",
-                });
+                // Clonar elemento para no afectar la UI
+                const clone = element.cloneNode(true) as HTMLElement;
 
-                // Extraer el texto del documento
-                const text = element.innerText;
+                // Aplicar estilos para PDF
+                clone.style.boxShadow = "none";
+                clone.style.border = "none";
+                clone.style.margin = "0";
+                clone.style.width = "210mm";
 
-                // Configuración de página
-                const pageWidth = 210; // A4 width in mm
-                const pageHeight = 297; // A4 height in mm
-                const margin = 20;
-                const maxWidth = pageWidth - margin * 2;
-                let yPos = margin;
+                // Fix para colores de Tailwind 4
+                sanitizeElementStyles(clone);
 
-                // Configurar fuente
-                pdf.setFontSize(10);
-                pdf.setTextColor(0, 0, 0);
+                const opt = {
+                    margin: [15, 15, 15, 15] as [number, number, number, number],
+                    filename: `Promesa_${nameclient || "Documento"}.pdf`,
+                    image: { type: "jpeg" as const, quality: 0.98 },
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        letterRendering: true,
+                        logging: false
+                    },
+                    jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
+                    pagebreak: { mode: ["avoid-all" as const, "css" as const, "legacy" as const] } // Evita cortar texto en medio
+                };
 
-                // Dividir el texto en líneas que quepan en el ancho de la página
-                const lines = pdf.splitTextToSize(text, maxWidth);
+                // Generar y descargar
+                await html2pdf().set(opt).from(clone).save();
 
-                // Agregar líneas al PDF, creando nuevas páginas cuando sea necesario
-                lines.forEach((line: string) => {
-                    if (yPos > pageHeight - margin) {
-                        pdf.addPage();
-                        yPos = margin;
-                    }
-                    pdf.text(line, margin, yPos);
-                    yPos += 6; // Espaciado entre líneas
-                });
-
-                // Guardar el PDF
-                pdf.save(`Promesa_${nameclient || "Documento"}.pdf`);
-                setIsExporting(false);
             } catch (error) {
                 console.error("Error al exportar PDF:", error);
+                alert("Ocurrió un error al generar el PDF. El botón 'Imprimir' suele ser una opción más compatible.");
+            } finally {
                 setIsExporting(false);
             }
         } else {
@@ -312,11 +461,10 @@ const PromesaFirma: React.FC = () => {
                                         disabled={
                                             !allFilesUploaded || isSubmitting
                                         }
-                                        className={`btn btn-block ${
-                                            allFilesUploaded && !isSubmitting
-                                                ? "btn bg-orange-100 text-black hover:bg-orange-200 border-none shadow-md"
-                                                : "btn-disabled bg-gray-200 text-gray-400"
-                                        }`}
+                                        className={`btn btn-block ${allFilesUploaded && !isSubmitting
+                                            ? "btn bg-orange-100 text-black hover:bg-orange-200 border-none shadow-md"
+                                            : "btn-disabled bg-gray-200 text-gray-400"
+                                            }`}
                                     >
                                         {isSubmitting ? (
                                             <>
@@ -493,11 +641,11 @@ const PromesaFirma: React.FC = () => {
                                             )
                                         }
                                         disabled={isExporting}
-                                        className={`p-3.5 rounded-2xl shadow-lg border transition-all duration-300 tooltip tooltip-left hover:scale-110 active:scale-95 ${isExporting ? "bg-blue-100 cursor-not-allowed border-blue-200" : "bg-[#0033cc] text-white border-blue-700 hover:bg-blue-700 shadow-blue-200"}`}
+                                        className={`p-3.5 rounded-2xl shadow-lg border transition-all duration-300 tooltip tooltip-left hover:scale-110 active:scale-95 ${isExporting ? "bg-blue-100 cursor-not-allowed border-blue-200" : "bg-white text-blue-600 border-blue-100 hover:bg-blue-50"}`}
                                         data-tip={
                                             isExporting
                                                 ? "Generando..."
-                                                : "Descargar como PDF"
+                                                : "Descargar PDF (Rápido)"
                                         }
                                     >
                                         {isExporting ? (
@@ -517,6 +665,26 @@ const PromesaFirma: React.FC = () => {
                                                 />
                                             </svg>
                                         )}
+                                    </button>
+
+                                    <button
+                                        onClick={handlePrint}
+                                        className="p-3.5 rounded-2xl shadow-lg border bg-[#0033cc] text-white border-blue-700 hover:bg-blue-700 shadow-blue-200 transition-all duration-300 tooltip tooltip-left hover:scale-110 active:scale-95"
+                                        data-tip="Imprimir / Guardar Alta Calidad (Texto Marcable)"
+                                    >
+                                        <svg
+                                            className="w-6 h-6"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2"
+                                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                                            />
+                                        </svg>
                                     </button>
                                 </div>
 
