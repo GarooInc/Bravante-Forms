@@ -120,26 +120,12 @@ const DocumentoPromesa: React.FC = () => {
 
     useEffect(() => {
         if (id) {
-            console.log("=== LLAMADA AL WEBHOOK ===");
-            console.log("ID enviado:", id);
-            console.log(
-                "URL:",
-                "https://agentsprod.redtec.ai/webhook/promesa-document",
-            );
-            console.log("Body:", JSON.stringify({ id }));
-            console.log("==========================");
-
             fetch("https://agentsprod.redtec.ai/webhook/promesa-document", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id }),
             })
                 .then(async (response) => {
-                    console.log("\n=== RESPUESTA DEL WEBHOOK ===");
-                    console.log("Status:", response.status);
-                    console.log("OK:", response.ok);
-                    console.log("Status Text:", response.statusText);
-
                     if (!response.ok) {
                         throw new Error(
                             `HTTP error! status: ${response.status}`,
@@ -147,29 +133,9 @@ const DocumentoPromesa: React.FC = () => {
                     }
 
                     const text = await response.text();
-                    console.log(
-                        "Longitud de respuesta:",
-                        text.length,
-                        "caracteres",
-                    );
-                    console.log(
-                        "Primeros 500 caracteres:",
-                        text.substring(0, 500),
-                    );
-                    console.log("============================\n");
 
                     if (!text || text.trim() === "") {
-                        console.error(
-                            "⚠️ ERROR: El webhook devolvió una respuesta vacía.",
-                        );
-                        console.error("Verifica que:");
-                        console.error("1. El ID existe en la base de datos");
-                        console.error(
-                            "2. El flujo de n8n está configurado correctamente",
-                        );
-                        console.error(
-                            "3. El flujo de n8n está devolviendo datos",
-                        );
+                        console.error("Respuesta vacía del webhook");
                         throw new Error("Respuesta vacía del servidor");
                     }
 
@@ -290,10 +256,10 @@ const DocumentoPromesa: React.FC = () => {
                 anioStr === "2026"
                     ? "veintiséis"
                     : anioStr === "2025"
-                      ? "veinticinco"
-                      : anioStr.length === 4
-                        ? anioStr.slice(-2)
-                        : anioStr;
+                        ? "veinticinco"
+                        : anioStr.length === 4
+                            ? anioStr.slice(-2)
+                            : anioStr;
             return { dia: dia.toString(), mes, anio: anioProc };
         }
 
@@ -320,10 +286,10 @@ const DocumentoPromesa: React.FC = () => {
                 anioStr === "2026"
                     ? "veintiséis"
                     : anioStr === "2025"
-                      ? "veinticinco"
-                      : anioStr.length === 4
-                        ? anioStr.slice(-2)
-                        : anioStr;
+                        ? "veinticinco"
+                        : anioStr.length === 4
+                            ? anioStr.slice(-2)
+                            : anioStr;
             return { dia: dia.toString(), mes, anio: anioProc };
         }
 
@@ -422,7 +388,7 @@ const DocumentoPromesa: React.FC = () => {
                 const monthsDiff =
                     (lastPaymentDate.getFullYear() -
                         currentDate.getFullYear()) *
-                        12 +
+                    12 +
                     (lastPaymentDate.getMonth() - currentDate.getMonth());
                 const diff = monthsDiff > 0 ? monthsDiff : 22;
                 return {
@@ -736,9 +702,7 @@ const DocumentoPromesa: React.FC = () => {
                 </div>
             </div>
 
-            {/* Contenido Principal - Vendedor y Compradores */}
             <div className="section-spacing">
-                {/* Vendedor */}
                 <p>
                     Yo, VENANCIO GÓMEZ (único apellido), quien declaro ser de
                     cincuenta y cinco años de edad, casado, Contador Público y
@@ -774,7 +738,6 @@ const DocumentoPromesa: React.FC = () => {
                     ;
                 </p>
 
-                {/* Compradores */}
                 <p>
                     {(() => {
                         const compradores = getVal<Comprador[]>(
@@ -791,8 +754,8 @@ const DocumentoPromesa: React.FC = () => {
                                                 {idx === 0
                                                     ? "I)"
                                                     : idx === 1
-                                                      ? "II)"
-                                                      : `${idx + 1})`}{" "}
+                                                        ? "II)"
+                                                        : `${idx + 1})`}{" "}
                                             </span>
                                             <span className="highlight-yellow">
                                                 {c.Nombre}
@@ -908,7 +871,6 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
             </div>
 
-            {/* Cláusula Primera */}
             <div id="clausula-primera" className="section-spacing">
                 <p>
                     <span className="clause-title">PRIMERA: ANTECEDENTES.</span>{" "}
@@ -1201,7 +1163,6 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
             </div>
 
-            {/* Cláusula Segunda */}
             <div id="clausula-segunda" className="section-spacing">
                 <p>
                     <span className="clause-title">
@@ -1409,7 +1370,6 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
             </div>
 
-            {/* Cláusula Tercera */}
             <div id="clausula-tercera" className="section-spacing">
                 <p>
                     <span className="clause-title">TERCERA:</span> La promesa de
@@ -1607,7 +1567,6 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
             </div>
 
-            {/* Cláusula Cuarta */}
             <div id="clausula-cuarta" className="section-spacing">
                 <p>
                     <span className="clause-title">
@@ -1652,7 +1611,6 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
             </div>
 
-            {/* Cláusula Quinta */}
             <div id="clausula-quinta" className="section-spacing">
                 <p>
                     <span className="clause-title">
@@ -1690,7 +1648,6 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
             </div>
 
-            {/* Cláusula Sexta */}
             <div id="clausula-sexta" className="section-spacing">
                 <p>
                     <span className="clause-title">
@@ -1780,7 +1737,6 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
             </div>
 
-            {/* Cláusula Séptima */}
             <div id="clausula-septima" className="section-spacing">
                 <p>
                     <span className="clause-title">
@@ -1798,7 +1754,6 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
             </div>
 
-            {/* Cláusula Octava */}
             <div id="clausula-octava" className="section-spacing">
                 <p>
                     <span className="clause-title">
@@ -1821,7 +1776,6 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
             </div>
 
-            {/* Cláusula Novena */}
             <div id="clausula-novena" className="section-spacing">
                 <p>
                     <span className="clause-title">
@@ -1849,7 +1803,6 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
             </div>
 
-            {/* Cláusula Décima */}
             <div id="clausula-decima" className="section-spacing">
                 <p>
                     <span className="clause-title">
@@ -1863,7 +1816,6 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
             </div>
 
-            {/* Cláusula Décima Primera */}
             <div id="clausula-decima-primera" className="section-spacing">
                 <p>
                     <span className="clause-title">
@@ -1912,7 +1864,6 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
             </div>
 
-            {/* Cláusula Décima Segunda */}
             <div id="clausula-decima-segunda" className="section-spacing">
                 <p>
                     <span className="clause-title">
@@ -1991,8 +1942,6 @@ const DocumentoPromesa: React.FC = () => {
                     ));
                 })()}
             </div>
-
-            {/* Acta de Legalización */}
 
             <div className="section-spacing" style={{ marginTop: "40px" }}>
                 <p>
@@ -2074,8 +2023,6 @@ const DocumentoPromesa: React.FC = () => {
                 })()}
             </div>
 
-            {/* Firmas de Legalización */}
-
             <div style={{ marginTop: "80px" }}>
                 {(() => {
                     const compradores = getVal<Comprador[]>("Compradores", []);
@@ -2117,7 +2064,6 @@ const DocumentoPromesa: React.FC = () => {
                     ));
                 })()}
 
-                {/* Sección ANTE MÍ */}
                 <div
                     style={{
                         marginTop: "40px",

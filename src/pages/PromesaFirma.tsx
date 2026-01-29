@@ -67,7 +67,6 @@ const PromesaFirma: React.FC = () => {
             const element = el as HTMLElement;
             const style = window.getComputedStyle(element);
 
-            // Convertir colores oklch/color() de Tailwind 4 a RGB simple para html2canvas
             if (style.color.includes("oklch") || style.color.includes("color(")) {
                 element.style.color = style.color;
             }
@@ -84,7 +83,6 @@ const PromesaFirma: React.FC = () => {
         const printContent = getDocElement(modalDocRootRef.current);
         if (!printContent) return;
 
-        // Crear un frame oculto para la impresión
         const printFrame = document.createElement('iframe');
         printFrame.style.position = 'fixed';
         printFrame.style.right = '0';
@@ -97,21 +95,18 @@ const PromesaFirma: React.FC = () => {
         const frameDoc = printFrame.contentWindow?.document || printFrame.contentDocument;
         if (!frameDoc) return;
 
-        // Copiar los estilos de la página principal al iframe
         const styles = document.querySelectorAll('style, link[rel="stylesheet"]');
         let styleHtml = '';
         styles.forEach(style => {
             styleHtml += style.outerHTML;
         });
 
-        // Escribir el contenido en el iframe usando el truco de la tabla para márgenes per-page
         frameDoc.write(`
             <html>
                 <head>
                     <title></title> 
                     ${styleHtml}
                     <style>
-                        /* Elimina cabeceras y pies de página forzando margen 0 */
                         @page { 
                             margin: 0; 
                             size: A4;
@@ -122,11 +117,9 @@ const PromesaFirma: React.FC = () => {
                             background: white !important; 
                         }
 
-                        /* Espaciadores que se repiten en cada página */
                         .page-header-spacer { height: 20mm; }
                         .page-footer-spacer { height: 20mm; }
                         
-                        /* Contenedor principal para márgenes laterales */
                         .print-container {
                             width: 100%;
                         }
@@ -146,7 +139,6 @@ const PromesaFirma: React.FC = () => {
                             filter: none !important;
                         }
 
-                        /* Evitar que párrafos se corten feo entre páginas */
                         p, .clause-title, .party-name {
                             page-break-inside: avoid;
                             break-inside: avoid;
@@ -172,16 +164,13 @@ const PromesaFirma: React.FC = () => {
                         </tfoot>
                     </table>
 
-                    <!-- Estilos de limpieza al final de todo para ganar por cascada -->
                     <style>
-                        /* Forzar eliminación de sombras y bordes en cualquier nivel */
                         * {
                             box-shadow: none !important;
                             text-shadow: none !important;
                             filter: none !important;
                         }
 
-                        /* Selector ultra-específico para el contenedor del documento */
                         html body .print-container .content-cell .documento-promesa {
                             box-shadow: none !important;
                             border: none !important;
@@ -192,7 +181,6 @@ const PromesaFirma: React.FC = () => {
                             background-color: white !important;
                         }
 
-                        /* Asegurar que el fondo del body sea blanco puro */
                         body {
                             background: white !important;
                             background-color: white !important;
@@ -221,17 +209,13 @@ const PromesaFirma: React.FC = () => {
         if (element) {
             try {
                 const html2pdf = (await import("html2pdf.js")).default;
-
-                // Clonar elemento para no afectar la UI
                 const clone = element.cloneNode(true) as HTMLElement;
 
-                // Aplicar estilos para PDF
                 clone.style.boxShadow = "none";
                 clone.style.border = "none";
                 clone.style.margin = "0";
                 clone.style.width = "210mm";
 
-                // Fix para colores de Tailwind 4
                 sanitizeElementStyles(clone);
 
                 const opt = {
@@ -245,10 +229,9 @@ const PromesaFirma: React.FC = () => {
                         logging: false
                     },
                     jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
-                    pagebreak: { mode: ["avoid-all" as const, "css" as const, "legacy" as const] } // Evita cortar texto en medio
+                    pagebreak: { mode: ["avoid-all" as const, "css" as const, "legacy" as const] }
                 };
 
-                // Generar y descargar
                 await html2pdf().set(opt).from(clone).save();
 
             } catch (error) {
@@ -344,7 +327,6 @@ const PromesaFirma: React.FC = () => {
                     );
                 }
 
-                console.log("Respuesta del servidor:", responseData);
                 alert(
                     "Documento enviado correctamente. Por favor revise su correo electrónico, ya que se le notificará una vez el documento haya sido procesado.",
                 );
@@ -392,7 +374,6 @@ const PromesaFirma: React.FC = () => {
                 }
             `}</style>
 
-            {/* Header con Logo */}
             <div className="w-full bg-white border-b border-gray-200 py-4 flex justify-center items-center z-10 shadow-sm shrink-0">
                 <img
                     src="/logo.png"
@@ -401,12 +382,9 @@ const PromesaFirma: React.FC = () => {
                 />
             </div>
 
-            {/* Contenedor de Secciones */}
             <div className="flex-1 overflow-y-auto">
-                {/* Sección Derecha - Formulario */}
                 <div className="w-full bg-white flex flex-col justify-center min-h-[80vh] p-6 sm:p-8 lg:p-16">
                     <div className="max-w-xl w-full mx-auto animate-fade-in">
-                        {/* Main Card */}
                         <div className="card bg-base-200 shadow-2xl">
                             <div className="card-body">
                                 <h2 className="card-title md:text-2xl text-xl mb-2 text-white font-bold">
@@ -437,7 +415,6 @@ const PromesaFirma: React.FC = () => {
                                     />
                                 </div>
 
-                                {/* Progress */}
                                 <div className="mt-8 mb-6">
                                     <div className="flex items-center justify-between text-sm mb-2">
                                         <span className="font-medium text-gray-700">
@@ -454,7 +431,6 @@ const PromesaFirma: React.FC = () => {
                                     ></progress>
                                 </div>
 
-                                {/* Submit Button */}
                                 <div className="card-actions justify-end mt-4">
                                     <button
                                         onClick={handleSubmit}
@@ -481,7 +457,6 @@ const PromesaFirma: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Footer */}
                         <div className="text-center mt-8">
                             <a
                                 className="text-sm text-black/50 hover:text-black transition-colors"
@@ -496,7 +471,6 @@ const PromesaFirma: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Modal para Ver Documento */}
                 {isDocumentModalOpen && (
                     <div className="modal modal-open" role="dialog">
                         <div className="modal-box max-w-6xl w-[96vw] p-0 bg-[#f5f5f7]">
