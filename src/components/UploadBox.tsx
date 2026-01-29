@@ -17,6 +17,9 @@ interface UploadBoxProps {
   fileData: FileUpload;
   dragOver: string | null;
   formatPdfUrl?: string;
+  belowSubtitleLinkText?: string;
+  belowSubtitleLinkHref?: string;
+  belowSubtitleLinkOnClick?: () => void;
   onFileChange: (type: string, file: File) => void; 
   onRemoveFile: (type: string) => void; 
   onDrop: (e: React.DragEvent, type: string) => void; 
@@ -32,6 +35,9 @@ const UploadBox: React.FC<UploadBoxProps> = ({
   fileData,
   dragOver,
   formatPdfUrl,
+  belowSubtitleLinkText,
+  belowSubtitleLinkHref,
+  belowSubtitleLinkOnClick,
   onFileChange,
   onRemoveFile,
   onDrop,
@@ -64,6 +70,23 @@ const UploadBox: React.FC<UploadBoxProps> = ({
           </>
         )}
       </p>
+
+      {belowSubtitleLinkText && (belowSubtitleLinkHref || belowSubtitleLinkOnClick) && (
+        <a
+          href={belowSubtitleLinkHref || "#"}
+          onClick={(e) => {
+            if (belowSubtitleLinkOnClick) {
+              e.preventDefault();
+              belowSubtitleLinkOnClick();
+            }
+          }}
+          target={belowSubtitleLinkHref ? "_blank" : undefined}
+          rel={belowSubtitleLinkHref ? "noopener noreferrer" : undefined}
+          className="text-xs text-green-300 hover:text-green-400 underline font-medium mb-3 inline-block"
+        >
+          {belowSubtitleLinkText}
+        </a>
+      )}
       
       {!fileData.file ? (
         <div
