@@ -251,15 +251,11 @@ const DocumentoPromesa: React.FC = () => {
         );
 
         if (dia !== 0 && mes !== "[MES_LEGALIZACION]" && anio !== 0) {
-            const anioStr = anio.toString();
-            const anioProc =
-                anioStr === "2026"
-                    ? "veintiséis"
-                    : anioStr === "2025"
-                        ? "veinticinco"
-                        : anioStr.length === 4
-                            ? anioStr.slice(-2)
-                            : anioStr;
+            let anioProc = anio.toString();
+            if (anio >= 2000 && anio < 2100) {
+                const resto = anio % 100;
+                anioProc = resto === 0 ? "" : numberToWords(resto);
+            }
             return { dia: dia.toString(), mes, anio: anioProc };
         }
 
@@ -281,15 +277,11 @@ const DocumentoPromesa: React.FC = () => {
         );
 
         if (dia !== 0 && mes !== "[MES_FIRMA]" && anio !== 0) {
-            const anioStr = anio.toString();
-            const anioProc =
-                anioStr === "2026"
-                    ? "veintiséis"
-                    : anioStr === "2025"
-                        ? "veinticinco"
-                        : anioStr.length === 4
-                            ? anioStr.slice(-2)
-                            : anioStr;
+            let anioProc = anio.toString();
+            if (anio >= 2000 && anio < 2100) {
+                const resto = anio % 100;
+                anioProc = resto === 0 ? "" : numberToWords(resto);
+            }
             return { dia: dia.toString(), mes, anio: anioProc };
         }
 
@@ -350,8 +342,14 @@ const DocumentoPromesa: React.FC = () => {
         if (num === 100) return "cien";
         if (num <= 9) return units[num];
         if (num <= 19) return teens[num - 10];
-        if (num <= 29)
-            return num === 20 ? "veinte" : "veinti" + units[num - 20];
+        if (num <= 29) {
+            if (num === 20) return "veinte";
+            if (num === 21) return "veintiuno";
+            if (num === 22) return "veintidós";
+            if (num === 23) return "veintitrés";
+            if (num === 26) return "veintiséis";
+            return "veinti" + units[num - 20];
+        }
         if (num <= 99)
             return (
                 tens[Math.floor(num / 10)] +
@@ -362,7 +360,46 @@ const DocumentoPromesa: React.FC = () => {
                 hundreds[Math.floor(num / 100)] +
                 (num % 100 !== 0 ? " " + numberToWords(num % 100) : "")
             );
+        if (num <= 999999) {
+            const thousands = Math.floor(num / 1000);
+            const remainder = num % 1000;
+            let thousandsPrefix = "";
+            if (thousands === 1) {
+                thousandsPrefix = "mil";
+            } else {
+                let text = numberToWords(thousands);
+                if (text === "veintiuno") text = "veintiún";
+                else if (text.endsWith(" uno"))
+                    text = text.substring(0, text.length - 1);
+                thousandsPrefix = text + " mil";
+            }
+            return (
+                thousandsPrefix +
+                (remainder !== 0 ? " " + numberToWords(remainder) : "")
+            );
+        }
         return num.toString();
+    };
+
+    const formatCUILetras = (cui: string | undefined): string => {
+        if (!cui) return "";
+        const cleanCUI = cui.replace(/\s/g, "");
+        if (cleanCUI.length !== 13) return cui;
+
+        const part1Str = cleanCUI.substring(0, 4);
+        const part2Str = cleanCUI.substring(4, 9);
+        const part3Str = cleanCUI.substring(9, 13);
+
+        const toWords = (s: string) => {
+            if (s.startsWith("0")) {
+                const num = parseInt(s);
+                if (num === 0) return "cero";
+                return "cero " + numberToWords(num);
+            }
+            return numberToWords(parseInt(s));
+        };
+
+        return `${toWords(part1Str)}, ${toWords(part2Str)}, ${toWords(part3Str)}`;
     };
 
     const getPlazoMeses = () => {
@@ -376,7 +413,10 @@ const DocumentoPromesa: React.FC = () => {
         );
 
         if (plazoLetras !== "[PLAZO_LETRAS]" && plazoNumeros !== 0) {
-            return { letras: plazoLetras, numeros: plazoNumeros.toString() };
+            return {
+                letras: plazoLetras.replace(/\s*meses\s*$/i, ""),
+                numeros: plazoNumeros.toString(),
+            };
         }
 
         const pagos = getVal<Pago[]>("Pagos", []);
@@ -388,7 +428,7 @@ const DocumentoPromesa: React.FC = () => {
                 const monthsDiff =
                     (lastPaymentDate.getFullYear() -
                         currentDate.getFullYear()) *
-                    12 +
+                        12 +
                     (lastPaymentDate.getMonth() - currentDate.getMonth());
                 const diff = monthsDiff > 0 ? monthsDiff : 22;
                 return {
@@ -437,6 +477,23 @@ const DocumentoPromesa: React.FC = () => {
             }
         }
         return "diciembre del año 2027";
+    };
+
+    const formatCUINumeros = (cui: string) => {
+        if (!cui) return "";
+        const clean = cui.replace(/[^0-9]/g, "");
+        if (clean.length !== 13) return cui;
+        return `${clean.substring(0, 4)} ${clean.substring(4, 10)} ${clean.substring(10, 13)}`;
+    };
+
+    const getCurrencySymbol = (): string => {
+        const letras = getVal<string>(
+            "Condiciones_Economicas.PrecioLetras",
+            "",
+        ).toLowerCase();
+        return letras.includes("dólar") || letras.includes("dollar")
+            ? "USD."
+            : "Q.";
     };
 
     const getSaldoFinal = () => {
@@ -706,9 +763,9 @@ const DocumentoPromesa: React.FC = () => {
                 <p>
                     Yo, VENANCIO GÓMEZ (único apellido), quien declaro ser de
                     cincuenta y cinco años de edad, casado, Contador Público y
-                    Auditor , guatemalteco, de este domicilio, me identifico con
+                    Auditor, guatemalteco, de este domicilio, me identifico con
                     el Documento Personal de Identificación -DPI- con Código
-                    Único de Identificación -CUI- dos mil quinientos cuarta,
+                    Único de Identificación -CUI- dos mil quinientos cuarenta,
                     setenta y nueve mil doscientos veintinueve, mil
                     cuatrocientos uno (2540 79229 1401), extendido por el
                     Registro Nacional de las Personas de la República de
@@ -717,15 +774,15 @@ const DocumentoPromesa: React.FC = () => {
                         ADMINISTRADOR ÚNICO Y REPRESENTANTE LEGAL
                     </span>{" "}
                     de la entidad{" "}
-                    <span className="bold">BRAVANTE, SOCIEDAD ANÓNIMA</span>{" "}
-                    calidad que acredita con mi nombramiento como tal contenido
+                    <span className="bold">BRAVANTE, SOCIEDAD ANÓNIMA</span>,
+                    calidad que acredito con mi nombramiento como tal contenido
                     en el acta notarial autorizada en esta ciudad el veintisiete
-                    de octubre de dos mil veinticinco , por la Notaria Lilian
-                    Elizabeth Azurdia Pérez de Quiroz , el cual se encuentra
+                    de octubre de dos mil veinticinco, por la Notaria Lilian
+                    Elizabeth Azurdia Pérez de Quiroz, el cual se encuentra
                     debidamente inscrito en el Registro Mercantil General de la
                     República de Guatemala bajo el número de registro
-                    ochocientos doce mil veintisiete (812027) , folio quinientos
-                    cuarenta y cuatro (544) , del libro ochocientos cincuenta y
+                    ochocientos doce mil veintisiete (812027), folio quinientos
+                    cuarenta y cuatro (544), del libro ochocientos cincuenta y
                     tres (853) de Auxiliares de Comercio, entidad en adelante
                     referida simple e indistintamente como{" "}
                     <span className="party-name">
@@ -754,8 +811,8 @@ const DocumentoPromesa: React.FC = () => {
                                                 {idx === 0
                                                     ? "I)"
                                                     : idx === 1
-                                                        ? "II)"
-                                                        : `${idx + 1})`}{" "}
+                                                      ? "II)"
+                                                      : `${idx + 1})`}{" "}
                                             </span>
                                             <span className="highlight-yellow">
                                                 {c.Nombre}
@@ -764,25 +821,26 @@ const DocumentoPromesa: React.FC = () => {
                                             <span className="highlight-yellow">
                                                 {c.Edad_Letras}
                                             </span>{" "}
-                                            de edad,{" "}
+                                            años de edad,{" "}
                                             <span className="highlight-yellow">
                                                 {c.EstadoCivil}
                                             </span>
                                             ,{" "}
                                             <span className="highlight-yellow">
                                                 {c.Profesion}
-                                            </span>{" "}
+                                            </span>
                                             , guatemalteco, de este domicilio,
                                             me identifico con el Documento
                                             Personal de Identificación -DPI-,
                                             con Código Único de Identificación
                                             -CUI- número{" "}
                                             <span className="highlight-yellow">
-                                                {c.DPI}
+                                                {formatCUILetras(c.DPI) ||
+                                                    c.DPI_Letras}
                                             </span>{" "}
                                             (
                                             <span className="highlight-yellow">
-                                                {c.DPI_Letras}
+                                                {formatCUINumeros(c.DPI || "")}
                                             </span>
                                             ), extendido por el Registro
                                             Nacional de las Personas de la
@@ -819,7 +877,7 @@ const DocumentoPromesa: React.FC = () => {
                                     <span className="highlight-yellow">
                                         {getComprador(0, "Edad_Letras")}
                                     </span>{" "}
-                                    de edad,{" "}
+                                    años de edad,{" "}
                                     <span className="highlight-yellow">
                                         {getComprador(0, "EstadoCivil")}
                                     </span>
@@ -832,11 +890,15 @@ const DocumentoPromesa: React.FC = () => {
                                     Identificación -DPI-, con Código Único de
                                     Identificación -CUI- número{" "}
                                     <span className="highlight-yellow">
-                                        {getComprador(0, "DPI")}
+                                        {formatCUILetras(
+                                            getComprador(0, "DPI"),
+                                        ) || getComprador(0, "DPI_Letras")}
                                     </span>{" "}
                                     (
                                     <span className="highlight-yellow">
-                                        {getComprador(0, "DPI_Letras")}
+                                        {formatCUINumeros(
+                                            getComprador(0, "DPI"),
+                                        )}
                                     </span>
                                     ), extendido por el Registro Nacional de las
                                     Personas de la República de Guatemala; en
@@ -875,15 +937,14 @@ const DocumentoPromesa: React.FC = () => {
                 <p>
                     <span className="clause-title">PRIMERA: ANTECEDENTES.</span>{" "}
                     Yo, VENANCIO GÓMEZ (único apellido), en representación de la
-                    entidad BRAVANTE, SOCIEDAD ANÓNIMA (SOCIEDAD ANÓNIMA),
-                    manifiesto que mi representada, está desarrollando la
-                    construcción del Proyecto de Apartamentos denominado{" "}
-                    BRAVANTE ubicado en Finca Cumbres de Vista Hermosa, Zona 5
-                    del municipio de Santa Catarina Pinula, departamento de
-                    Guatemala, a quien de acá en adelante denominaremos "El
-                    Proyecto". El Proyecto contará con dos torres de nueve
-                    niveles cada una, más cuatro sótanos, y estará distribuido
-                    de la siguiente forma:{" "}
+                    entidad BRAVANTE, SOCIEDAD ANÓNIMA, manifiesta que su
+                    representada está desarrollando la construcción del Proyecto
+                    de Apartamentos denominado BRAVANTE ubicado en Finca Cumbres
+                    de Vista Hermosa, Zona 5 del municipio de Santa Catarina
+                    Pinula, departamento de Guatemala, a quien de acá en
+                    adelante denominaremos "El Proyecto". El Proyecto contará
+                    con dos torres de nueve niveles cada una, más cuatro
+                    sótanos, y estará distribuido de la siguiente forma:{" "}
                     <span className="bold">a) cuatro niveles de sótanos</span>{" "}
                     los cuales serán utilizados para estacionamientos de
                     vehículos, distribuidos así:{" "}
@@ -899,7 +960,7 @@ const DocumentoPromesa: React.FC = () => {
                     estacionamiento de vehículos de los propietarios de los
                     apartamentos del edificio, así como bodegas en los sótanos
                     uno, dos y cuatro; y parqueos para motos en el sótano
-                    cuatro. y{" "}
+                    cuatro; y{" "}
                     <span className="bold">
                         b) Del primero hasta el noveno nivel,
                     </span>{" "}
@@ -971,7 +1032,10 @@ const DocumentoPromesa: React.FC = () => {
                     para suministro de energía a áreas comunes, los cuales son
                     pasillos, elevadores y lobby del edificio.{" "}
                     <span className="bold">d)</span> Contará con{" "}
-                    {getVal("proyecto.sistema_security", "[SISTEMA_SEGURIDAD]")}{" "}
+                    {getVal(
+                        "proyecto.sistema_seguridad",
+                        "[SISTEMA_SEGURIDAD]",
+                    )}{" "}
                     en cada nivel. <span className="bold">e)</span>{" "}
                     {getVal("proyecto.sistema_acceso", "[SISTEMA_ACCESO]")} en
                     ingreso vehicular.{" "}
@@ -1004,11 +1068,10 @@ const DocumentoPromesa: React.FC = () => {
                     horizontalmente dividida y su respectivo reglamento, así
                     como estarán sujetos a las servidumbres que la promitente{" "}
                     vendedora considere para el proyecto, y del cual formarán
-                    parte, entre otros: El apartamento{" "}
+                    parte, entre otros: El{" "}
                     <span className="highlight-yellow">
                         {getVal("Descripcion_del_Inmueble.Apartamento")}
                     </span>{" "}
-                    Torre{" "}
                     <span className="highlight-yellow">
                         {getVal("Descripcion_del_Inmueble.Torre")}
                     </span>
@@ -1175,11 +1238,10 @@ const DocumentoPromesa: React.FC = () => {
                     </span>{" "}
                     los bienes indicados en la cláusula que antecede, que se
                     describen así: <span className="bold">a)</span> El
-                    apartamento identificado como Apartamento{" "}
+                    apartamento identificado como{" "}
                     <span className="highlight-yellow">
                         {getVal("Descripcion_del_Inmueble.Apartamento")}
                     </span>{" "}
-                    Torre{" "}
                     <span className="highlight-yellow">
                         {getVal("Descripcion_del_Inmueble.Torre")}
                     </span>
@@ -1286,7 +1348,7 @@ const DocumentoPromesa: React.FC = () => {
                     <p style={{ margin: "3px 0", textIndent: "0" }}>
                         - Ventanería de aluminio línea europea con vidrio
                         laminado para aislamiento acústico, de ocho milímetros
-                        (8mm);
+                        (8 mm);
                     </p>
 
                     <p style={{ margin: "3px 0", textIndent: "0" }}>
@@ -1345,7 +1407,7 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
 
                 <p>
-                    Manifestamos las partes que aceptamos que el área de los
+                    Las partes manifestamos que aceptamos que el área de los
                     bienes objeto de este contrato podrá variar en más o menos
                     hasta en un dos por ciento (2%).
                 </p>
@@ -1382,9 +1444,9 @@ const DocumentoPromesa: React.FC = () => {
                         {getVal<string>(
                             "Condiciones_Economicas.PrecioLetras",
                             "[PRECIO_LETRAS]",
-                        ).replace(/\s*quetzales\s*$/i, "")}
+                        )}
                     </span>{" "}
-                    quetzales (Q.{" "}
+                    ({getCurrencySymbol()}{" "}
                     <span className="highlight-yellow">
                         {getVal(
                             "Condiciones_Economicas.PrecioNumeros",
@@ -1392,24 +1454,35 @@ const DocumentoPromesa: React.FC = () => {
                         )}
                     </span>
                     ) , el cual incluye el IMPUESTO AL VALOR AGREGADO y el
-                    IMPUESTO DEL TIMBRE correspondiente; para lo cual en su
+                    IMPUESTO DE TIMBRES correspondiente; para lo cual en su
                     momento se podrán redactar dos documentos, el de la
                     compraventa de inmuebles y el de la compraventa de mueble
                     (acción), cada uno con su precio correspondiente.{" "}
-                    <span className="bold">II) VARIACIÓN DEL PRECIO.</span>{" "}
-                    Manifiesto como la Promitente Compradora que acepto de forma
-                    expresa que en caso de nuevas leyes que regulen nuevos
-                    impuestos relacionados con el objeto de este contrato y su
-                    respectiva construcción o se aumenten los existentes, acepto
-                    que en esa misma medida y proporción se aumentará el valor
-                    de los bienes prometidos en venta, siempre que se acredite
+                    <span className="bold">II) VARIACIÓN DEL PRECIO.</span> LA
+                    PARTE PROMITENTE COMPRADORA acepta de forma expresa que en
+                    caso de nuevas leyes que regulen nuevos impuestos
+                    relacionados con el objeto de este contrato y su respectiva
+                    construcción o se aumenten los existentes, acepto que en esa
+                    misma medida y proporción se aumentará el valor de los
+                    bienes prometidos en venta, siempre que se acredite
                     fehacientemente el aumento en que dichas disposiciones han
                     afectado al precio pactado, aceptando consecuentemente dicha
                     variación como valor a cancelar de los bienes objeto de esta
                     promesa, cuyo pago se hará conforme y en conjunto al precio
                     antes establecido y según lo que se establece en el presente
-                    contrato. <span className="bold">III) FORMA DE PAGO.</span>{" "}
-                    LA PARTE PROMITENTE COMPRADORA pagará el valor de los bienes
+                    contrato. <span className="bold">III) MONEDA DE PAGO:</span>{" "}
+                    Las partes libre y expresamente pactamos que el precio de
+                    este contrato se pague en Dólares de los Estados Unidos de
+                    Norte América. No obstante, la PARTE PROMITENTE COMPRADORA,
+                    mediante previa autorización por escrito de la PARTE
+                    PROMITENTE VENDEDORA, podrá efectuar el pago en Quetzales,
+                    para cuyo efecto la PARTE PROMITENTE COMPRADORA autorizo a
+                    la PROMITENTE VENDEDORA a aplicar la tasa de cambio
+                    referencial para la VENTA de dólares de los Estados Unidos
+                    de América que publique el Banco Agromercantil de Guatemala,
+                    Sociedad Anónima, el día en que deba efectuarse el pago.{" "}
+                    <span className="bold">IV) FORMA DE PAGO.</span> LA PARTE
+                    PROMITENTE COMPRADORA pagaré el valor de los bienes
                     prometidos en venta de la siguiente forma:
                 </p>
 
@@ -1420,17 +1493,17 @@ const DocumentoPromesa: React.FC = () => {
                         {getVal<string>(
                             "Condiciones_Economicas.ReservaLetras",
                             "[RESERVA_LETRAS]",
-                        ).replace(/\s*quetzales\s*$/i, "")}
+                        )}
                     </span>{" "}
-                    quetzales (Q.{" "}
+                    ({getCurrencySymbol()}{" "}
                     <span className="highlight-yellow">
                         {getVal(
                             "Condiciones_Economicas.ReservaNumeros",
                             "[RESERVA_NUMEROS]",
                         )}
                     </span>
-                    ) en concepto de reserva, que Yo, la parte Promitente
-                    Vendedora manifiesto que tengo recibido a mi entera
+                    ) en concepto de reserva, misma que la parte Promitente
+                    Vendedora manifiesta haber recibido a su entera
                     satisfacción.
                 </p>
 
@@ -1441,9 +1514,9 @@ const DocumentoPromesa: React.FC = () => {
                         {getVal<string>(
                             "Condiciones_Economicas.SegundoPagoLetras",
                             "[SEGUNDO_PAGO_LETRAS]",
-                        ).replace(/\s*quetzales\s*$/i, "")}
+                        )}
                     </span>{" "}
-                    quetzales (Q.{" "}
+                    ({getCurrencySymbol()}{" "}
                     <span className="highlight-yellow">
                         {getVal(
                             "Condiciones_Economicas.SegundoPagoNumeros",
@@ -1452,10 +1525,10 @@ const DocumentoPromesa: React.FC = () => {
                     </span>
                     ) , que la parte Promitente Compradora entregará mediante{" "}
                     <span className="highlight-red">
-                        {getVal(
+                        {getVal<string>(
                             "Condiciones_Economicas.CantidadPagosLetras",
                             "veintidós",
-                        )}
+                        ).replace(/\s*pagos\s*$/i, "")}
                     </span>{" "}
                     (
                     <span className="highlight-red">
@@ -1519,7 +1592,7 @@ const DocumentoPromesa: React.FC = () => {
                                     <span className="highlight-red">
                                         {valorTexto}
                                     </span>{" "}
-                                    (Q.{" "}
+                                    ({getCurrencySymbol()}{" "}
                                     <span className="highlight-red">
                                         {valorNum.toLocaleString("en-US", {
                                             minimumFractionDigits: 2,
@@ -1537,12 +1610,9 @@ const DocumentoPromesa: React.FC = () => {
                     <span className="bold">c)</span> El saldo del precio total
                     de la compraventa, es decir la cantidad de{" "}
                     <span className="highlight-yellow">
-                        {getSaldoFinal().letras.replace(
-                            /\s*quetzales\s*$/i,
-                            "",
-                        )}
+                        {getSaldoFinal().letras}
                     </span>{" "}
-                    quetzales (Q.{" "}
+                    ({getCurrencySymbol()}{" "}
                     <span className="highlight-yellow">
                         {getSaldoFinal().numeros}
                     </span>
@@ -1550,9 +1620,81 @@ const DocumentoPromesa: React.FC = () => {
                     en que se otorgue la escritura pública de compraventa
                     definitiva de los bienes inmuebles y el bien mueble (acción)
                     objeto de este contrato y se haga entrega de los mismos.{" "}
-                    <span className="bold">V) PLAZO:</span>
-                    El plazo para el otorgamiento de la escritura pública de
-                    compraventa respectiva será de{" "}
+                    <span className="bold">V) LUGAR DE PAGO.</span> LA PARTE
+                    PROMITENTE COMPRADORA deberé efectuar los pagos en las
+                    oficinas de LA PARTE PROMITENTE VENDEDORA, ubicadas en
+                    Boulevard Rafael Landívar, 10-05, zona 16, Paseo Cayalá,
+                    Edificio D-1, 2do. Nivel, Guatemala, Guatemala, las cuales
+                    son del conocimiento de la Parte Promitente Compradora, sin
+                    necesidad de cobro o requerimiento alguno, o de cualquier
+                    forma o en cualquier otra dirección que me comunique en su
+                    momento y por escrito la PROMITENTE VENDEDORA, o por medio
+                    de transferencia bancaria, a la cuenta de la PROMITENTE
+                    VENDEDORA. Los pagos los deberé efectuar la parte promitente
+                    compradora en días y horas hábiles. En el caso que el día de
+                    pago fuere un día inhábil, el pago lo efectuaré la parte
+                    promitente compradora el día hábil siguiente.{" "}
+                    <span className="bold">VI) MORA.</span> Si existe atraso en
+                    efectuar cualquiera de los pagos antes indicados en la forma
+                    y plazo aquí acordados, LA PARTE PROMITENTE COMPRADORA
+                    reconozco y me obligo a pagar a la PARTE PROMITENTE
+                    VENDEDORA un interés del TRES por ciento (3 %) mensual sobre
+                    el saldo vencido calculado a partir del día siguiente en que
+                    debió efectuarse el pago hasta la fecha en que efectivamente
+                    se realice el pago adeudado. Asimismo, por cada cheque
+                    rechazado la PARTE PROMITENTE COMPRADORA me obligó a
+                    cancelar la cantidad de QUINIENTOS QUETZALES EXACTOS (Q.
+                    500.00) en concepto de gastos administrativos generados por
+                    tal hecho.{" "}
+                    <span className="bold">VII) DE LOS GRAVÁMENES.</span> LA
+                    PARTE PROMITENTE VENDEDORA traspasaré los bienes libres de
+                    gravámenes, limitaciones y/o anotaciones, salvo aquellas que
+                    fueren necesarios para el proyecto a desarrollar, tales como
+                    las servidumbres y régimen de propiedad horizontal y su
+                    respectivo reglamento al cual estará sometido el Edificio al
+                    que pertenecen los bienes objeto de este contrato.{" "}
+                    <span className="bold">VIII) GASTOS.</span> Los honorarios
+                    profesionales, gastos y aranceles de registro en que se
+                    incurra para el presente contrato y la futura compraventa
+                    correrán por cuenta de LA PARTE PROMITENTE COMPRADORA, los
+                    cuales no se encuentran incluidos dentro del valor de la
+                    compraventa prometida; estos deberán ser cancelados en su
+                    totalidad al momento de la formalización de la compraventa
+                    prometida en este documento. A partir de la fecha de
+                    suscripción del contrato de compraventa prometido, serán a
+                    cargo exclusivo de la PARTE PROMITENTE COMPRADORA los gastos
+                    correspondientes a Impuesto Único Sobre Inmuebles (IUSI),
+                    impuestos inmobiliarios, territoriales y cualquier otro
+                    impuesto, o arbitrio en general no especificado aquí o
+                    cualquier otro que se cree en el futuro, aplicables a los
+                    bienes objeto de este contrato, así como mantenimiento y
+                    gastos comunes de los bienes objeto de esta promesa que fije
+                    el propietario o administración del edificio, de igual
+                    manera, LA PARTE PROMITENTE COMPRADORA me obligo desde ya a
+                    pagar los montos correspondientes al mantenimiento mensual
+                    los cuales corresponderán a la Administración propia de
+                    BRAVANTE o bien quien ejerza la administración del mismo.
+                    Dicho monto está sujeto a cambio según lo considere la
+                    Administración de los Condominios.{" "}
+                    <span className="bold">IX) HONORARIOS Y GASTOS.</span> Los
+                    honorarios notariales y gastos de inscripción que causen
+                    este documento y la futura compraventa, correrán por cuenta
+                    de la PARTE PROMITENTE COMPRADORA, los cuales No se
+                    encuentran incluidos dentro del monto de la compraventa
+                    prometida, debiendo ser LA PARTE PROMITENTE VENDEDORA quien
+                    designe el Notario que autorice todos los documentos y
+                    escrituras públicas relacionadas directa o indirectamente
+                    con el presente contrato. El precio aquí pactado No incluye
+                    los gastos y honorarios correspondientes a la autorización
+                    del presente contrato y la compraventa prometida. La PARTE
+                    PROMITENTE COMPRADORA renuncio expresamente a mi derecho de
+                    elección del notario autorizante de la escritura de
+                    compraventa definitiva y/o de cualquier otro documento o
+                    escritura pública relacionada directa o indirectamente con
+                    el presente contrato, y acepto al notario designado por la
+                    PARTE PROMITENTE VENDEDORA.{" "}
+                    <span className="bold">X) PLAZO.</span> El plazo del
+                    presente contrato de Promesa de Compraventa es de{" "}
                     <span className="highlight-yellow">
                         {getPlazoMeses().letras} ({getPlazoMeses().numeros})
                     </span>{" "}
@@ -1577,15 +1719,15 @@ const DocumentoPromesa: React.FC = () => {
                     PROMITENTE VENDEDORA podrá resolver en cualquier momento el
                     presente contrato, sin necesidad de declaración judicial
                     previa o posterior, y dar por terminado en forma anticipada
-                    el mismo sin responsabilidad de mi parte, si LA PARTE
+                    el mismo sin responsabilidad de su parte, si LA PARTE
                     PROMITENTE COMPRADORA no cumple con una sola de sus
                     obligaciones de pago en la fecha, monto y forma aquí
                     pactados, dicho incumplimiento constituirá una condición
                     resolutoria expresa de este contrato. En caso ocurra el
-                    hecho constitutivo de la condición resolutoria expresa, La
-                    PARTE PROMITENTE VENDEDORA tengo el derecho de disponer de
+                    hecho constitutivo de la condición resolutoria expresa, LA
+                    PARTE PROMITENTE VENDEDORA tiene el derecho de disponer de
                     los bienes objetos de este contrato en cualquier forma y
-                    podré negociar, prometer en venta, vender o ceder los mismos
+                    podrá negociar, prometer en venta, vender o ceder los mismos
                     a un tercero, sin que haya necesidad que preceda orden o
                     resolución judicial o autorización alguna de LA PARTE
                     PROMITENTE COMPRADORA, procediéndose de conformidad con lo
@@ -1600,10 +1742,10 @@ const DocumentoPromesa: React.FC = () => {
                     PROMITENTE COMPRADORA, durante el plazo del presente
                     contrato fuere sujeto de procesos judiciales de cualquier
                     índole o naturaleza que conlleve la posibilidad de concluir
-                    con sentencia alguna de índole condenatoria que afecte mi
-                    libertad y/o capacidad de pago, por el presente acto
-                    confiero facultad especial a LA PARTE PROMITENTE VENDEDORA
-                    para resolver el presente contrato sin responsabilidad
+                    con sentencia alguna de índole condenatoria que afecte su
+                    libertad y/o capacidad de pago, por el presente acto otorga
+                    facultad especial a LA PARTE PROMITENTE VENDEDORA para
+                    resolver el presente contrato sin responsabilidad
                     indemnizatoria y/o legal alguna sujetándome al procedimiento
                     de devolución de los montos dados en concepto de enganche,
                     según lo estipulado en el presente contrato en cuanto a la
@@ -1621,7 +1763,7 @@ const DocumentoPromesa: React.FC = () => {
                     artículo un mil cuatrocientos cuarenta y dos (1,442) del
                     Código Civil vigente, de manera que los pagos recibidos a
                     cuenta del precio no constituirán el equivalente a los daños
-                    y perjuicios, ni la PARTE PROMITENTE VENDEDORA estaré en la
+                    y perjuicios, ni la PARTE PROMITENTE VENDEDORA estará en la
                     obligación de restituir el doble de lo que hubiese recibido.
                     En relación a daños y perjuicios resultantes de la
                     inejecución a falta de cumplimiento del contrato, las partes
@@ -1630,11 +1772,11 @@ const DocumentoPromesa: React.FC = () => {
                     cláusula. El incumplimiento o el retardo en el cumplimiento
                     por parte de PROMITENTE VENDEDORA, se regirá por las
                     estipulaciones siguientes, pero cobrarán efecto, sí y solo
-                    sí la PARTE PROMITENTE COMPRADORA he cumplido a cabalidad y
-                    en tiempo con mis obligaciones de pago. Si la Parte
-                    Vendedora decido resolver el presente contrato sin
+                    sí la PARTE PROMITENTE COMPRADORA ha cumplido a cabalidad y
+                    en tiempo con sus obligaciones de pago. Si la Parte
+                    Vendedora decide resolver el presente contrato sin
                     justificar causa alguna o sin haber sido motivado por la
-                    condición resolutoria expresa, deberé devolver a la parte
+                    condición resolutoria expresa, deberá devolver a la parte
                     PROMITENTE COMPRADORA los montos recibidos a cuenta del
                     precio del apartamento sumado a un interés anual del tres
                     por ciento (3%) en concepto de daños y perjuicios, en un
@@ -1643,7 +1785,7 @@ const DocumentoPromesa: React.FC = () => {
                     de la siguiente forma: Por cada pago recibido por LA PARTE
                     PROMITENTE VENDEDORA y efectivamente disponible, a partir de
                     ese día se calculará el interés, el cual no será
-                    capitalizable; calculándose el intereses sobre cada pago
+                    capitalizable; calculándose el interés sobre cada pago
                     efectivamente recibido.
                 </p>
             </div>
@@ -1666,8 +1808,8 @@ const DocumentoPromesa: React.FC = () => {
                     <p>
                         A. Desistir de la compra, encontrándose ya en trámite de
                         análisis de crédito, o por ser denegado por la entidad
-                        Bancaria o Financiera, DIEZ MIL DOLARES DE LOS ESTADOS
-                        UNIDOS DE NORTE AMERICA. (UDS.10,000.00).
+                        Bancaria o Financiera, DIEZ MIL DÓLARES DE LOS ESTADOS
+                        UNIDOS DE NORTEAMÉRICA. (USD.10,000.00).
                     </p>
 
                     <p>
@@ -1682,8 +1824,8 @@ const DocumentoPromesa: React.FC = () => {
                         C. El cinco por ciento (5%) del valor total de la
                         compraventa pactada en la promesa de compraventa de
                         bienes inmuebles y mueble (acción) más un fee de CINCO
-                        MIL DOLARES DE LOS ESTADOS UNIDOS DE NORTE AMERICA
-                        (UDS.5,000.00), por desistir de la compra después de
+                        MIL DÓLARES DE LOS ESTADOS UNIDOS DE NORTEAMÉRICA
+                        (USD.5,000.00), por desistir de la compra después de
                         haber pedido cambios y mejoras en el inmueble y estos se
                         hubieran ya realizado, siendo No reintegrable el monto
                         pagado por las mejoras ya realizadas.
@@ -1706,11 +1848,11 @@ const DocumentoPromesa: React.FC = () => {
                             II. El cinco por ciento (5%) del valor total de la
                             compraventa pactada en la promesa de compraventa de
                             bienes inmuebles y mueble (acción) más un fee de
-                            CINCO MIL DOLARES DE LOS ESTADOS UNIDOS DE NORTE
-                            AMERICA (UDS.5,000.00), por desistir de la compra
-                            después de haber pedido cambios y mejoras en el
-                            inmueble y estos se hubieran ya realizado, siendo No
-                            reintegrable el monto pagado por las mejoras ya
+                            CINCO MIL DÓLARES DE LOS ESTADOS UNIDOS DE
+                            NORTEAMÉRICA (USD.5,000.00), por desistir de la
+                            compra después de haber pedido cambios y mejoras en
+                            el inmueble y estos se hubieran ya realizado, siendo
+                            No reintegrable el monto pagado por las mejoras ya
                             realizadas.
                         </p>
                     </div>
@@ -1722,8 +1864,8 @@ const DocumentoPromesa: React.FC = () => {
                     Consejo Administrativo de la entidad vendedora, quien
                     asignará la penalización en relación a la causa del
                     desistimiento, acordando desde ya que en ningún caso podrá
-                    ser menor de CUATRO MIL DOLARES DE LOS ESTADOS UNIDOS DE
-                    NORTE AMERICA (UDS.4,000.00).
+                    ser menor de CUATRO MIL DÓLARES DE LOS ESTADOS UNIDOS DE
+                    NORTEAMÉRICA (USD.4,000.00).
                 </p>
 
                 <p>
@@ -1739,25 +1881,34 @@ const DocumentoPromesa: React.FC = () => {
 
             <div id="clausula-septima" className="section-spacing">
                 <p>
-                    <span className="clause-title">
-                        SÉPTIMA: CESIÓN DE DERECHOS.
-                    </span>{" "}
-                    LA PARTE PROMITENTE COMPRADORA no podré negociar, ceder,
-                    enajenar, o de cualquier otra forma disponer de las
-                    obligaciones o derechos que adquiere en este contrato, salvo
-                    que cuente con la aprobación previa y por escrito de LA
-                    PARTE PROMITENTE VENDEDORA. LA PARTE PROMITENTE VENDEDORA,
-                    por mi parte, quedo en libertad de negociar, ceder, o
-                    enajenar los derechos y obligaciones que adquiero en este
-                    contrato, parcial o totalmente, dando posterior aviso a LA
-                    PARTE PROMITENTE COMPRADORA.
+                    <span className="clause-title">SÉPTIMA: LIMITACIONES.</span>{" "}
+                    Las partes convienen que no podrán, ninguno de ellos,
+                    enajenar los bienes y/o derechos objeto de este contrato,
+                    mientras esté vigente el mismo o sus prórrogas.
                 </p>
             </div>
 
             <div id="clausula-octava" className="section-spacing">
                 <p>
                     <span className="clause-title">
-                        OCTAVA: PREEMINENCIA DEL PRESENTE CONTRATO.
+                        OCTAVA: CESIÓN DE DERECHOS.
+                    </span>{" "}
+                    LA PARTE PROMITENTE COMPRADORA no podrá negociar, ceder,
+                    enajenar, o de cualquier otra forma disponer de las
+                    obligaciones o derechos que adquiere en este contrato, salvo
+                    que cuente con la aprobación previa y por escrito de LA
+                    PARTE PROMITENTE VENDEDORA. LA PARTE PROMITENTE VENDEDORA,
+                    por su parte, queda en libertad de negociar, ceder, o
+                    enajenar los derechos y obligaciones que adquiero en este
+                    contrato, parcial o totalmente, dando posterior aviso a LA
+                    PARTE PROMITENTE COMPRADORA.
+                </p>
+            </div>
+
+            <div id="clausula-novena" className="section-spacing">
+                <p>
+                    <span className="clause-title">
+                        NOVENA: PREEMINENCIA DEL PRESENTE CONTRATO.
                     </span>{" "}
                     EI PROMITENTE COMPRADOR Y EL PROMITENTE VENDEDOR
                     manifestamos que el texto del contrato contenido en el
@@ -1776,10 +1927,10 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
             </div>
 
-            <div id="clausula-novena" className="section-spacing">
+            <div id="clausula-decima" className="section-spacing">
                 <p>
                     <span className="clause-title">
-                        NOVENA: LUGAR PARA RECIBIR NOTIFICACIONES.
+                        DÉCIMA: LUGAR PARA RECIBIR NOTIFICACIONES.
                     </span>{" "}
                     Para todos los efectos legales que correspondan, las partes
                     contratantes señalamos como lugares para recibir toda clase
@@ -1803,23 +1954,23 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
             </div>
 
-            <div id="clausula-decima" className="section-spacing">
+            <div id="clausula-decima-primera" className="section-spacing">
                 <p>
                     <span className="clause-title">
-                        DÉCIMA: CONFIDENCIALIDAD.
+                        DÉCIMA PRIMERA: CONFIDENCIALIDAD.
                     </span>{" "}
-                    LA PARTE PROMITENTE COMPRADORA me obligo a mantener bajo
+                    LA PARTE PROMITENTE COMPRADORA se obliga a mantener bajo
                     estricta confidencialidad toda la información que en virtud
                     del presente contrato le fuera suministrada por la PARTE
-                    PROMITENTE VENDEDORA, así como deberé mantener bajo esta
+                    PROMITENTE VENDEDORA, así como deberá mantener bajo esta
                     misma reserva el texto de este contrato.
                 </p>
             </div>
 
-            <div id="clausula-decima-primera" className="section-spacing">
+            <div id="clausula-decima-segunda" className="section-spacing">
                 <p>
                     <span className="clause-title">
-                        DÉCIMA PRIMERA: CLAUSULA COMPROMISORIA.
+                        DÉCIMA SEGUNDA: CLAUSULA COMPROMISORIA.
                     </span>{" "}
                     Las partes contratantes convenimos en que de producirse
                     cualquier controversia, conflicto o disputa entre nosotras,
@@ -1848,7 +1999,7 @@ const DocumentoPromesa: React.FC = () => {
                 <p>
                     Acordamos los contratantes que desde ya autorizamos al{" "}
                     <span className="bold">CENAC</span> para que nombre al
-                    árbitro de conformidad con su reglamento, así mismo,
+                    árbitro de conformidad con su reglamento, asimismo,
                     acordamos que el arbitraje, se llevará a cabo en la Ciudad
                     de Guatemala, en idioma español, y se decidirá por un solo
                     árbitro. Adicionalmente, acordamos las partes contratantes
@@ -1864,10 +2015,10 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
             </div>
 
-            <div id="clausula-decima-segunda" className="section-spacing">
+            <div id="clausula-decima-tercera" className="section-spacing">
                 <p>
                     <span className="clause-title">
-                        DÉCIMA SEGUNDA: ACEPTACIÓN:
+                        DÉCIMA TERCERA: ACEPTACIÓN Y RATIFICACIÓN:
                     </span>{" "}
                     En los términos expuestos y en las calidades con las que
                     actuamos, los comparecientes declaramos la plena conformidad
@@ -1882,12 +2033,10 @@ const DocumentoPromesa: React.FC = () => {
                     <span className="highlight-red">
                         {getFechaFirma().anio}
                     </span>
-                    , quedando contenido el mismo en cuatro (4) hojas de papel
+                    , quedando contenido el mismo en seis (6) hojas de papel
                     bond, impresas en su lado anverso y reverso.
                 </p>
             </div>
-
-            {/* Firmas del Contrato */}
 
             {/* Firmas del Contrato */}
             <div id="firmas" style={{ marginTop: "100px" }}>
@@ -1919,25 +2068,33 @@ const DocumentoPromesa: React.FC = () => {
                                 marginBottom: "50px",
                             }}
                         >
-                            {row.map((firmante, colIndex) => (
-                                <div key={colIndex} style={{ width: "45%" }}>
+                            {row.map(
+                                (
+                                    firmante: { label: string },
+                                    colIndex: number,
+                                ) => (
                                     <div
-                                        style={{
-                                            width: "100%",
-                                            borderBottom: "1px solid black",
-                                        }}
-                                    ></div>
-                                    <p
-                                        style={{
-                                            textAlign: "center",
-                                            fontSize: "9pt",
-                                            marginTop: "5px",
-                                        }}
+                                        key={colIndex}
+                                        style={{ width: "45%" }}
                                     >
-                                        {firmante.label}
-                                    </p>
-                                </div>
-                            ))}
+                                        <div
+                                            style={{
+                                                width: "100%",
+                                                borderBottom: "1px solid black",
+                                            }}
+                                        ></div>
+                                        <p
+                                            style={{
+                                                textAlign: "center",
+                                                fontSize: "9pt",
+                                                marginTop: "5px",
+                                            }}
+                                        >
+                                            {firmante.label}
+                                        </p>
+                                    </div>
+                                ),
+                            )}
                         </div>
                     ));
                 })()}
@@ -2010,8 +2167,13 @@ const DocumentoPromesa: React.FC = () => {
                             Identificación -DPI-, con Código Único de
                             Identificación -CUI- número{" "}
                             <span className="highlight-yellow">
-                                {c.DPI_Letras ?? `[DPI_LETRAS_${idx + 1}]`} (
-                                {c.DPI ?? `[DPI_NUMEROS_${idx + 1}]`})
+                                {formatCUILetras(c.DPI) ||
+                                    c.DPI_Letras ||
+                                    `[DPI_LETRAS_${idx + 1}]`}{" "}
+                                (
+                                {formatCUINumeros(c.DPI || "") ||
+                                    `[DPI_NUMEROS_${idx + 1}]`}
+                                )
                             </span>{" "}
                             extendido por el Registro Nacional de las Personas
                             de la República de Guatemala;
@@ -2050,7 +2212,7 @@ const DocumentoPromesa: React.FC = () => {
                                 marginBottom: "60px",
                             }}
                         >
-                            {row.map((_, colIndex) => (
+                            {row.map((_: unknown, colIndex: number) => (
                                 <div key={colIndex} style={{ width: "45%" }}>
                                     <div
                                         style={{
