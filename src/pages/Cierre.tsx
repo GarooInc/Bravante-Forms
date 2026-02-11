@@ -172,8 +172,8 @@ const Cierre: React.FC = () => {
             <div className="space-y-6">
               <UploadBox
                 type="cheque"
-                title="Imagen del cheque"
-                subtitle="Sube una foto clara del cheque"
+                title="Imagen del pago (cheque o transferencia)"
+                subtitle="Sube una foto clara del cheque o comprobante de transferencia"
                 acceptedFormats="image/png,image/jpeg,image/jpg"
                 fileData={files.cheque}
                 dragOver={dragOver}
