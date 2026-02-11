@@ -254,15 +254,14 @@ const Promesa: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="card bg-base-200 shadow-2xl">
-                    <div className="card-body">
-                        <h2 className="card-title md:text-2xl text-xl mb-2">
-                            Documentos de Promesa de {nameclient}
-                        </h2>
-                        <p className="text-base-content/70 mb-6">
-                            Por favor, sube los siguientes documentos para
-                            completar el proceso de promesa:
-                        </p>
+        <div className="card bg-gray-900 shadow-2xl">
+          <div className="card-body">
+            <h2 className="card-title md:text-2xl text-xl mb-2">
+              Documentos de Promesa de {nameclient}
+            </h2>
+            <p className="text-base-content/70 mb-6">
+              Por favor, sube los siguientes documentos para completar el proceso de promesa:
+            </p>
 
                         <div>
                             <label className="cursor-pointer flex items-center gap-3 mb-4">
