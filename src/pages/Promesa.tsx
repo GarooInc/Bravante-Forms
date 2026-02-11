@@ -277,7 +277,7 @@ const Promesa: React.FC = () => {
                                     onChange={() => setTypePerson(0)}
                                 />
                                 <label className="cursor-pointer flex items-center gap-3">
-                                    Persona Jurídica
+                                    Persona Jurídica (empresa)
                                 </label>
                                 <input
                                     type="radio"
@@ -486,7 +486,7 @@ const Promesa: React.FC = () => {
                             <div className="space-y-6 mt-4">
                                 <div className="bg-base-100 p-4 rounded-box border border-base-300">
                                     <label className="block font-medium mb-3">
-                                        Cantidad de personas:
+                                        Cantidad de personas solicitantes (incluyéndote a ti)
                                     </label>
                                     <div className="flex gap-6">
                                         {[1, 2, 3].map((num) => (
@@ -497,7 +497,7 @@ const Promesa: React.FC = () => {
                                                 <input
                                                     type="radio"
                                                     name="num-people"
-                                                    className="radio radio-primary radio-sm"
+                                                    className="radio radio-sm"
                                                     checked={numPeople === num}
                                                     onChange={() =>
                                                         setNumPeople(num)
