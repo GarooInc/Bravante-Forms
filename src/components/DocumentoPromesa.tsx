@@ -59,8 +59,27 @@ interface Bodega {
     Sotano_Letras?: string;
 }
 
+interface DatosJuridicos {
+    EmpresaNombre?: string;
+    RepresentanteNombre?: string;
+    RepresentanteCargo?: string;
+    RepresentanteNacionalidad?: string;
+    RepresentanteEstadoCivil?: string;
+    RepresentanteProfesion?: string;
+    RepresentanteEdadLetras?: string;
+    ActaNotarialFecha?: string;
+    NotarioNombre?: string;
+    InscritoNumero?: string;
+    InscritoFolio?: string;
+    InscritoLibro?: string;
+    RepresentanteDPI?: string;
+    RepresentanteDPI_Letras?: string;
+}
+
 interface WebhookData {
+    TipoPersona?: "individual" | "juridica";
     Compradores?: Comprador[];
+    Datos_Juridicos?: DatosJuridicos;
     proyecto?: Proyecto;
     Descripcion_del_Inmueble?: {
         Apartamento?: string;
@@ -775,10 +794,94 @@ const DocumentoPromesa: React.FC = () => {
 
                 <p>
                     {(() => {
-                        const compradores = getVal<Comprador[]>(
-                            "Compradores",
-                            [],
-                        );
+                        const tipoPersona = getVal<string>("TipoPersona", "individual");
+                        const datosJuridicos = getVal<DatosJuridicos>("Datos_Juridicos", {});
+                        const compradores = getVal<Comprador[]>("Compradores", []);
+
+                        if (tipoPersona === "juridica") {
+                            return (
+                                <>
+                                    Yo,{" "}
+                                    <span className="highlight-yellow">
+                                        {datosJuridicos.RepresentanteNombre || "[NOMBRE_REPRESENTANTE]"}
+                                    </span>
+                                    , quien declaro ser de{" "}
+                                    <span className="highlight-yellow">
+                                        {datosJuridicos.RepresentanteEdadLetras || "[EDAD_REPRESENTANTE]"}
+                                    </span>{" "}
+                                    años de edad,{" "}
+                                    <span className="highlight-yellow">
+                                        {datosJuridicos.RepresentanteEstadoCivil || "[ESTADO_CIVIL_REPRESENTANTE]"}
+                                    </span>
+                                    ,{" "}
+                                    <span className="highlight-yellow">
+                                        {datosJuridicos.RepresentanteProfesion || "[PROFESION_REPRESENTANTE]"}
+                                    </span>
+                                    ,{" "}
+                                    <span className="highlight-yellow">
+                                        {datosJuridicos.RepresentanteNacionalidad || "guatemalteco"}
+                                    </span>
+                                    , de este domicilio, me identifico con el Documento
+                                    Personal de Identificación -DPI-, con Código Único de
+                                    Identificación -CUI- número{" "}
+                                    <span className="highlight-yellow">
+                                        {datosJuridicos.RepresentanteDPI || "[DPI_REPRESENTANTE]"}
+                                    </span>{" "}
+                                    (
+                                    <span className="highlight-yellow">
+                                        {datosJuridicos.RepresentanteDPI_Letras || "[DPI_LETRAS_REPRESENTANTE]"}
+                                    </span>
+                                    ), extendido por el Registro Nacional de las Personas
+                                    de la República de Guatemala, comparezco en mi calidad de{" "}
+                                    <span className="bold">
+                                        {datosJuridicos.RepresentanteCargo || "[CARGO_REPRESENTANTE]"}
+                                    </span>{" "}
+                                    de la entidad{" "}
+                                    <span className="bold">
+                                        {datosJuridicos.EmpresaNombre || "[NOMBRE_EMPRESA]"}
+                                    </span>
+                                    , calidad que acredita con mi nombramiento como tal contenido
+                                    en el acta notarial autorizada en esta ciudad el día{" "}
+                                    <span className="highlight-yellow">
+                                        {datosJuridicos.ActaNotarialFecha || "[FECHA_ACTA]"}
+                                    </span>
+                                    , por el Notario{" "}
+                                    <span className="highlight-yellow">
+                                        {datosJuridicos.NotarioNombre || "[NOTARIO_ACTA]"}
+                                    </span>
+                                    , el cual se encuentra debidamente inscrito en el Registro
+                                    Mercantil General de la República de Guatemala bajo el número de
+                                    registro{" "}
+                                    <span className="highlight-yellow">
+                                        {datosJuridicos.InscritoNumero || "[NUMERO_REGISTRO]"}
+                                    </span>
+                                    , folio{" "}
+                                    <span className="highlight-yellow">
+                                        {datosJuridicos.InscritoFolio || "[FOLIO_REGISTRO]"}
+                                    </span>
+                                    , del libro{" "}
+                                    <span className="highlight-yellow">
+                                        {datosJuridicos.InscritoLibro || "[LIBRO_REGISTRO]"}
+                                    </span>{" "}
+                                    de Auxiliares de Comercio; entidad en adelante referida simple e
+                                    indistintamente como{" "}
+                                    <span className="party-name">
+                                        "LA PARTE PROMITENTE COMPRADORA"
+                                    </span>
+                                    ,{" "}
+                                    <span className="party-name">
+                                        "LA PROMITENTE COMPRADORA"
+                                    </span>{" "}
+                                    o{" "}
+                                    <span className="party-name">
+                                        "EL PROMITENTE COMPRADOR"
+                                    </span>
+                                    .
+                                </>
+                            );
+                        }
+
+                        // Default to Individual (Single or Multiple)
                         if (compradores.length > 1) {
                             return (
                                 <>
@@ -1207,16 +1310,21 @@ const DocumentoPromesa: React.FC = () => {
                     presente instrumento prometo vender a{" "}
                     <span className="highlight-yellow">
                         {(() => {
-                            const compradores = getVal<Comprador[]>(
-                                "Compradores",
-                                [],
-                            );
-                            if (compradores.length <= 1) {
-                                return getComprador(0, "Nombre");
+                            const tipoPersona = getVal<string>("TipoPersona", "individual");
+                            const datosJuridicos = getVal<DatosJuridicos>("Datos_Juridicos", {});
+                            const compradores = getVal<Comprador[]>("Compradores", []);
+
+                            if (tipoPersona === "juridica") {
+                                return `la entidad ${datosJuridicos.EmpresaNombre || "[NOMBRE_EMPRESA]"}, por medio de su representante legal`;
                             }
-                            const nombres = compradores.map((c) => c.Nombre);
-                            const last = nombres.pop();
-                            return nombres.join(", ") + " y " + last;
+
+                            if (compradores.length > 1) {
+                                const nombres = compradores.map((c) => c.Nombre);
+                                const last = nombres.pop();
+                                return "los señores " + nombres.join(", ") + " y " + last;
+                            }
+
+                            return "el señor " + getComprador(0, "Nombre");
                         })()}
                     </span>{" "}
                     los bienes indicados en la cláusula que antecede, que se
@@ -1976,16 +2084,20 @@ const DocumentoPromesa: React.FC = () => {
             {/* Firmas del Contrato */}
             <div id="firmas" style={{ marginTop: "100px" }}>
                 {(() => {
+                    const tipoPersona = getVal<string>("TipoPersona", "individual");
                     const compradores = getVal<Comprador[]>("Compradores", []);
-                    // Lista de firmantes: Vendedor + Compradores
+                    const datosJuridicos = getVal<DatosJuridicos>("Datos_Juridicos", {});
+
+                    // Lista de firmantes: Vendedor + (Empresa if Juridica else Compradores)
                     const firmantes = [
                         { label: "POR LA PARTE VENDEDORA" },
-                        ...compradores.map(() => ({
-                            label: "POR LA PARTE COMPRADORA",
-                        })),
+                        ...(tipoPersona === "juridica"
+                            ? [{ label: `POR LA ENTIDAD ${datosJuridicos.EmpresaNombre || "[NOMBRE_EMPRESA]"}` }]
+                            : compradores.map(() => ({
+                                label: "POR LA PARTE COMPRADORA",
+                            }))),
                     ];
 
-                    // Agrupar en filas de 2
                     const rows = [];
                     for (let i = 0; i < firmantes.length; i += 2) {
                         rows.push(firmantes.slice(i, i + 2));
@@ -2043,11 +2155,10 @@ const DocumentoPromesa: React.FC = () => {
                     </span>
                     , Yo, el infrascrito Notario hago constar que las{" "}
                     {(() => {
-                        const compradores = getVal<Comprador[]>(
-                            "Compradores",
-                            [],
-                        );
-                        const count = compradores.length + 1;
+                        const tipoPersona = getVal<string>("TipoPersona", "individual");
+                        const compradores = getVal<Comprador[]>("Compradores", []);
+                        // Signatures count: 1 Vendedor + (1 if Juridica else N if Individual)
+                        const count = 1 + (tipoPersona === "juridica" ? 1 : compradores.length);
                         const words = ["CERO", "UNA", "DOS", "TRES", "CUATRO", "CINCO", "SEIS"];
                         return words[count] || count.toString();
                     })()}{" "}
@@ -2079,7 +2190,62 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
 
                 {(() => {
+                    const tipoPersona = getVal<string>("TipoPersona", "individual");
+                    const datosJuridicos = getVal<DatosJuridicos>("Datos_Juridicos", {});
                     const compradores = getVal<Comprador[]>("Compradores", []);
+
+                    if (tipoPersona === "juridica") {
+                        return (
+                            <p style={{ marginTop: "10px" }}>
+                                <span className="bold">
+                                    b) <span className="highlight-yellow">
+                                        {datosJuridicos.RepresentanteNombre || "[NOMBRE_REPRESENTANTE]"}
+                                    </span>
+                                </span>
+                                , quien se identifica con el Documento Personal de
+                                Identificación -DPI-, con Código Único de
+                                Identificación -CUI- número{" "}
+                                <span className="highlight-yellow">
+                                    {datosJuridicos.RepresentanteDPI_Letras || "[DPI_LETRAS_REPRESENTANTE]"} (
+                                    {datosJuridicos.RepresentanteDPI || "[DPI_NUMEROS_REPRESENTANTE]"})
+                                </span>{" "}
+                                extendido por el Registro Nacional de las Personas
+                                de la República de Guatemala, quien comparece en su calidad de{" "}
+                                <span className="bold">
+                                    {datosJuridicos.RepresentanteCargo || "[CARGO_REPRESENTANTE]"}
+                                </span>{" "}
+                                de la entidad{" "}
+                                <span className="bold">
+                                    {datosJuridicos.EmpresaNombre || "[NOMBRE_EMPRESA]"}
+                                </span>{" "}
+                                calidad que acredita con su nombramiento como tal contenido
+                                en el acta notarial autorizada en esta ciudad el día{" "}
+                                <span className="highlight-yellow">
+                                    {datosJuridicos.ActaNotarialFecha || "[FECHA_ACTA]"}
+                                </span>
+                                , por el Notario{" "}
+                                <span className="highlight-yellow">
+                                    {datosJuridicos.NotarioNombre || "[NOTARIO_ACTA]"}
+                                </span>
+                                , el cual se encuentra debidamente inscrito en el Registro
+                                Mercantil General de la República de Guatemala bajo el número de
+                                registro{" "}
+                                <span className="highlight-yellow">
+                                    {datosJuridicos.InscritoNumero || "[NUMERO_REGISTRO]"}
+                                </span>
+                                , folio{" "}
+                                <span className="highlight-yellow">
+                                    {datosJuridicos.InscritoFolio || "[FOLIO_REGISTRO]"}
+                                </span>
+                                , del libro{" "}
+                                <span className="highlight-yellow">
+                                    {datosJuridicos.InscritoLibro || "[LIBRO_REGISTRO]"}
+                                </span>{" "}
+                                de Auxiliares de Comercio; quienes vuelven a firmar la presente acta, ante el infrascrito Notario quien de todo lo relacionado Doy Fe.
+                            </p>
+                        );
+                    }
+
                     if (!Array.isArray(compradores)) return null;
 
                     return compradores.map((c: Comprador, idx: number) => (
@@ -2110,13 +2276,12 @@ const DocumentoPromesa: React.FC = () => {
 
             <div style={{ marginTop: "80px" }}>
                 {(() => {
+                    const tipoPersona = getVal<string>("TipoPersona", "individual");
                     const compradores = getVal<Comprador[]>("Compradores", []);
-                    // Total de firmas: 1 Vendedor + N Compradores
-                    const totalFirmas = 1 + compradores.length;
+                    // Total de firmas: 1 Vendedor + (1 if Juridica else N if Individual)
+                    const totalFirmas = 1 + (tipoPersona === "juridica" ? 1 : compradores.length);
 
-                    // Agrupar en filas de 2
                     const rows = [];
-                    // Creamos un array dummy para iterar
                     const firmasArray = Array(totalFirmas).fill(null);
 
                     for (let i = 0; i < firmasArray.length; i += 2) {
