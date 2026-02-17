@@ -110,7 +110,7 @@ const Cierre: React.FC = () => {
         formData.append('autorizaciones_especiales', autorizacionesEspeciales ? '1' : '0');
         formData.append('id', urlId);
 
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/cierre`, {
+        const response = await fetch('https://agentsprod.redtec.ai/webhook/cierre', {
           method: 'POST',
           body: formData,
         });

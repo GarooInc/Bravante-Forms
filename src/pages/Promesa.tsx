@@ -13,7 +13,7 @@ const Promesa: React.FC = () => {
     const [urlId, setUrlId] = useState<string | null>(null);
     const [nameclient, setName] = useState<string>("");
     const [contado, setContado] = useState<boolean>(false);
-    const [numPeople, setNumPeople] = useState<number>(1);
+
 
     useEffect(() => {
         setUrlId(id || null);
@@ -129,9 +129,6 @@ const Promesa: React.FC = () => {
                 });
                 formData.append("type_person", typePerson.toString());
                 formData.append("id", urlId);
-                if (typePerson === 1) {
-                    formData.append("num_people", numPeople.toString());
-                }
 
                 const response = await fetch(
                     "https://agentsprod.redtec.ai/webhook/promesa",
@@ -146,7 +143,7 @@ const Promesa: React.FC = () => {
                 if (!response.ok || responseData.status !== "success") {
                     throw new Error(
                         responseData.message ||
-                            "Error en el servidor o respuesta inválida",
+                        "Error en el servidor o respuesta inválida",
                     );
                 }
 
@@ -175,7 +172,7 @@ const Promesa: React.FC = () => {
                 };
                 setFiles(resetFiles);
                 setContado(false);
-                setNumPeople(1);
+
             } catch (error) {
                 console.error("Error al enviar documentos:", error);
                 const errorMessage =
@@ -194,52 +191,52 @@ const Promesa: React.FC = () => {
     const allFilesUploaded =
         typePerson === 0
             ? files.carta_investigacion.file &&
-              files.dpi_replegal.file &&
-              files.nombramiento_replegal.file &&
-              files.ive.file &&
-              files.rtu_replegal.file &&
-              files.rtu_pjuridica.file &&
-              files.escritura_empresa.file &&
-              files.patente_sociedad.file &&
-              files.patente_empresa.file &&
-              files.recibo_replegal.file &&
-              files.recibo_empresa.file &&
-              (contado ? files.estados_financieros.file : true)
+            files.dpi_replegal.file &&
+            files.nombramiento_replegal.file &&
+            files.ive.file &&
+            files.rtu_replegal.file &&
+            files.rtu_pjuridica.file &&
+            files.escritura_empresa.file &&
+            files.patente_sociedad.file &&
+            files.patente_empresa.file &&
+            files.recibo_replegal.file &&
+            files.recibo_empresa.file &&
+            (contado ? files.estados_financieros.file : true)
             : files.carta_investigacion.file &&
-              files.ive.file &&
-              files.rtu_individual.file &&
-              files.recibo_individual.file &&
-              files.carta_ingresos.file &&
-              files.estado_cuenta1.file &&
-              files.estado_cuenta2.file &&
-              files.estado_cuenta3.file;
+            files.ive.file &&
+            files.rtu_individual.file &&
+            files.recibo_individual.file &&
+            files.carta_ingresos.file &&
+            files.estado_cuenta1.file &&
+            files.estado_cuenta2.file &&
+            files.estado_cuenta3.file;
 
     const uploadedCount =
         typePerson === 0
             ? [
-                  files.carta_investigacion,
-                  files.dpi_replegal,
-                  files.nombramiento_replegal,
-                  files.ive,
-                  files.rtu_replegal,
-                  files.rtu_pjuridica,
-                  files.escritura_empresa,
-                  files.patente_sociedad,
-                  files.patente_empresa,
-                  files.recibo_replegal,
-                  files.recibo_empresa,
-                  contado ? files.estados_financieros : null,
-              ].filter((f) => f && f.file).length
+                files.carta_investigacion,
+                files.dpi_replegal,
+                files.nombramiento_replegal,
+                files.ive,
+                files.rtu_replegal,
+                files.rtu_pjuridica,
+                files.escritura_empresa,
+                files.patente_sociedad,
+                files.patente_empresa,
+                files.recibo_replegal,
+                files.recibo_empresa,
+                contado ? files.estados_financieros : null,
+            ].filter((f) => f && f.file).length
             : [
-                  files.carta_investigacion,
-                  files.ive,
-                  files.rtu_individual,
-                  files.recibo_individual,
-                  files.carta_ingresos,
-                  files.estado_cuenta1,
-                  files.estado_cuenta2,
-                  files.estado_cuenta3,
-              ].filter((f) => f && f.file).length;
+                files.carta_investigacion,
+                files.ive,
+                files.rtu_individual,
+                files.recibo_individual,
+                files.carta_ingresos,
+                files.estado_cuenta1,
+                files.estado_cuenta2,
+                files.estado_cuenta3,
+            ].filter((f) => f && f.file).length;
 
     return (
         <div className="min-h-screen bg-white p-6">
@@ -254,14 +251,14 @@ const Promesa: React.FC = () => {
                     </div>
                 </div>
 
-        <div className="card bg-gray-900 shadow-2xl">
-          <div className="card-body">
-            <h2 className="card-title md:text-2xl text-xl mb-2">
-              Documentos de Promesa de {nameclient}
-            </h2>
-            <p className="text-base-content/70 mb-6">
-              Por favor, sube los siguientes documentos para completar el proceso de promesa:
-            </p>
+                <div className="card bg-gray-900 shadow-2xl">
+                    <div className="card-body">
+                        <h2 className="card-title md:text-2xl text-xl mb-2">
+                            Documentos de Promesa de {nameclient}
+                        </h2>
+                        <p className="text-base-content/70 mb-6">
+                            Por favor, sube los siguientes documentos para completar el proceso de promesa:
+                        </p>
 
                         <div>
                             <label className="cursor-pointer flex items-center gap-3 mb-4">
@@ -483,33 +480,6 @@ const Promesa: React.FC = () => {
                         )}
                         {typePerson === 1 && (
                             <div className="space-y-6 mt-4">
-                                <div className="bg-base-100 p-4 rounded-box border border-base-300">
-                                    <label className="block font-medium mb-3">
-                                        Cantidad de personas solicitantes (incluyéndote a ti)
-                                    </label>
-                                    <div className="flex gap-6">
-                                        {[1, 2, 3].map((num) => (
-                                            <label
-                                                key={num}
-                                                className="flex items-center gap-2 cursor-pointer"
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    name="num-people"
-                                                    className="radio radio-sm"
-                                                    checked={numPeople === num}
-                                                    onChange={() =>
-                                                        setNumPeople(num)
-                                                    }
-                                                />
-                                                <span className="label-text">
-                                                    {num}
-                                                </span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-
                                 <UploadBox
                                     type="carta_investigacion"
                                     title="Carta de Investigación firmada por el representante legal"
@@ -644,11 +614,10 @@ const Promesa: React.FC = () => {
                             <button
                                 onClick={handleSubmit}
                                 disabled={!allFilesUploaded || isSubmitting}
-                                className={`btn btn-block ${
-                                    allFilesUploaded && !isSubmitting
+                                className={`btn btn-block ${allFilesUploaded && !isSubmitting
                                         ? "btn bg-orange-100 text-black"
                                         : "btn-disabled"
-                                }`}
+                                    }`}
                             >
                                 {isSubmitting ? (
                                     <>
