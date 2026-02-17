@@ -253,7 +253,7 @@ const PromesaFirma: React.FC = () => {
             try {
                 const formData = new FormData();
                 formData.append("promesa_firmada", files.promesa_firmada.file);
-                formData.append('id', urlId);
+                formData.append("id", urlId);
 
                 const response = await fetch(
                     `${import.meta.env.VITE_API_URL}/promesafirmada`,
@@ -418,14 +418,14 @@ const PromesaFirma: React.FC = () => {
 
                 {isDocumentModalOpen && (
                     <div className="modal modal-open" role="dialog">
-                        <div className="modal-box max-w-6xl w-[96vw] p-0 bg-[#f5f5f7]">
-                            <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-                                <h3 className="font-semibold text-gray-800">
+                        <div className="modal-box max-w-6xl w-[96vw] p-0 bg-[#0f172a] border border-gray-800">
+                            <div className="flex items-center justify-between px-4 py-3 bg-[#111827] border-b border-gray-800">
+                                <h3 className="font-semibold text-white">
                                     Documento
                                 </h3>
                                 <button
                                     type="button"
-                                    className="btn btn-primary btn-sm"
+                                    className="btn bg-[#10b981] hover:bg-[#059669] text-white border-none btn-sm px-6"
                                     onClick={() =>
                                         setIsDocumentModalOpen(false)
                                     }
@@ -433,8 +433,8 @@ const PromesaFirma: React.FC = () => {
                                     Cerrar
                                 </button>
                             </div>
-                            <div className="relative h-[90vh] bg-[#f5f5f7]">
-                                <div className="hidden lg:flex absolute left-3 top-1/2 -translate-y-1/2 z-20 flex-col items-center gap-1 p-2 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200">
+                            <div className="relative h-[90vh] bg-[#0f172a]">
+                                <div className="hidden lg:flex absolute left-3 top-1/2 -translate-y-1/2 z-20 flex-col items-center gap-1 p-2 bg-[#111827]/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-800">
                                     <button
                                         onClick={() =>
                                             scrollToInRoot(
@@ -442,11 +442,11 @@ const PromesaFirma: React.FC = () => {
                                                 "inicio",
                                             )
                                         }
-                                        className="p-3 hover:bg-blue-50 rounded-xl transition-colors tooltip tooltip-right"
+                                        className="p-3 hover:bg-[#10b981]/10 rounded-xl transition-all tooltip tooltip-right group"
                                         data-tip="Inicio"
                                     >
                                         <svg
-                                            className="w-5 h-5 text-[#0033cc]"
+                                            className="w-5 h-5 text-[#10b981] group-hover:scale-110 transition-transform"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -460,7 +460,7 @@ const PromesaFirma: React.FC = () => {
                                         </svg>
                                     </button>
 
-                                    <div className="w-8 h-px bg-gray-100 my-1"></div>
+                                    <div className="w-8 h-px bg-gray-800 my-1"></div>
 
                                     {[
                                         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
@@ -473,14 +473,14 @@ const PromesaFirma: React.FC = () => {
                                                     `clausula-${ordinalMap[num]}`,
                                                 );
                                             }}
-                                            className="w-9 h-9 flex items-center justify-center hover:bg-blue-50 rounded-xl transition-colors text-[10px] font-bold text-gray-500 hover:text-[#0033cc] tooltip tooltip-right"
+                                            className="w-9 h-9 flex items-center justify-center hover:bg-[#10b981]/10 rounded-xl transition-all text-[10px] font-bold text-gray-400 hover:text-[#10b981] tooltip tooltip-right"
                                             data-tip={`Cláusula ${num}`}
                                         >
                                             C{num}
                                         </button>
                                     ))}
 
-                                    <div className="w-8 h-px bg-gray-100 my-1"></div>
+                                    <div className="w-8 h-px bg-gray-800 my-1"></div>
 
                                     <button
                                         onClick={() =>
@@ -489,11 +489,11 @@ const PromesaFirma: React.FC = () => {
                                                 "firmas",
                                             )
                                         }
-                                        className="p-3 hover:bg-blue-50 rounded-xl transition-colors tooltip tooltip-right"
+                                        className="p-3 hover:bg-[#10b981]/10 rounded-xl transition-all tooltip tooltip-right group"
                                         data-tip="Final / Firmas"
                                     >
                                         <svg
-                                            className="w-5 h-5 text-[#0033cc]"
+                                            className="w-5 h-5 text-[#10b981] group-hover:scale-110 transition-transform"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -515,7 +515,7 @@ const PromesaFirma: React.FC = () => {
                                                 modalDocRootRef.current,
                                             )
                                         }
-                                        className={`p-3.5 rounded-2xl shadow-lg border transition-all duration-300 tooltip tooltip-left hover:scale-110 active:scale-95 ${copied ? "bg-green-500 text-white border-green-600" : "bg-white text-gray-700 border-gray-200 hover:border-blue-400 hover:text-blue-600"}`}
+                                        className={`p-3.5 rounded-2xl shadow-lg border transition-all duration-300 tooltip tooltip-left hover:scale-110 active:scale-95 ${copied ? "bg-[#10b981] text-white border-[#10b981]" : "bg-[#111827] text-gray-300 border-gray-800 hover:border-[#10b981] hover:text-[#10b981]"}`}
                                         data-tip={
                                             copied
                                                 ? "¡Copiado!"
@@ -555,7 +555,7 @@ const PromesaFirma: React.FC = () => {
 
                                     <button
                                         onClick={handlePrint}
-                                        className="p-3.5 rounded-2xl shadow-lg border bg-[#0033cc] text-white border-blue-700 hover:bg-blue-700 shadow-blue-200 transition-all duration-300 tooltip tooltip-left hover:scale-110 active:scale-95"
+                                        className="p-3.5 rounded-2xl shadow-lg border bg-[#10b981] text-white border-[#10b981] hover:bg-[#059669] shadow-emerald-900/20 transition-all duration-300 tooltip tooltip-left hover:scale-110 active:scale-95"
                                         data-tip="Imprimir / Guardar Alta Calidad (Texto Marcable)"
                                     >
                                         <svg
@@ -574,7 +574,7 @@ const PromesaFirma: React.FC = () => {
                                     </button>
                                 </div>
 
-                                <div className="h-full overflow-auto flex justify-center items-start py-6 px-2 sm:px-4">
+                                <div className="h-full overflow-auto flex justify-center items-start py-6 px-2 sm:px-4 custom-scrollbar">
                                     <div
                                         ref={modalDocRootRef}
                                         className="transform scale-[0.7] sm:scale-[0.85] lg:scale-[0.95] origin-top"

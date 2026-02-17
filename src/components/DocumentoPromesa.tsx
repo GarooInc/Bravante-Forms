@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useParams } from "react-router-dom";
 
 interface Comprador {
@@ -136,9 +137,11 @@ interface ApiResponse {
 const DocumentoPromesa: React.FC = () => {
     const { id } = useParams();
     const [data, setData] = useState<WebhookData | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         if (id) {
+            setLoading(true);
             fetch("https://agentsprod.redtec.ai/webhook/promesa-document", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -214,7 +217,10 @@ const DocumentoPromesa: React.FC = () => {
                 })
                 .catch((error) =>
                     console.error("Error fetching document data:", error),
-                );
+                )
+                .finally(() => {
+                    setLoading(false);
+                });
         }
     }, [id]);
 
@@ -275,10 +281,10 @@ const DocumentoPromesa: React.FC = () => {
                 anioStr === "2026"
                     ? "veintiséis"
                     : anioStr === "2025"
-                        ? "veinticinco"
-                        : anioStr.length === 4
-                            ? anioStr.slice(-2)
-                            : anioStr;
+                      ? "veinticinco"
+                      : anioStr.length === 4
+                        ? anioStr.slice(-2)
+                        : anioStr;
             return { dia: dia.toString(), mes, anio: anioProc };
         }
 
@@ -305,10 +311,10 @@ const DocumentoPromesa: React.FC = () => {
                 anioStr === "2026"
                     ? "veintiséis"
                     : anioStr === "2025"
-                        ? "veinticinco"
-                        : anioStr.length === 4
-                            ? anioStr.slice(-2)
-                            : anioStr;
+                      ? "veinticinco"
+                      : anioStr.length === 4
+                        ? anioStr.slice(-2)
+                        : anioStr;
             return { dia: dia.toString(), mes, anio: anioProc };
         }
 
@@ -442,7 +448,7 @@ const DocumentoPromesa: React.FC = () => {
                 const monthsDiff =
                     (lastPaymentDate.getFullYear() -
                         currentDate.getFullYear()) *
-                    12 +
+                        12 +
                     (lastPaymentDate.getMonth() - currentDate.getMonth());
                 const diff = monthsDiff > 0 ? monthsDiff : 22;
                 return {
@@ -556,6 +562,138 @@ const DocumentoPromesa: React.FC = () => {
         return { letras: "[SALDO_LETRAS]", numeros: "[SALDO_NUMEROS]" };
     };
 
+    const getParqueosDescripcion = () => {
+        const desc = getVal<string>(
+            "Descripcion_del_Inmueble.ParqueosDescripcion",
+            "",
+        );
+        if (desc && desc !== "[DESCRIPCION_PARQUEOS]") return desc;
+
+        const ests = getVal<Estacionamiento[]>(
+            "Descripcion_del_Inmueble.Estacionamientos",
+            [],
+        );
+        if (!Array.isArray(ests) || ests.length === 0)
+            return "Cero plazas de estacionamiento";
+
+        const numLetras = numberToWords(ests.length).toLowerCase();
+        const numeros = ests.map((e) => e.Numero).join(", ");
+        const sotanos = Array.from(new Set(ests.map((e) => e.Sotano))).join(
+            " y ",
+        );
+
+        return `${numLetras} (${ests.length}) plazas de estacionamiento identificadas con los números: ${numeros}, ubicadas en el sótano número: ${sotanos}`;
+    };
+
+    if (loading) {
+        return createPortal(
+            <div
+                style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    backgroundColor: "#0f172a", // Dark navy from image
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: 2147483647,
+                    fontFamily: "'Outfit', sans-serif",
+                }}
+            >
+                <style>{`
+                    body { 
+                        margin: 0 !important; 
+                        padding: 0 !important; 
+                        overflow: hidden !important; 
+                        background-color: #0f172a !important;
+                    }
+                    
+                    .loader-minimalist {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        gap: 2rem;
+                        text-align: center;
+                        max-width: 400px;
+                    }
+
+                    .spinner-emerald {
+                        width: 50px;
+                        height: 50px;
+                        border: 3px solid rgba(16, 185, 129, 0.1);
+                        border-top: 3px solid #10b981;
+                        border-radius: 50%;
+                        animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+                    }
+
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+
+                    .main-text {
+                        font-size: 1.5rem;
+                        font-weight: 600;
+                        color: #ffffff;
+                        margin-bottom: 0.5rem;
+                        letter-spacing: -0.02em;
+                    }
+
+                    .sub-text {
+                        color: #94a3b8;
+                        font-size: 1rem;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        gap: 8px;
+                        font-weight: 400;
+                    }
+
+                    .dot-container {
+                        display: flex;
+                        gap: 4px;
+                    }
+
+                    .dot-emerald {
+                        width: 4px;
+                        height: 4px;
+                        background: #10b981;
+                        border-radius: 50%;
+                        animation: dotPulse 1.4s infinite ease-in-out;
+                    }
+
+                    .dot-emerald:nth-child(2) { animation-delay: 0.2s; }
+                    .dot-emerald:nth-child(3) { animation-delay: 0.4s; }
+
+                    @keyframes dotPulse {
+                        0%, 100% { transform: scale(0.8); opacity: 0.4; }
+                        50% { transform: scale(1.2); opacity: 1; }
+                    }
+                `}</style>
+                <div className="loader-minimalist">
+                    <div className="spinner-emerald"></div>
+                    <div>
+                        <div className="main-text">Generando Documento</div>
+                        <div className="sub-text">
+                            Analizando compromiso de compraventa
+                            <div className="dot-container">
+                                <div className="dot-emerald"></div>
+                                <div className="dot-emerald"></div>
+                                <div className="dot-emerald"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>,
+            document.body,
+        );
+    }
+
     return (
         <div className="documento-promesa">
             <style>{`
@@ -564,17 +702,17 @@ const DocumentoPromesa: React.FC = () => {
           font-family: 'Arial', 'Helvetica', sans-serif;
           font-size: 11pt;
           line-height: 1.5;
-          color: #000;
           width: 210mm;
           max-width: 95vw;
           min-height: 297mm;
-          margin: 20px auto;
+          margin: 40px auto;
           background-color: #ffffff !important;
-          color: #000000 !important;
+          color: #1e293b !important;
           padding: 25mm 20mm;
           box-sizing: border-box;
-          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
-          border: 1px solid rgba(0,0,0,0.05);
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08) !important;
+          border: 1px solid #e2e8f0;
+          border-radius: 4px;
         }
 
         @media (max-width: 768px) {
@@ -633,12 +771,11 @@ const DocumentoPromesa: React.FC = () => {
         .highlight-blue,
         .highlight-red {
           font-weight: 700;
-          color: #0033cc; /* Azul cobalto vibrante y profesional */
-          background: transparent;
-          padding: 0;
-          text-decoration: underline;
-          text-underline-offset: 2px;
-          text-decoration-thickness: 1px;
+          color: #059669; /* Un verde esmeralda un poco más oscuro para mejor legibilidad en blanco */
+          background: rgba(16, 185, 129, 0.05); /* Sutil fondo verde */
+          padding: 0 2px;
+          border-radius: 2px;
+          text-decoration: none;
         }
 
         
@@ -762,7 +899,7 @@ const DocumentoPromesa: React.FC = () => {
                     cincuenta y cinco años de edad, casado, Contador Público y
                     Auditor , guatemalteco, de este domicilio, me identifico con
                     el Documento Personal de Identificación -DPI- con Código
-                    Único de Identificación -CUI- dos mil quinientos cuarta,
+                    Único de Identificación -CUI- dos mil quinientos cuarenta,
                     setenta y nueve mil doscientos veintinueve, mil
                     cuatrocientos uno (2540 79229 1401), extendido por el
                     Registro Nacional de las Personas de la República de
@@ -794,77 +931,105 @@ const DocumentoPromesa: React.FC = () => {
 
                 <p>
                     {(() => {
-                        const tipoPersona = getVal<string>("TipoPersona", "individual");
-                        const datosJuridicos = getVal<DatosJuridicos>("Datos_Juridicos", {});
-                        const compradores = getVal<Comprador[]>("Compradores", []);
+                        const tipoPersona = getVal<string>(
+                            "TipoPersona",
+                            "individual",
+                        );
+                        const datosJuridicos = getVal<DatosJuridicos>(
+                            "Datos_Juridicos",
+                            {},
+                        );
+                        const compradores = getVal<Comprador[]>(
+                            "Compradores",
+                            [],
+                        );
 
                         if (tipoPersona === "juridica") {
                             return (
                                 <>
                                     Yo,{" "}
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteNombre || "[NOMBRE_REPRESENTANTE]"}
+                                        {datosJuridicos.RepresentanteNombre ||
+                                            "[NOMBRE_REPRESENTANTE]"}
                                     </span>
                                     , quien declaro ser de{" "}
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteEdadLetras || "[EDAD_REPRESENTANTE]"}
+                                        {datosJuridicos.RepresentanteEdadLetras ||
+                                            "[EDAD_REPRESENTANTE]"}
                                     </span>{" "}
                                     años de edad,{" "}
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteEstadoCivil || "[ESTADO_CIVIL_REPRESENTANTE]"}
+                                        {datosJuridicos.RepresentanteEstadoCivil ||
+                                            "[ESTADO_CIVIL_REPRESENTANTE]"}
                                     </span>
                                     ,{" "}
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteProfesion || "[PROFESION_REPRESENTANTE]"}
+                                        {datosJuridicos.RepresentanteProfesion ||
+                                            "[PROFESION_REPRESENTANTE]"}
                                     </span>
                                     ,{" "}
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteNacionalidad || "guatemalteco"}
+                                        {datosJuridicos.RepresentanteNacionalidad ||
+                                            "guatemalteco"}
                                     </span>
-                                    , de este domicilio, me identifico con el Documento
-                                    Personal de Identificación -DPI-, con Código Único de
-                                    Identificación -CUI- número{" "}
+                                    , de este domicilio, me identifico con el
+                                    Documento Personal de Identificación -DPI-,
+                                    con Código Único de Identificación -CUI-
+                                    número{" "}
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteDPI || "[DPI_REPRESENTANTE]"}
+                                        {datosJuridicos.RepresentanteDPI ||
+                                            "[DPI_REPRESENTANTE]"}
                                     </span>{" "}
                                     (
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteDPI_Letras || "[DPI_LETRAS_REPRESENTANTE]"}
+                                        {datosJuridicos.RepresentanteDPI_Letras ||
+                                            "[DPI_LETRAS_REPRESENTANTE]"}
                                     </span>
-                                    ), extendido por el Registro Nacional de las Personas
-                                    de la República de Guatemala, comparezco en mi calidad de{" "}
+                                    ), extendido por el Registro Nacional de las
+                                    Personas de la República de Guatemala,
+                                    comparezco en mi calidad de{" "}
                                     <span className="bold">
-                                        {datosJuridicos.RepresentanteCargo || "[CARGO_REPRESENTANTE]"}
+                                        {datosJuridicos.RepresentanteCargo ||
+                                            "[CARGO_REPRESENTANTE]"}
                                     </span>{" "}
                                     de la entidad{" "}
                                     <span className="bold">
-                                        {datosJuridicos.EmpresaNombre || "[NOMBRE_EMPRESA]"}
+                                        {datosJuridicos.EmpresaNombre ||
+                                            "[NOMBRE_EMPRESA]"}
                                     </span>
-                                    , calidad que acredita con mi nombramiento como tal contenido
-                                    en el acta notarial autorizada en esta ciudad el día{" "}
+                                    , calidad que acredita con mi nombramiento
+                                    como tal contenido en el acta notarial
+                                    autorizada en esta ciudad el día{" "}
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.ActaNotarialFecha || "[FECHA_ACTA]"}
+                                        {datosJuridicos.ActaNotarialFecha ||
+                                            "[FECHA_ACTA]"}
                                     </span>
                                     , por el Notario{" "}
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.NotarioNombre || "[NOTARIO_ACTA]"}
+                                        {datosJuridicos.NotarioNombre ||
+                                            "[NOTARIO_ACTA]"}
                                     </span>
-                                    , el cual se encuentra debidamente inscrito en el Registro
-                                    Mercantil General de la República de Guatemala bajo el número de
+                                    , el cual se encuentra debidamente inscrito
+                                    en el Registro Mercantil General de la
+                                    República de Guatemala bajo el número de
                                     registro{" "}
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.InscritoNumero || "[NUMERO_REGISTRO]"}
+                                        {datosJuridicos.InscritoNumero ||
+                                            "[NUMERO_REGISTRO]"}
                                     </span>
                                     , folio{" "}
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.InscritoFolio || "[FOLIO_REGISTRO]"}
+                                        {datosJuridicos.InscritoFolio ||
+                                            "[FOLIO_REGISTRO]"}
                                     </span>
                                     , del libro{" "}
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.InscritoLibro || "[LIBRO_REGISTRO]"}
+                                        {datosJuridicos.InscritoLibro ||
+                                            "[LIBRO_REGISTRO]"}
                                     </span>{" "}
-                                    de Auxiliares de Comercio; entidad en adelante referida simple e
-                                    indistintamente como{" "}
+                                    de Auxiliares de Comercio; entidad en
+                                    adelante referida simple e indistintamente
+                                    como{" "}
                                     <span className="party-name">
                                         "LA PARTE PROMITENTE COMPRADORA"
                                     </span>
@@ -889,11 +1054,20 @@ const DocumentoPromesa: React.FC = () => {
                                     {compradores.map((c, idx) => (
                                         <React.Fragment key={idx}>
                                             <span className="bold">
-                                                {idx === 0
-                                                    ? "I)"
-                                                    : idx === 1
-                                                        ? "II)"
-                                                        : `${idx + 1})`}{" "}
+                                                {(() => {
+                                                    const roman = [
+                                                        "I)",
+                                                        "II)",
+                                                        "III)",
+                                                        "IV)",
+                                                        "V)",
+                                                        "VI)",
+                                                    ];
+                                                    return (
+                                                        roman[idx] ||
+                                                        `${idx + 1})`
+                                                    );
+                                                })()}{" "}
                                             </span>
                                             <span className="highlight-yellow">
                                                 {c.Nombre}
@@ -926,7 +1100,7 @@ const DocumentoPromesa: React.FC = () => {
                                             Nacional de las Personas de la
                                             República de Guatemala
                                             {idx < compradores.length - 1
-                                                ? ". y "
+                                                ? "; y "
                                                 : ""}
                                         </React.Fragment>
                                     ))}
@@ -1013,15 +1187,14 @@ const DocumentoPromesa: React.FC = () => {
                 <p>
                     <span className="clause-title">PRIMERA: ANTECEDENTES.</span>{" "}
                     Yo, VENANCIO GÓMEZ (único apellido), en representación de la
-                    entidad BRAVANTE, SOCIEDAD ANÓNIMA,
-                    manifiesto que mi representada, está desarrollando la
-                    construcción del Proyecto de Apartamentos denominado{" "}
-                    BRAVANTE ubicado en Finca Cumbres de Vista Hermosa, Zona 5
-                    del municipio de Santa Catarina Pinula, departamento de
-                    Guatemala, a quien de acá en adelante denominaremos "El
-                    Proyecto". El Proyecto contará con dos torres de nueve
-                    niveles cada una, más cuatro sótanos, y estará distribuido
-                    de la siguiente forma:{" "}
+                    entidad BRAVANTE, SOCIEDAD ANÓNIMA, manifiesto que mi
+                    representada, está desarrollando la construcción del
+                    Proyecto de Apartamentos denominado BRAVANTE ubicado en
+                    Finca Cumbres de Vista Hermosa, Zona 5 del municipio de
+                    Santa Catarina Pinula, departamento de Guatemala, a quien de
+                    acá en adelante denominaremos "El Proyecto". El Proyecto
+                    contará con dos torres de nueve niveles cada una, más cuatro
+                    sótanos, y estará distribuido de la siguiente forma:{" "}
                     <span className="bold">a) cuatro niveles de sótanos</span>{" "}
                     los cuales serán utilizados para estacionamientos de
                     vehículos, distribuidos así:{" "}
@@ -1109,7 +1282,10 @@ const DocumentoPromesa: React.FC = () => {
                     para suministro de energía a áreas comunes, los cuales son
                     pasillos, elevadores y lobby del edificio.{" "}
                     <span className="bold">d)</span> Contará con{" "}
-                    {getVal("proyecto.sistema_security", "[SISTEMA_SEGURIDAD]")}{" "}
+                    {getVal(
+                        "proyecto.sistema_seguridad",
+                        "[SISTEMA_SEGURIDAD]",
+                    )}{" "}
                     en cada nivel. <span className="bold">e)</span>{" "}
                     {getVal("proyecto.sistema_acceso", "[SISTEMA_ACCESO]")} en
                     ingreso vehicular.{" "}
@@ -1310,18 +1486,34 @@ const DocumentoPromesa: React.FC = () => {
                     presente instrumento prometo vender a{" "}
                     <span className="highlight-yellow">
                         {(() => {
-                            const tipoPersona = getVal<string>("TipoPersona", "individual");
-                            const datosJuridicos = getVal<DatosJuridicos>("Datos_Juridicos", {});
-                            const compradores = getVal<Comprador[]>("Compradores", []);
+                            const tipoPersona = getVal<string>(
+                                "TipoPersona",
+                                "individual",
+                            );
+                            const datosJuridicos = getVal<DatosJuridicos>(
+                                "Datos_Juridicos",
+                                {},
+                            );
+                            const compradores = getVal<Comprador[]>(
+                                "Compradores",
+                                [],
+                            );
 
                             if (tipoPersona === "juridica") {
                                 return `la entidad ${datosJuridicos.EmpresaNombre || "[NOMBRE_EMPRESA]"}, por medio de su representante legal`;
                             }
 
                             if (compradores.length > 1) {
-                                const nombres = compradores.map((c) => c.Nombre);
+                                const nombres = compradores.map(
+                                    (c) => c.Nombre,
+                                );
                                 const last = nombres.pop();
-                                return "los señores " + nombres.join(", ") + " y " + last;
+                                return (
+                                    "los señores " +
+                                    nombres.join(", ") +
+                                    " y " +
+                                    last
+                                );
                             }
 
                             return "el señor " + getComprador(0, "Nombre");
@@ -1367,12 +1559,10 @@ const DocumentoPromesa: React.FC = () => {
                             "Descripcion_del_Inmueble.AreaConstruccionNumeros",
                         )}
                     </span>{" "}
-                    metros cuadrados) de construcción; <span className="bold">b)</span>{" "}
+                    metros cuadrados) de construcción;{" "}
+                    <span className="bold">b)</span>{" "}
                     <span className="highlight-red">
-                        {getVal(
-                            "Descripcion_del_Inmueble.ParqueosDescripcion",
-                            "[DESCRIPCION_PARQUEOS]",
-                        )}
+                        {getParqueosDescripcion()}
                     </span>
                     ; <span className="bold">c)</span> Una terraza o balcón, con
                     un área aproximada de{" "}
@@ -1547,12 +1737,14 @@ const DocumentoPromesa: React.FC = () => {
                             );
                             return val !== 0
                                 ? val.toLocaleString("en-US", {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                })
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                  })
                                 : "[PRECIO_NUMEROS]";
-                        })()})
-                    </span> , el cual incluye el IMPUESTO AL VALOR AGREGADO y el
+                        })()}
+                        )
+                    </span>{" "}
+                    , el cual incluye el IMPUESTO AL VALOR AGREGADO y el
                     IMPUESTO DEL TIMBRE correspondiente; para lo cual en su
                     momento se podrán redactar dos documentos, el de la
                     compraventa de inmuebles y el de la compraventa de mueble
@@ -1603,12 +1795,14 @@ const DocumentoPromesa: React.FC = () => {
                             );
                             return val !== 0
                                 ? val.toLocaleString("en-US", {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                })
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                  })
                                 : "[RESERVA_NUMEROS]";
-                        })()})
-                    </span> en concepto de reserva, que Yo, la parte Promitente
+                        })()}
+                        )
+                    </span>{" "}
+                    en concepto de reserva, que Yo, la parte Promitente
                     Vendedora manifiesto que tengo recibido a mi entera
                     satisfacción.
                 </p>
@@ -1631,12 +1825,14 @@ const DocumentoPromesa: React.FC = () => {
                             );
                             return val !== 0
                                 ? val.toLocaleString("en-US", {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                })
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                  })
                                 : "[SEGUNDO_PAGO_NUMEROS]";
-                        })()})
-                    </span> , que la parte Promitente Compradora entregará mediante{" "}
+                        })()}
+                        )
+                    </span>{" "}
+                    , que la parte Promitente Compradora entregará mediante{" "}
                     <span className="highlight-red">
                         {getVal(
                             "Condiciones_Economicas.CantidadPagosLetras",
@@ -1704,12 +1900,15 @@ const DocumentoPromesa: React.FC = () => {
                                     , la cantidad de{" "}
                                     <span className="highlight-red">
                                         {valorTexto.toUpperCase()} DÓLARES DE
-                                        LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
+                                        LOS ESTADOS UNIDOS DE NORTE AMÉRICA
+                                        (USD.
                                         {valorNum.toLocaleString("en-US", {
                                             minimumFractionDigits: 2,
                                             maximumFractionDigits: 2,
-                                        })})
-                                    </span>;
+                                        })}
+                                        )
+                                    </span>
+                                    ;
                                 </p>
                             );
                         });
@@ -1721,12 +1920,16 @@ const DocumentoPromesa: React.FC = () => {
                     de la compraventa, es decir la cantidad de{" "}
                     <span className="highlight-yellow">
                         {getSaldoFinal()
-                            .letras.replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
+                            .letras.replace(
+                                /\s*(quetzales|dólares|dólar)\s*$/i,
+                                "",
+                            )
                             .toUpperCase()}{" "}
                         DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
                         {getSaldoFinal().numeros})
-                    </span> , será pagado por la PARTE PROMITENTE COMPRADORA, el día
-                    en que se otorgue la escritura pública de compraventa
+                    </span>{" "}
+                    , será pagado por la PARTE PROMITENTE COMPRADORA, el día en
+                    que se otorgue la escritura pública de compraventa
                     definitiva de los bienes inmuebles y el bien mueble (acción)
                     objeto de este contrato y se haga entrega de los mismos.{" "}
                     <span className="bold">V) PLAZO:</span>
@@ -1847,8 +2050,8 @@ const DocumentoPromesa: React.FC = () => {
                         análisis de crédito, o por ser denegado por la entidad
                         Bancaria o Financiera,{" "}
                         <span className="highlight-red">
-                            DIEZ MIL DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA
-                            (USD.10,000.00)
+                            DIEZ MIL DÓLARES DE LOS ESTADOS UNIDOS DE NORTE
+                            AMÉRICA (USD.10,000.00)
                         </span>
                         .
                     </p>
@@ -1866,13 +2069,13 @@ const DocumentoPromesa: React.FC = () => {
                         compraventa pactada en la promesa de compraventa de
                         bienes inmuebles y mueble (acción) más un fee de{" "}
                         <span className="highlight-red">
-                            CINCO MIL DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA
-                            (USD.5,000.00)
+                            CINCO MIL DÓLARES DE LOS ESTADOS UNIDOS DE NORTE
+                            AMÉRICA (USD.5,000.00)
                         </span>
-                        , por desistir de la compra después de
-                        haber pedido cambios y mejoras en el inmueble y estos se
-                        hubieran ya realizado, siendo No reintegrable el monto
-                        pagado por las mejoras ya realizadas.
+                        , por desistir de la compra después de haber pedido
+                        cambios y mejoras en el inmueble y estos se hubieran ya
+                        realizado, siendo No reintegrable el monto pagado por
+                        las mejoras ya realizadas.
                     </p>
 
                     <p>
@@ -1893,13 +2096,13 @@ const DocumentoPromesa: React.FC = () => {
                             compraventa pactada en la promesa de compraventa de
                             bienes inmuebles y mueble (acción) más un fee de{" "}
                             <span className="highlight-red">
-                                CINCO MIL DÓLARES DE LOS ESTADOS UNIDOS DE
-                                NORTE AMÉRICA (USD.5,000.00)
+                                CINCO MIL DÓLARES DE LOS ESTADOS UNIDOS DE NORTE
+                                AMÉRICA (USD.5,000.00)
                             </span>
-                            , por desistir de la compra después de haber pedido cambios y mejoras en el
-                            inmueble y estos se hubieran ya realizado, siendo No
-                            reintegrable el monto pagado por las mejoras ya
-                            realizadas.
+                            , por desistir de la compra después de haber pedido
+                            cambios y mejoras en el inmueble y estos se hubieran
+                            ya realizado, siendo No reintegrable el monto pagado
+                            por las mejoras ya realizadas.
                         </p>
                     </div>
                 </div>
@@ -1912,8 +2115,8 @@ const DocumentoPromesa: React.FC = () => {
                     desistimiento, acordando desde ya que en ningún caso podrá
                     ser menor de{" "}
                     <span className="highlight-red">
-                        CUATRO MIL DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA
-                        (USD.4,000.00)
+                        CUATRO MIL DÓLARES DE LOS ESTADOS UNIDOS DE NORTE
+                        AMÉRICA (USD.4,000.00)
                     </span>
                     .
                 </p>
@@ -2084,18 +2287,28 @@ const DocumentoPromesa: React.FC = () => {
             {/* Firmas del Contrato */}
             <div id="firmas" style={{ marginTop: "100px" }}>
                 {(() => {
-                    const tipoPersona = getVal<string>("TipoPersona", "individual");
+                    const tipoPersona = getVal<string>(
+                        "TipoPersona",
+                        "individual",
+                    );
                     const compradores = getVal<Comprador[]>("Compradores", []);
-                    const datosJuridicos = getVal<DatosJuridicos>("Datos_Juridicos", {});
+                    const datosJuridicos = getVal<DatosJuridicos>(
+                        "Datos_Juridicos",
+                        {},
+                    );
 
                     // Lista de firmantes: Vendedor + (Empresa if Juridica else Compradores)
                     const firmantes = [
                         { label: "POR LA PARTE VENDEDORA" },
                         ...(tipoPersona === "juridica"
-                            ? [{ label: `POR LA ENTIDAD ${datosJuridicos.EmpresaNombre || "[NOMBRE_EMPRESA]"}` }]
+                            ? [
+                                  {
+                                      label: `POR LA ENTIDAD ${datosJuridicos.EmpresaNombre || "[NOMBRE_EMPRESA]"}`,
+                                  },
+                              ]
                             : compradores.map(() => ({
-                                label: "POR LA PARTE COMPRADORA",
-                            }))),
+                                  label: "POR LA PARTE COMPRADORA",
+                              }))),
                     ];
 
                     const rows = [];
@@ -2155,11 +2368,29 @@ const DocumentoPromesa: React.FC = () => {
                     </span>
                     , Yo, el infrascrito Notario hago constar que las{" "}
                     {(() => {
-                        const tipoPersona = getVal<string>("TipoPersona", "individual");
-                        const compradores = getVal<Comprador[]>("Compradores", []);
+                        const tipoPersona = getVal<string>(
+                            "TipoPersona",
+                            "individual",
+                        );
+                        const compradores = getVal<Comprador[]>(
+                            "Compradores",
+                            [],
+                        );
                         // Signatures count: 1 Vendedor + (1 if Juridica else N if Individual)
-                        const count = 1 + (tipoPersona === "juridica" ? 1 : compradores.length);
-                        const words = ["CERO", "UNA", "DOS", "TRES", "CUATRO", "CINCO", "SEIS"];
+                        const count =
+                            1 +
+                            (tipoPersona === "juridica"
+                                ? 1
+                                : compradores.length);
+                        const words = [
+                            "CERO",
+                            "UNA",
+                            "DOS",
+                            "TRES",
+                            "CUATRO",
+                            "CINCO",
+                            "SEIS",
+                        ];
                         return words[count] || count.toString();
                     })()}{" "}
                     firmas que anteceden calzan en un Contrato de Promesa de
@@ -2190,58 +2421,81 @@ const DocumentoPromesa: React.FC = () => {
                 </p>
 
                 {(() => {
-                    const tipoPersona = getVal<string>("TipoPersona", "individual");
-                    const datosJuridicos = getVal<DatosJuridicos>("Datos_Juridicos", {});
+                    const tipoPersona = getVal<string>(
+                        "TipoPersona",
+                        "individual",
+                    );
+                    const datosJuridicos = getVal<DatosJuridicos>(
+                        "Datos_Juridicos",
+                        {},
+                    );
                     const compradores = getVal<Comprador[]>("Compradores", []);
 
                     if (tipoPersona === "juridica") {
                         return (
                             <p style={{ marginTop: "10px" }}>
                                 <span className="bold">
-                                    b) <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteNombre || "[NOMBRE_REPRESENTANTE]"}
+                                    b){" "}
+                                    <span className="highlight-yellow">
+                                        {datosJuridicos.RepresentanteNombre ||
+                                            "[NOMBRE_REPRESENTANTE]"}
                                     </span>
                                 </span>
-                                , quien se identifica con el Documento Personal de
-                                Identificación -DPI-, con Código Único de
+                                , quien se identifica con el Documento Personal
+                                de Identificación -DPI-, con Código Único de
                                 Identificación -CUI- número{" "}
                                 <span className="highlight-yellow">
-                                    {datosJuridicos.RepresentanteDPI_Letras || "[DPI_LETRAS_REPRESENTANTE]"} (
-                                    {datosJuridicos.RepresentanteDPI || "[DPI_NUMEROS_REPRESENTANTE]"})
+                                    {datosJuridicos.RepresentanteDPI_Letras ||
+                                        "[DPI_LETRAS_REPRESENTANTE]"}{" "}
+                                    (
+                                    {datosJuridicos.RepresentanteDPI ||
+                                        "[DPI_NUMEROS_REPRESENTANTE]"}
+                                    )
                                 </span>{" "}
-                                extendido por el Registro Nacional de las Personas
-                                de la República de Guatemala, quien comparece en su calidad de{" "}
+                                extendido por el Registro Nacional de las
+                                Personas de la República de Guatemala, quien
+                                comparece en su calidad de{" "}
                                 <span className="bold">
-                                    {datosJuridicos.RepresentanteCargo || "[CARGO_REPRESENTANTE]"}
+                                    {datosJuridicos.RepresentanteCargo ||
+                                        "[CARGO_REPRESENTANTE]"}
                                 </span>{" "}
                                 de la entidad{" "}
                                 <span className="bold">
-                                    {datosJuridicos.EmpresaNombre || "[NOMBRE_EMPRESA]"}
+                                    {datosJuridicos.EmpresaNombre ||
+                                        "[NOMBRE_EMPRESA]"}
                                 </span>{" "}
-                                calidad que acredita con su nombramiento como tal contenido
-                                en el acta notarial autorizada en esta ciudad el día{" "}
+                                calidad que acredita con su nombramiento como
+                                tal contenido en el acta notarial autorizada en
+                                esta ciudad el día{" "}
                                 <span className="highlight-yellow">
-                                    {datosJuridicos.ActaNotarialFecha || "[FECHA_ACTA]"}
+                                    {datosJuridicos.ActaNotarialFecha ||
+                                        "[FECHA_ACTA]"}
                                 </span>
                                 , por el Notario{" "}
                                 <span className="highlight-yellow">
-                                    {datosJuridicos.NotarioNombre || "[NOTARIO_ACTA]"}
+                                    {datosJuridicos.NotarioNombre ||
+                                        "[NOTARIO_ACTA]"}
                                 </span>
-                                , el cual se encuentra debidamente inscrito en el Registro
-                                Mercantil General de la República de Guatemala bajo el número de
-                                registro{" "}
+                                , el cual se encuentra debidamente inscrito en
+                                el Registro Mercantil General de la República de
+                                Guatemala bajo el número de registro{" "}
                                 <span className="highlight-yellow">
-                                    {datosJuridicos.InscritoNumero || "[NUMERO_REGISTRO]"}
+                                    {datosJuridicos.InscritoNumero ||
+                                        "[NUMERO_REGISTRO]"}
                                 </span>
                                 , folio{" "}
                                 <span className="highlight-yellow">
-                                    {datosJuridicos.InscritoFolio || "[FOLIO_REGISTRO]"}
+                                    {datosJuridicos.InscritoFolio ||
+                                        "[FOLIO_REGISTRO]"}
                                 </span>
                                 , del libro{" "}
                                 <span className="highlight-yellow">
-                                    {datosJuridicos.InscritoLibro || "[LIBRO_REGISTRO]"}
+                                    {datosJuridicos.InscritoLibro ||
+                                        "[LIBRO_REGISTRO]"}
                                 </span>{" "}
-                                de Auxiliares de Comercio; quienes vuelven a firmar la presente acta, ante el infrascrito Notario quien de todo lo relacionado Doy Fe.
+                                de Auxiliares de Comercio; quienes vuelven a
+                                firmar la presente acta, ante el infrascrito
+                                Notario quien de todo lo relacionado Doy Fe.
                             </p>
                         );
                     }
@@ -2276,10 +2530,15 @@ const DocumentoPromesa: React.FC = () => {
 
             <div style={{ marginTop: "80px" }}>
                 {(() => {
-                    const tipoPersona = getVal<string>("TipoPersona", "individual");
+                    const tipoPersona = getVal<string>(
+                        "TipoPersona",
+                        "individual",
+                    );
                     const compradores = getVal<Comprador[]>("Compradores", []);
                     // Total de firmas: 1 Vendedor + (1 if Juridica else N if Individual)
-                    const totalFirmas = 1 + (tipoPersona === "juridica" ? 1 : compradores.length);
+                    const totalFirmas =
+                        1 +
+                        (tipoPersona === "juridica" ? 1 : compradores.length);
 
                     const rows = [];
                     const firmasArray = Array(totalFirmas).fill(null);
