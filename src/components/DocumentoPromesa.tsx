@@ -136,11 +136,6 @@ interface WebhookData {
     };
 }
 
-interface ApiResponse {
-    status?: string;
-    data?: WebhookData;
-}
-
 const numberToWords = (num: number): string => {
     if (num === 0) return "CERO";
     if (num < 0) return "MENOS " + numberToWords(Math.abs(num));
