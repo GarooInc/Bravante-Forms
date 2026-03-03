@@ -12,6 +12,12 @@ interface Comprador {
     Edad_Letras?: string;
     Nacionalidad?: string;
     Direccion?: string;
+    Domicilio?: string;
+    Domicilio_Letras?: string;
+    TelefonoDomicilio?: string;
+    Celular?: string;
+    NIT?: string;
+    CorreoElectronico?: string;
 }
 
 interface Proyecto {
@@ -108,6 +114,7 @@ interface WebhookData {
         CantidadPagosNumeros?: number;
         TercerPagoLetras?: string;
         TercerPagoNumeros?: number;
+        SaldoFinanciar?: number;
     };
     Pagos?: Pago[];
     Liquidacion_Final_y_Plazos?: {
@@ -129,10 +136,73 @@ interface WebhookData {
     };
 }
 
-interface ApiResponse {
-    status?: string;
-    data?: WebhookData;
-}
+const numberToWords = (num: number): string => {
+    if (num === 0) return "CERO";
+    if (num < 0) return "MENOS " + numberToWords(Math.abs(num));
+
+    const units = [
+        "", "UN", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE"
+    ];
+    const teens = [
+        "DIEZ", "ONCE", "DOCE", "TRECE", "CATORCE", "QUINCE", "DIECISÉIS", "DIECISIETE", "DIECIOCHO", "DIECINUEVE"
+    ];
+    const tens = [
+        "", "DIEZ", "VEINTE", "TREINTA", "CUARENTA", "CINCUENTA", "SESENTA", "SETENTA", "OCHENTA", "NOVENTA"
+    ];
+    const hundreds = [
+        "", "CIENTO", "DOSCIENTOS", "TRESCIENTOS", "CUATROCIENTOS", "QUINIENTOS", "SEISCIENTOS", "SETECIENTOS", "OCHOCIENTOS", "NOVECIENTOS"
+    ];
+
+    const convertGroup = (n: number): string => {
+        let res = "";
+        if (n >= 100) {
+            if (n === 100) return "CIEN";
+            res += hundreds[Math.floor(n / 100)];
+            n %= 100;
+            if (n > 0) res += " ";
+        }
+        if (n >= 20) {
+            if (n === 20) return res + "VEINTE";
+            if (n < 30) return res + "VEINTI" + units[n - 20];
+            res += tens[Math.floor(n / 10)];
+            n %= 10;
+            if (n > 0) res += " Y " + units[n];
+        } else if (n >= 10) {
+            res += teens[n - 10];
+        } else if (n > 0) {
+            res += units[n];
+        }
+        return res;
+    };
+
+    let result = "";
+
+    if (num >= 1000000) {
+        const millions = Math.floor(num / 1000000);
+        if (millions === 1) {
+            result += "UN MILLÓN ";
+        } else {
+            result += convertGroup(millions) + " MILLONES ";
+        }
+        num %= 1000000;
+    }
+
+    if (num >= 1000) {
+        const thousands = Math.floor(num / 1000);
+        if (thousands === 1) {
+            result += "MIL ";
+        } else {
+            result += convertGroup(thousands) + " MIL ";
+        }
+        num %= 1000;
+    }
+
+    if (num > 0) {
+        result += convertGroup(num);
+    }
+
+    return result.trim().toUpperCase();
+};
 
 const DocumentoPromesa: React.FC = () => {
     const { id } = useParams();
@@ -169,13 +239,88 @@ const DocumentoPromesa: React.FC = () => {
                         throw new Error("Respuesta inválida del servidor");
                     }
                 })
-                .then((jsonData: ApiResponse) => {
+                .then((jsonData: any) => {
                     let payload: WebhookData | null = null;
                     if (jsonData && typeof jsonData === "object") {
-                        if (jsonData.data) {
-                            payload = jsonData.data;
-                        } else if (jsonData.status === "success") {
-                            payload = jsonData as unknown as WebhookData;
+                        const rawData = jsonData.data || (jsonData.status === "success" ? jsonData : null);
+                        
+                        if (rawData) {
+                            if (rawData.Inmueble && rawData.Precio) {
+                                const dt = rawData;
+                                
+                                let mesStr = dt.FechaDocumento ? dt.FechaDocumento.split('-')[1] : "01";
+                                const mesesNombres = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+                                let mesNombre = mesesNombres[parseInt(mesStr) - 1] || "enero";
+
+                                const mappedCompradores = (dt.Compradores || []).map((c: any) => ({
+                                    ...c,
+                                    Direccion: c.Domicilio || c.Direccion
+                                }));
+
+                                const totalPagosNum = (dt.Pagos || []).reduce((sum: number, p: any) => sum + parseFloat(p.value || "0"), 0);
+
+                                payload = {
+                                    TipoPersona: dt.TipoPersona,
+                                    Compradores: mappedCompradores,
+                                    Datos_Juridicos: dt.Datos_Juridicos,
+                                    Descripcion_del_Inmueble: {
+                                        Apartamento: dt.Inmueble.Apartamento,
+                                        Torre: dt.Inmueble.Torre,
+                                        Nivel: dt.Inmueble.Nivel?.toString(),
+                                        Habitaciones: dt.Inmueble.Habitaciones?.toString(),
+                                        DescripcionApartamento: dt.Inmueble.Modelo,
+                                        AreaConstruccionLetras: dt.Inmueble.AreaConstruccionLetras,
+                                        AreaConstruccionNumeros: dt.Inmueble.AreaConstruccionM2,
+                                        Estacionamientos: (dt.Inmueble.Estacionamientos || []).map((e: any) => ({
+                                            Numero: e.Numero,
+                                            Numero_Letras: e.Numero_Letras,
+                                            Sotano: e.Sotano || "1",
+                                            Sotano_Letras: e.Sotano_Letras || "UNO"
+                                        })),
+                                        Bodegas: (dt.Inmueble.Bodegas || []).map((b: any) => ({
+                                            Numero: b.Numero,
+                                            Numero_Letras: b.Numero_Letras,
+                                            Sotano: b.Sotano || "1",
+                                            Sotano_Letras: b.Sotano_Letras || "UNO"
+                                        })),
+                                        TerrazaBalconAreaLetras: dt.Inmueble.TerrazaAreaLetras || dt.Inmueble.BalconAreaLetras,
+                                        TerrazaBalconAreaNumeros: dt.Inmueble.TerrazaAreaM2 || dt.Inmueble.BalconAreaM2,
+                                    },
+                                    Condiciones_Economicas: {
+                                        PrecioLetras: dt.Precio.PrecioLetras,
+                                        PrecioNumeros: dt.Precio.PrecioFinal,
+                                        ReservaLetras: dt.Precio.ReservaLetras,
+                                        ReservaNumeros: dt.Precio.EngancheMonto,
+                                        SegundoPagoLetras: numberToWords(Math.round(totalPagosNum)),
+                                        SegundoPagoNumeros: totalPagosNum,
+                                        CantidadPagosLetras: dt.Precio.PlazoEngancheMeses ? numberToWords(dt.Precio.PlazoEngancheMeses).toLowerCase() : "",
+                                        CantidadPagosNumeros: dt.Precio.PlazoEngancheMeses,
+                                        TercerPagoLetras: dt.Precio.SaldoFinanciarLetras,
+                                        TercerPagoNumeros: dt.Precio.SaldoFinanciar,
+                                        SaldoFinanciar: dt.Precio.SaldoFinanciar
+                                    },
+                                    Pagos: dt.Pagos,
+                                    Liquidacion_Final_y_Plazos: {
+                                        PlazoMesesLetras: "",
+                                        PlazoMesesNumeros: dt.Precio.PlazoEngancheMeses,
+                                        MesEntrega: "", 
+                                        AnioEntrega: dt.Precio.FechaEntrega ? parseInt(dt.Precio.FechaEntrega.split('-')[0]) : 0,
+                                        UltimoPagoLetras: "",
+                                        UltimoPagoNumeros: 0
+                                    },
+                                    Datos_de_Notificacion_y_Cierre: dt.FechaDocumento ? {
+                                        Direccion: dt.Compradores && dt.Compradores.length > 0 ? (dt.Compradores[0].Domicilio || "") : "",
+                                        FechaFirmaDia: parseInt(dt.FechaDocumento.split('-')[2]),
+                                        FechaFirmaMes: mesNombre,
+                                        FechaFirmaAnio: parseInt(dt.FechaDocumento.split('-')[0]),
+                                        FechaLegalizacionDia: parseInt(dt.FechaDocumento.split('-')[2]),
+                                        FechaLegalizacionMes: mesNombre,
+                                        FechaLegalizacionAnio: parseInt(dt.FechaDocumento.split('-')[0])
+                                    } : undefined
+                                } as unknown as WebhookData;
+                            } else {
+                                payload = rawData as WebhookData;
+                            }
                         }
                     }
 
@@ -319,110 +464,6 @@ const DocumentoPromesa: React.FC = () => {
         }
 
         return { dia: "25", mes: "enero", anio: "veintiséis" };
-    };
-
-    const numberToWords = (num: number): string => {
-        if (num === 0) return "CERO";
-        if (num < 0) return "MENOS " + numberToWords(Math.abs(num));
-
-        const units = [
-            "",
-            "UN",
-            "DOS",
-            "TRES",
-            "CUATRO",
-            "CINCO",
-            "SEIS",
-            "SIETE",
-            "OCHO",
-            "NUEVE",
-        ];
-        const teens = [
-            "DIEZ",
-            "ONCE",
-            "DOCE",
-            "TRECE",
-            "CATORCE",
-            "QUINCE",
-            "DIECISÉIS",
-            "DIECISIETE",
-            "DIECIOCHO",
-            "DIECINUEVE",
-        ];
-        const tens = [
-            "",
-            "DIEZ",
-            "VEINTE",
-            "TREINTA",
-            "CUARENTA",
-            "CINCUENTA",
-            "SESENTA",
-            "SETENTA",
-            "OCHENTA",
-            "NOVENTA",
-        ];
-        const hundreds = [
-            "",
-            "CIENTO",
-            "DOSCIENTOS",
-            "TRESCIENTOS",
-            "CUATROCIENTOS",
-            "QUINIENTOS",
-            "SEISCIENTOS",
-            "SETECIENTOS",
-            "OCHOCIENTOS",
-            "NOVECIENTOS",
-        ];
-
-        const convertGroup = (n: number): string => {
-            let res = "";
-            if (n >= 100) {
-                if (n === 100) return "CIEN";
-                res += hundreds[Math.floor(n / 100)];
-                n %= 100;
-                if (n > 0) res += " ";
-            }
-            if (n >= 20) {
-                if (n === 20) return res + "VEINTE";
-                if (n < 30) return res + "VEINTI" + units[n - 20];
-                res += tens[Math.floor(n / 10)];
-                n %= 10;
-                if (n > 0) res += " Y " + units[n];
-            } else if (n >= 10) {
-                res += teens[n - 10];
-            } else if (n > 0) {
-                res += units[n];
-            }
-            return res;
-        };
-
-        let result = "";
-
-        if (num >= 1000000) {
-            const millions = Math.floor(num / 1000000);
-            if (millions === 1) {
-                result += "UN MILLÓN ";
-            } else {
-                result += convertGroup(millions) + " MILLONES ";
-            }
-            num %= 1000000;
-        }
-
-        if (num >= 1000) {
-            const thousands = Math.floor(num / 1000);
-            if (thousands === 1) {
-                result += "MIL ";
-            } else {
-                result += convertGroup(thousands) + " MIL ";
-            }
-            num %= 1000;
-        }
-
-        if (num > 0) {
-            result += convertGroup(num);
-        }
-
-        return result.trim().toUpperCase();
     };
 
     const getPlazoMeses = () => {
@@ -959,8 +1000,8 @@ const DocumentoPromesa: React.FC = () => {
                                     </span>{" "}
                                     años de edad,{" "}
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteEstadoCivil ||
-                                            "[ESTADO_CIVIL_REPRESENTANTE]"}
+                                        {(datosJuridicos.RepresentanteEstadoCivil ||
+                                            "[ESTADO_CIVIL_REPRESENTANTE]").toLowerCase()}
                                     </span>
                                     ,{" "}
                                     <span className="highlight-yellow">
@@ -969,21 +1010,21 @@ const DocumentoPromesa: React.FC = () => {
                                     </span>
                                     ,{" "}
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteNacionalidad ||
-                                            "guatemalteco"}
+                                        {(datosJuridicos.RepresentanteNacionalidad ||
+                                            "guatemalteco").toLowerCase()}
                                     </span>
                                     , de este domicilio, me identifico con el
                                     Documento Personal de Identificación -DPI-,
                                     con Código Único de Identificación -CUI-
                                     número{" "}
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteDPI ||
-                                            "[DPI_REPRESENTANTE]"}
+                                        {datosJuridicos.RepresentanteDPI_Letras ||
+                                            "[DPI_LETRAS_REPRESENTANTE]"}
                                     </span>{" "}
                                     (
                                     <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteDPI_Letras ||
-                                            "[DPI_LETRAS_REPRESENTANTE]"}
+                                        {datosJuridicos.RepresentanteDPI ||
+                                            "[DPI_REPRESENTANTE]"}
                                     </span>
                                     ), extendido por el Registro Nacional de las
                                     Personas de la República de Guatemala,
@@ -1027,7 +1068,7 @@ const DocumentoPromesa: React.FC = () => {
                                         {datosJuridicos.InscritoLibro ||
                                             "[LIBRO_REGISTRO]"}
                                     </span>{" "}
-                                    de Auxiliares de Comercio; entidad en
+                                    de Auxiliares de Comercio, en
                                     adelante referida simple e indistintamente
                                     como{" "}
                                     <span className="party-name">
@@ -1035,7 +1076,7 @@ const DocumentoPromesa: React.FC = () => {
                                     </span>
                                     ,{" "}
                                     <span className="party-name">
-                                        "LA PROMITENTE COMPRADORA"
+                                        "LOS PROMITENTES COMPRADORES"
                                     </span>{" "}
                                     o{" "}
                                     <span className="party-name">
@@ -1050,60 +1091,59 @@ const DocumentoPromesa: React.FC = () => {
                         if (compradores.length > 1) {
                             return (
                                 <>
-                                    <span className="bold">NOSOTROS: </span>
-                                    {compradores.map((c, idx) => (
-                                        <React.Fragment key={idx}>
-                                            <span className="bold">
-                                                {(() => {
-                                                    const roman = [
-                                                        "I)",
-                                                        "II)",
-                                                        "III)",
-                                                        "IV)",
-                                                        "V)",
-                                                        "VI)",
-                                                    ];
-                                                    return (
-                                                        roman[idx] ||
-                                                        `${idx + 1})`
-                                                    );
-                                                })()}{" "}
-                                            </span>
-                                            <span className="highlight-yellow">
-                                                {c.Nombre}
-                                            </span>
-                                            , quien declaro ser de{" "}
-                                            <span className="highlight-yellow">
-                                                {c.Edad_Letras}
-                                            </span>{" "}
-                                            de edad,{" "}
-                                            <span className="highlight-yellow">
-                                                {c.EstadoCivil}
-                                            </span>
-                                            ,{" "}
-                                            <span className="highlight-yellow">
-                                                {c.Profesion}
-                                            </span>{" "}
-                                            , guatemalteco, de este domicilio,
-                                            me identifico con el Documento
-                                            Personal de Identificación -DPI-,
-                                            con Código Único de Identificación
-                                            -CUI- número{" "}
-                                            <span className="highlight-yellow">
-                                                {c.DPI}
-                                            </span>{" "}
-                                            (
-                                            <span className="highlight-yellow">
-                                                {c.DPI_Letras}
-                                            </span>
-                                            ), extendido por el Registro
-                                            Nacional de las Personas de la
-                                            República de Guatemala
-                                            {idx < compradores.length - 1
-                                                ? "; y "
-                                                : ""}
-                                        </React.Fragment>
-                                    ))}
+                                    NOSOTROS:{" "}
+                                    {compradores.map((c, idx) => {
+                                        const roman = [
+                                            "I)",
+                                            "II)",
+                                            "III)",
+                                            "IV)",
+                                            "V)",
+                                            "VI)",
+                                        ];
+                                        const numRomano = roman[idx] || `${idx + 1})`;
+                                        return (
+                                            <React.Fragment key={idx}>
+                                                {numRomano}{" "}
+                                                <span className="highlight-yellow">
+                                                    {c.Nombre}
+                                                </span>
+                                                , quien declaro ser de{" "}
+                                                <span className="highlight-yellow">
+                                                    {c.Edad_Letras}
+                                                </span>{" "}
+                                                años de edad,{" "}
+                                                <span className="highlight-yellow">
+                                                    {(c.EstadoCivil || "").toLowerCase()}
+                                                </span>
+                                                ,{" "}
+                                                <span className="highlight-yellow">
+                                                    {c.Profesion}
+                                                </span>
+                                                ,{" "}
+                                                <span className="highlight-yellow">
+                                                    {(c.Nacionalidad || "guatemalteco").toLowerCase()}
+                                                </span>
+                                                , de este domicilio, me identifico con el Documento
+                                                Personal de Identificación -DPI-,
+                                                con Código Único de Identificación
+                                                -CUI- número{" "}
+                                                <span className="highlight-yellow">
+                                                    {c.DPI_Letras}
+                                                </span>{" "}
+                                                (
+                                                <span className="highlight-yellow">
+                                                    {c.DPI}
+                                                </span>
+                                                ), extendido por el Registro
+                                                Nacional de las Personas de la
+                                                República de Guatemala
+                                                {idx < compradores.length - 1
+                                                    ? "; y "
+                                                    : ""}
+                                            </React.Fragment>
+                                        );
+                                    })}
                                     ; en adelante referido simple e
                                     indistintamente como{" "}
                                     <span className="party-name">
@@ -1131,24 +1171,28 @@ const DocumentoPromesa: React.FC = () => {
                                     <span className="highlight-yellow">
                                         {getComprador(0, "Edad_Letras")}
                                     </span>{" "}
-                                    de edad,{" "}
+                                    años de edad,{" "}
                                     <span className="highlight-yellow">
-                                        {getComprador(0, "EstadoCivil")}
+                                        {(getComprador(0, "EstadoCivil") || "").toLowerCase()}
                                     </span>
                                     ,{" "}
                                     <span className="highlight-yellow">
                                         {getComprador(0, "Profesion")}
                                     </span>
-                                    , guatemalteco, de este domicilio, me
+                                    ,{" "}
+                                    <span className="highlight-yellow">
+                                        {(getComprador(0, "Nacionalidad", "guatemalteco") || "").toLowerCase()}
+                                    </span>
+                                    , de este domicilio, me
                                     identifico con el Documento Personal de
                                     Identificación -DPI-, con Código Único de
                                     Identificación -CUI- número{" "}
                                     <span className="highlight-yellow">
-                                        {getComprador(0, "DPI")}
+                                        {getComprador(0, "DPI_Letras")}
                                     </span>{" "}
                                     (
                                     <span className="highlight-yellow">
-                                        {getComprador(0, "DPI_Letras")}
+                                        {getComprador(0, "DPI")}
                                     </span>
                                     ), extendido por el Registro Nacional de las
                                     Personas de la República de Guatemala; en
@@ -1156,6 +1200,10 @@ const DocumentoPromesa: React.FC = () => {
                                     como{" "}
                                     <span className="party-name">
                                         "LA PARTE PROMITENTE COMPRADORA"
+                                    </span>
+                                    ,{" "}
+                                    <span className="party-name">
+                                        "LOS PROMITENTES COMPRADORES"
                                     </span>{" "}
                                     o{" "}
                                     <span className="party-name">
