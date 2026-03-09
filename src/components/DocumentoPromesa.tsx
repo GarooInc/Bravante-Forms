@@ -242,22 +242,35 @@ const DocumentoPromesa: React.FC = () => {
                 .then((jsonData: any) => {
                     let payload: WebhookData | null = null;
                     if (jsonData && typeof jsonData === "object") {
-                        const rawData = jsonData.data || (jsonData.status === "success" ? jsonData : null);
-                        
-                        if (rawData) {
-                            if (rawData.Inmueble && rawData.Precio) {
-                                const dt = rawData;
-                                
-                                let mesStr = dt.FechaDocumento ? dt.FechaDocumento.split('-')[1] : "01";
-                                const mesesNombres = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-                                let mesNombre = mesesNombres[parseInt(mesStr) - 1] || "enero";
+                        // Response format: { status: "success", data: [{ document_promesa_firma: { data: {...}, Pagos: [...] } }] }
+                        const dataArray = jsonData.data;
+                        const container = Array.isArray(dataArray) && dataArray[0]
+                            ? dataArray[0].document_promesa_firma
+                            : null;
+
+                        const dt = container ? container.data : null;
+                        const rawPagos = container ? container.Pagos : null;
+
+                        if (dt && dt.Inmueble && dt.Precio) {
+                            // Strip currency suffix from letras fields — the API sends full legal strings
+                            // like "CIENTO MIL DOLARES DE LOS ESTADOS UNIDOS... (USD.X)" but the
+                            // render template appends the currency text itself.
+                            const stripCurrency = (str?: string) =>
+                                str ? str.replace(/\s*(D[OÓ]LARES?|QUETZALES?)\s.*/i, "").trim() : "";
+
+                            let mesStr = dt.FechaDocumento ? dt.FechaDocumento.split('-')[1] : "01";
+                            const mesesNombres = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+                            let mesNombre = mesesNombres[parseInt(mesStr) - 1] || "enero";
 
                                 const mappedCompradores = (dt.Compradores || []).map((c: any) => ({
                                     ...c,
                                     Direccion: c.Domicilio || c.Direccion
                                 }));
 
-                                const totalPagosNum = (dt.Pagos || []).reduce((sum: number, p: any) => sum + parseFloat(p.value || "0"), 0);
+                                const totalPagosNum = (rawPagos || []).reduce((sum: number, p: any) => {
+                                    const v = parseFloat(p.value);
+                                    return sum + (isNaN(v) ? 0 : v);
+                                }, 0);
 
                                 payload = {
                                     TipoPersona: dt.TipoPersona,
@@ -287,23 +300,23 @@ const DocumentoPromesa: React.FC = () => {
                                         TerrazaBalconAreaNumeros: dt.Inmueble.TerrazaAreaM2 || dt.Inmueble.BalconAreaM2,
                                     },
                                     Condiciones_Economicas: {
-                                        PrecioLetras: dt.Precio.PrecioLetras,
+                                        PrecioLetras: stripCurrency(dt.Precio.PrecioLetras),
                                         PrecioNumeros: dt.Precio.PrecioFinal,
-                                        ReservaLetras: dt.Precio.ReservaLetras,
+                                        ReservaLetras: stripCurrency(dt.Precio.ReservaLetras),
                                         ReservaNumeros: dt.Precio.EngancheMonto,
                                         SegundoPagoLetras: numberToWords(Math.round(totalPagosNum)),
                                         SegundoPagoNumeros: totalPagosNum,
                                         CantidadPagosLetras: dt.Precio.PlazoEngancheMeses ? numberToWords(dt.Precio.PlazoEngancheMeses).toLowerCase() : "",
                                         CantidadPagosNumeros: dt.Precio.PlazoEngancheMeses,
-                                        TercerPagoLetras: dt.Precio.SaldoFinanciarLetras,
+                                        TercerPagoLetras: stripCurrency(dt.Precio.SaldoFinanciarLetras),
                                         TercerPagoNumeros: dt.Precio.SaldoFinanciar,
                                         SaldoFinanciar: dt.Precio.SaldoFinanciar
                                     },
-                                    Pagos: dt.Pagos,
+                                    Pagos: rawPagos,
                                     Liquidacion_Final_y_Plazos: {
                                         PlazoMesesLetras: "",
                                         PlazoMesesNumeros: dt.Precio.PlazoEngancheMeses,
-                                        MesEntrega: "", 
+                                        MesEntrega: "",
                                         AnioEntrega: dt.Precio.FechaEntrega ? parseInt(dt.Precio.FechaEntrega.split('-')[0]) : 0,
                                         UltimoPagoLetras: "",
                                         UltimoPagoNumeros: 0
@@ -318,9 +331,6 @@ const DocumentoPromesa: React.FC = () => {
                                         FechaLegalizacionAnio: parseInt(dt.FechaDocumento.split('-')[0])
                                     } : undefined
                                 } as unknown as WebhookData;
-                            } else {
-                                payload = rawData as WebhookData;
-                            }
                         }
                     }
 
