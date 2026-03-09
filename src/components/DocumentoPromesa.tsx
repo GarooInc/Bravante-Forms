@@ -92,7 +92,9 @@ interface WebhookData {
         Apartamento?: string;
         Torre?: string;
         Nivel?: string;
+        Nivel_Letras?: string;
         Habitaciones?: string;
+        Habitaciones_Letras?: string;
         DescripcionApartamento?: string;
         AreaConstruccionLetras?: string;
         AreaConstruccionNumeros?: number;
@@ -267,7 +269,9 @@ const DocumentoPromesa: React.FC = () => {
                                         Apartamento: dt.Inmueble.Apartamento,
                                         Torre: dt.Inmueble.Torre,
                                         Nivel: dt.Inmueble.Nivel?.toString(),
+                                        Nivel_Letras: dt.Inmueble.Nivel_Letras,
                                         Habitaciones: dt.Inmueble.Habitaciones?.toString(),
+                                        Habitaciones_Letras: dt.Inmueble.Habitaciones_Letras,
                                         DescripcionApartamento: dt.Inmueble.Modelo,
                                         AreaConstruccionLetras: dt.Inmueble.AreaConstruccionLetras,
                                         AreaConstruccionNumeros: dt.Inmueble.AreaConstruccionM2,
@@ -301,9 +305,9 @@ const DocumentoPromesa: React.FC = () => {
                                     },
                                     Pagos: dt.Pagos,
                                     Liquidacion_Final_y_Plazos: {
-                                        PlazoMesesLetras: "",
+                                        PlazoMesesLetras: dt.Precio.PlazoEngancheMeses ? numberToWords(dt.Precio.PlazoEngancheMeses).toLowerCase() : "",
                                         PlazoMesesNumeros: dt.Precio.PlazoEngancheMeses,
-                                        MesEntrega: "", 
+                                        MesEntrega: dt.Precio.FechaEntrega ? mesesNombres[parseInt(dt.Precio.FechaEntrega.split('-')[1]) - 1] : "",
                                         AnioEntrega: dt.Precio.FechaEntrega ? parseInt(dt.Precio.FechaEntrega.split('-')[0]) : 0,
                                         UltimoPagoLetras: "",
                                         UltimoPagoNumeros: 0
@@ -1376,7 +1380,9 @@ const DocumentoPromesa: React.FC = () => {
                     </span>
                     , ubicado en el nivel{" "}
                     <span className="highlight-yellow">
-                        {getVal("Descripcion_del_Inmueble.Nivel")}
+                        {getVal("Descripcion_del_Inmueble.Nivel_Letras") !== "[DATO_FALTANTE]"
+                            ? `${getVal("Descripcion_del_Inmueble.Nivel_Letras")} (${getVal("Descripcion_del_Inmueble.Nivel")})`
+                            : getVal("Descripcion_del_Inmueble.Nivel")}
                     </span>{" "}
                     del Complejo;{" "}
                     <span className="highlight-red">
@@ -1579,11 +1585,15 @@ const DocumentoPromesa: React.FC = () => {
                     </span>
                     , ubicado en el nivel{" "}
                     <span className="highlight-yellow">
-                        {getVal("Descripcion_del_Inmueble.Nivel")}
+                        {getVal("Descripcion_del_Inmueble.Nivel_Letras") !== "[DATO_FALTANTE]"
+                            ? `${getVal("Descripcion_del_Inmueble.Nivel_Letras")} (${getVal("Descripcion_del_Inmueble.Nivel")})`
+                            : getVal("Descripcion_del_Inmueble.Nivel")}
                     </span>{" "}
                     del Complejo; apartamento que consta de{" "}
                     <span className="highlight-yellow">
-                        {getVal("Descripcion_del_Inmueble.Habitaciones")}
+                        {getVal("Descripcion_del_Inmueble.Habitaciones_Letras") !== "[DATO_FALTANTE]"
+                            ? `${getVal("Descripcion_del_Inmueble.Habitaciones_Letras")} (${getVal("Descripcion_del_Inmueble.Habitaciones")})`
+                            : getVal("Descripcion_del_Inmueble.Habitaciones")}
                     </span>{" "}
                     habitaciones,{" "}
                     <span className="highlight-yellow">
