@@ -674,11 +674,11 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     la siguiente forma:
                 </p>
                 <p>
-                    a) Reserva:{" "}
+                    a) Enganche:{" "}
                     <span className="highlight-yellow">
                         {getVal<string>(
                             "Condiciones_Economicas.ReservaLetras",
-                            "[RESERVA_LETRAS]",
+                            "[ENGANCHE_LETRAS]",
                         )
                             .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
                             .toUpperCase()}{" "}
@@ -689,27 +689,8 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                         ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                         )
                     </span>
-                    , que la PARTE PROMITENTE VENDEDORA declara tener por
-                    recibidos a su entera satisfacción con anterioridad a este
-                    acto.
-                </p>
-                <p>
-                    b) Segundo Pago:{" "}
-                    <span className="highlight-yellow">
-                        {getVal<string>(
-                            "Condiciones_Economicas.SegundoPagoLetras",
-                            "[SEGUNDO_PAGO_LETRAS]",
-                        )
-                            .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
-                            .toUpperCase()}{" "}
-                        DÓLARES (USD.
-                        {getVal<number>(
-                            "Condiciones_Economicas.SegundoPagoNumeros",
-                            0,
-                        ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                        )
-                    </span>
-                    , que la parte Promitente Compradora entregará mediante{" "}
+                    , que la PARTE PROMITENTE COMPRADORA pagará a LA PARTE
+                    PROMITENTE VENDEDORA mediante{" "}
                     <span className="highlight-red">
                         {getVal(
                             "Condiciones_Economicas.CantidadPagosLetras",
@@ -723,7 +704,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                             "20",
                         )}
                     </span>
-                    ) pagos:
+                    ) pagos, de la siguiente forma:
                 </p>
                 <div style={{ marginLeft: "20px" }}>
                     {(() => {
@@ -783,7 +764,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     })()}
                 </div>
                 <p>
-                    c) El saldo final es de{" "}
+                    b) El saldo final es de{" "}
                     <span className="highlight-yellow">
                         {getSaldoFinal().letras.toUpperCase()} DÓLARES (USD.
                         {getSaldoFinal().numeros})
