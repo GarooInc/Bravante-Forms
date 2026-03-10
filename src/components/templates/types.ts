@@ -113,6 +113,8 @@ export interface WebhookData {
         TerrazaAreaNumeros?: number;
         BalconAreaLetras?: string;
         BalconAreaNumeros?: number;
+        TerrazaBalconAreaLetras?: string;
+        TerrazaBalconAreaNumeros?: number;
         Estacionamientos?: Estacionamiento[];
         Bodegas?: Bodega[];
     };
@@ -147,6 +149,7 @@ export interface WebhookData {
         FechaLegalizacionMes?: string;
         FechaLegalizacionAnio?: number;
     };
+    FechaDocumento?: string;
 }
 
 export interface TemplateProps {

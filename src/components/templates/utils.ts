@@ -79,3 +79,15 @@ export const yearSuffixToWords = (year: number): string => {
     const u = suffix % 10;
     return u === 0 ? tens[t] : tens[t] + " y " + units[u];
 };
+export const numberToWordsYear = (year: number): string => {
+    if (year === 0) return "CERO";
+    if (year === 2025) return "DOS MIL VEINTICINCO";
+    if (year === 2026) return "DOS MIL VEINTISÉIS";
+    if (year === 2027) return "DOS MIL VEINTISIETE";
+    if (year === 2028) return "DOS MIL VEINTIOCHO";
+    if (year === 2029) return "DOS MIL VEINTINUEVE";
+    if (year === 2030) return "DOS MIL TREINTA";
+    
+    // Fallback using original numberToWords if the specific year isn't hardcoded
+    return numberToWords(year);
+};
