@@ -597,6 +597,14 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         ({getVal("Descripcion_del_Inmueble.Habitaciones")})
                     </span>{" "}
                     habitaciones,{" "}
+                    {getVal("Descripcion_del_Inmueble.NumeroBR") && (
+                        <>
+                            <span className="highlight-yellow">
+                                {getVal("Descripcion_del_Inmueble.NumeroBR")}
+                            </span>{" "}
+                            baños,{" "}
+                        </>
+                    )}
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.DescripcionApartamento",

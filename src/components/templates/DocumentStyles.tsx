@@ -62,15 +62,27 @@ export const DocumentStyles = () => (
             font-weight: bold;
         }
 
+        .blank-field {
+            display: inline-block;
+            min-width: 70px;
+            border-bottom: 1.5px solid #555;
+            cursor: help;
+            vertical-align: bottom;
+        }
+
         @media print {
             .no-print { display: none !important; }
-            .documento-promesa { 
-                margin: 0 !important; 
-                box-shadow: none !important; 
+            .documento-promesa {
+                margin: 0 !important;
+                box-shadow: none !important;
                 border: none !important;
                 padding: 0 !important;
             }
             body { background: white !important; }
+            .blank-field {
+                border-bottom: 1.5px solid #000;
+                cursor: default;
+            }
         }
     `}</style>
 );

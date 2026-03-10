@@ -165,16 +165,21 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     debidamente inscrita en el Registro Mercantil General de la
                     República... bajo el número{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.InscritoNumero ||
-                            "[NÚMERO_INSCRIPCIÓN]"}
+                        {datosJuridicos.InscritoNumero || (
+                            <span className="blank-field" title="Número de inscripción en el Registro Mercantil">&nbsp;</span>
+                        )}
                     </span>
                     , folio{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.InscritoFolio || "[FOLIO_INSCRIPCIÓN]"}
+                        {datosJuridicos.InscritoFolio || (
+                            <span className="blank-field" title="Folio de inscripción en el Registro Mercantil">&nbsp;</span>
+                        )}
                     </span>
                     , del libro{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.InscritoLibro || "[LIBRO_INSCRIPCIÓN]"}
+                        {datosJuridicos.InscritoLibro || (
+                            <span className="blank-field" title="Libro de inscripción en el Registro Mercantil">&nbsp;</span>
+                        )}
                     </span>
                     ; en adelante referida como{" "}
                     <span className="party-name">
@@ -247,11 +252,22 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                         {getVal("proyecto.total_unidades", "noventa y cinco")} (
                         {getVal("proyecto.total_unidades_numeros", "95")})
                     </span>{" "}
-                    unidades de apartamentos, es decir, cuarenta y siete (47)
-                    unidades de apartamentos en la torre número uno y cuarenta y
-                    ocho (48) unidades de apartamentos en la torre número dos,
-                    pudiendo variar el número de apartamentos en más o menos
-                    diez apartamentos, a criterio de la Promitente Vendedora.
+                    unidades de apartamentos, es decir,{" "}
+                    <span className="highlight-yellow">
+                        {getVal("proyecto.unidades_torre1", "cuarenta y siete")}{" "}
+                        ({getVal("proyecto.unidades_torre1_numeros", "47")})
+                    </span>{" "}
+                    unidades de apartamentos en la torre número uno y{" "}
+                    <span className="highlight-yellow">
+                        {getVal("proyecto.unidades_torre2", "cuarenta y ocho")}{" "}
+                        ({getVal("proyecto.unidades_torre2_numeros", "48")})
+                    </span>{" "}
+                    unidades de apartamentos en la torre número dos, pudiendo
+                    variar el número de apartamentos en más o menos{" "}
+                    <span className="highlight-yellow">
+                        {getVal("proyecto.variacion_unidades", "diez")}
+                    </span>{" "}
+                    apartamentos, a criterio de la Promitente Vendedora.
                 </p>
                 <p>
                     El Proyecto contará además con lo siguiente:{" "}
@@ -508,6 +524,14 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                         ({getVal("Descripcion_del_Inmueble.Habitaciones")})
                     </span>{" "}
                     habitaciones,{" "}
+                    {getVal("Descripcion_del_Inmueble.NumeroBR") && (
+                        <>
+                            <span className="highlight-yellow">
+                                {getVal("Descripcion_del_Inmueble.NumeroBR")}
+                            </span>{" "}
+                            baños,{" "}
+                        </>
+                    )}
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.DescripcionApartamento",
@@ -1158,33 +1182,47 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     contenido en el acta notarial autorizada en esta ciudad el
                     día{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.ActaFechaDia || "[DIA]"}
+                        {datosJuridicos.ActaFechaDia || (
+                            <span className="blank-field" title="Día del acta notarial">&nbsp;</span>
+                        )}
                     </span>{" "}
                     de{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.ActaFechaMes || "[MES]"}
+                        {datosJuridicos.ActaFechaMes || (
+                            <span className="blank-field" title="Mes del acta notarial">&nbsp;</span>
+                        )}
                     </span>{" "}
                     de{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.ActaFechaAnio || "[AÑO]"}
+                        {datosJuridicos.ActaFechaAnio || (
+                            <span className="blank-field" title="Año del acta notarial">&nbsp;</span>
+                        )}
                     </span>
                     , por el Notario{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.NotarioNombre || "[NOMBRE_NOTARIO]"}
+                        {datosJuridicos.NotarioNombre || (
+                            <span className="blank-field" title="Nombre del Notario autorizante">&nbsp;</span>
+                        )}
                     </span>
                     , el cual se encuentra debidamente inscrito en el Registro
                     Mercantil General de la República de Guatemala bajo el
                     número de registro{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.InscritoNumero || "[NÚMERO]"}
+                        {datosJuridicos.InscritoNumero || (
+                            <span className="blank-field" title="Número de registro en el Registro Mercantil">&nbsp;</span>
+                        )}
                     </span>
                     , folio{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.InscritoFolio || "[FOLIO]"}
+                        {datosJuridicos.InscritoFolio || (
+                            <span className="blank-field" title="Folio de registro en el Registro Mercantil">&nbsp;</span>
+                        )}
                     </span>
                     , del libro{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.InscritoLibro || "[LIBRO]"}
+                        {datosJuridicos.InscritoLibro || (
+                            <span className="blank-field" title="Libro de registro en el Registro Mercantil">&nbsp;</span>
+                        )}
                     </span>{" "}
                     de Auxiliares de Comercio; quienes vuelven a firmar la
                     presente acta, ante el infrascrito Notario quien de todo lo

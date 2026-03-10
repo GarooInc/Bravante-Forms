@@ -209,7 +209,10 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                                         dt.RepresentanteNombre,
                                     RepresentanteCargo:
                                         datosJur.RepresentanteCargo ||
+                                        datosJur.cargo ||
                                         dt.RepresentanteCargo ||
+                                        dt.RepresentanteLegal?.Cargo ||
+                                        dt.representante_cargo ||
                                         datosJur.Cargo ||
                                         dt.Cargo ||
                                         datosJur.Puesto ||
@@ -300,12 +303,20 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                                             ?.replace("Apt", ""),
                                     Torre:
                                         inmueble.Torre || dt.Torre || "ETEREA",
-                                    Nivel: (
-                                        inmueble.Nivel ||
-                                        inmueble.Nivel_Numeros ||
-                                        dt.Nivel ||
-                                        dt.Nivel_Numeros
-                                    )?.toString(),
+                                    Nivel: (() => {
+                                        const raw =
+                                            inmueble.Nivel ??
+                                            inmueble.Nivel_Numeros ??
+                                            dt.Nivel ??
+                                            dt.Nivel_Numeros;
+                                        if (raw === undefined || raw === null) return undefined;
+                                        const str = raw.toString();
+                                        if (str === "") return undefined;
+                                        const num = parseInt(str);
+                                        if (!isNaN(num) && num <= 0)
+                                            return `S${Math.abs(num) || 1}`;
+                                        return str;
+                                    })(),
                                     Nivel_Letras:
                                         inmueble.Nivel_Letras ||
                                         dt.Nivel_Letras,
@@ -319,10 +330,24 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                                         inmueble.Habitaciones_Letras ||
                                         dt.Habitaciones_Letras,
                                     DescripcionApartamento:
-                                        inmueble.Modelo ||
+                                        (inmueble.Apartamento?.includes(
+                                            " / ",
+                                        )
+                                            ? inmueble.Apartamento.split(
+                                                  " / ",
+                                              )
+                                                  .slice(1)
+                                                  .join(" / ")
+                                            : undefined) ||
                                         inmueble.DescripcionApartamento ||
+                                        dt.nombre_modelo ||
+                                        dt.NombreModelo ||
                                         dt.modelo ||
                                         dt.Modelo,
+                                    NumeroBR:
+                                        dt.NumeroBR ||
+                                        inmueble.NumeroBR ||
+                                        dt.numeroBR,
                                     AreaConstruccionLetras:
                                         inmueble.AreaConstruccionLetras ||
                                         dt.AreaConstruccionLetras,
@@ -567,6 +592,16 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
     };
 
     const getDireccionComprador = () => {
+        if (isJuridica) {
+            return (
+                getVal<string>("DatosFiscales.Direccion", "") ||
+                getVal<string>("Datos_Juridicos.DireccionFiscal", "") ||
+                getVal<string>(
+                    "Datos_de_Notificacion_y_Cierre.Direccion",
+                    "15 Calle 2-00 Zona 10, Ciudad de Guatemala",
+                )
+            );
+        }
         return getVal<string>(
             "Datos_de_Notificacion_y_Cierre.Direccion",
             "15 Calle 2-00 Zona 10, Ciudad de Guatemala",
