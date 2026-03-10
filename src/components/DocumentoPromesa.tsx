@@ -14,6 +14,8 @@ interface DocumentoPromesaProps {
     showWebhookDataProp?: boolean;
     setShowWebhookDataProp?: (show: boolean) => void;
     hideControlBar?: boolean;
+    viewModeProp?: "html" | "markdown";
+    setViewModeProp?: (mode: "html" | "markdown") => void;
 }
 
 const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
