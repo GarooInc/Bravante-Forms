@@ -15,6 +15,8 @@ const PromesaFirma: React.FC = () => {
     const [copied, setCopied] = useState(false);
 
     const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
+    const [modalViewMode, setModalViewMode] = useState<'html' | 'markdown'>('html');
+    const [modalShowWebhookData, setModalShowWebhookData] = useState(false);
     const modalDocRootRef = useRef<HTMLDivElement | null>(null);
 
     const getDocElement = (root: ParentNode | null) => {
@@ -419,20 +421,67 @@ const PromesaFirma: React.FC = () => {
                 {isDocumentModalOpen && (
                     <div className="modal modal-open" role="dialog">
                         <div className="modal-box max-w-6xl w-[96vw] p-0 bg-[#0f172a] border border-gray-800">
-                            <div className="flex items-center justify-between px-4 py-3 bg-[#111827] border-b border-gray-800">
-                                <h3 className="font-semibold text-white">
-                                    Documento
-                                </h3>
-                                <button
-                                    type="button"
-                                    className="btn bg-[#10b981] hover:bg-[#059669] text-white border-none btn-sm px-6"
-                                    onClick={() =>
-                                        setIsDocumentModalOpen(false)
-                                    }
-                                >
-                                    Cerrar
-                                </button>
-                            </div>
+                             <div className="flex items-center justify-between px-4 py-3 bg-[#111827] border-b border-gray-800 sticky top-0 z-50">
+                                 <div className="flex items-center gap-4">
+                                     <h3 className="font-semibold text-white">Documento</h3>
+                                     
+                                     {/* View Switchers - Middle-left */}
+                                     <div className="flex bg-[#0f172a] p-1 rounded-lg border border-gray-800">
+                                         <button 
+                                             onClick={() => setModalViewMode('html')}
+                                             className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                                                 modalViewMode === 'html' 
+                                                     ? 'bg-[#10b981] text-white' 
+                                                     : 'text-gray-400 hover:text-white'
+                                             }`}
+                                         >
+                                             Vista HTML
+                                         </button>
+                                         <button 
+                                             onClick={() => setModalViewMode('markdown')}
+                                             className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
+                                                 modalViewMode === 'markdown' 
+                                                     ? 'bg-[#6366f1] text-white' 
+                                                     : 'text-gray-400 hover:text-white'
+                                             }`}
+                                         >
+                                             Plantilla (MD)
+                                         </button>
+                                     </div>
+                                 </div>
+
+                                 <div className="flex items-center gap-3">
+                                     {/* Data Toggle */}
+                                     <button
+                                         onClick={() => setModalShowWebhookData(!modalShowWebhookData)}
+                                         className={`btn btn-xs border-none font-bold px-3 ${
+                                             modalShowWebhookData 
+                                                 ? 'bg-[#3b82f6] text-white hover:bg-[#2563eb]' 
+                                                 : 'bg-[#1f2937] text-[#3b82f6] hover:bg-[#374151]'
+                                         }`}
+                                     >
+                                         {modalShowWebhookData ? 'Ocultar Data' : 'Ver Data'}
+                                     </button>
+
+                                     {/* Extra Print - Secondary */}
+                                     <button 
+                                         onClick={handlePrint}
+                                         className="btn btn-xs bg-[#6366f1]/10 text-[#6366f1] border-[#6366f1]/30 hover:bg-[#6366f1] hover:text-white font-bold px-4"
+                                     >
+                                         Imprimir / PDF
+                                     </button>
+
+                                     <div className="w-px h-6 bg-gray-800 mx-1"></div>
+
+                                     <button
+                                         type="button"
+                                         className="btn bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white border-none btn-sm px-6 font-bold"
+                                         onClick={() => setIsDocumentModalOpen(false)}
+                                     >
+                                         Cerrar
+                                     </button>
+                                 </div>
+                             </div>
                             <div className="relative h-[90vh] bg-[#0f172a]">
                                 <div className="hidden lg:flex absolute left-3 top-1/2 -translate-y-1/2 z-20 flex-col items-center gap-1 p-2 bg-[#111827]/95 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-800">
                                     <button
@@ -579,7 +628,13 @@ const PromesaFirma: React.FC = () => {
                                         ref={modalDocRootRef}
                                         className="transform scale-[0.7] sm:scale-[0.85] lg:scale-[0.95] origin-top"
                                     >
-                                        <DocumentoPromesa />
+                                        <DocumentoPromesa 
+                                            viewModeProp={modalViewMode} 
+                                            setViewModeProp={setModalViewMode}
+                                            showWebhookDataProp={modalShowWebhookData}
+                                            setShowWebhookDataProp={setModalShowWebhookData}
+                                            hideControlBar={true}
+                                        />
                                     </div>
                                 </div>
                             </div>

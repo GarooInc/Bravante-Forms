@@ -1,213 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useParams } from "react-router-dom";
+import { IndividualTemplate } from "./templates/IndividualTemplate";
+import { JuridicaTemplate } from "./templates/JuridicaTemplate";
+import { numberToWords, numberToWordsYear } from "./templates/utils";
+import type {
+    Comprador,
+    WebhookData,
+    Estacionamiento,
+} from "./templates/types";
 
-interface Comprador {
-    Nombre?: string;
-    DPI?: string;
-    DPI_Letras?: string;
-    EstadoCivil?: string;
-    Profesion?: string;
-    Edad_Numeros?: number;
-    Edad_Letras?: string;
-    Nacionalidad?: string;
-    Direccion?: string;
-    Domicilio?: string;
-    Domicilio_Letras?: string;
-    TelefonoDomicilio?: string;
-    Celular?: string;
-    NIT?: string;
-    CorreoElectronico?: string;
+interface DocumentoPromesaProps {
+    showWebhookDataProp?: boolean;
+    setShowWebhookDataProp?: (show: boolean) => void;
+    hideControlBar?: boolean;
+    viewModeProp?: "html" | "markdown";
+    setViewModeProp?: (mode: "html" | "markdown") => void;
 }
 
-interface Proyecto {
-    total_unidades?: string;
-    total_unidades_numeros?: string;
-    unidades_torre1?: string;
-    unidades_torre1_numeros?: string;
-    unidades_torre2?: string;
-    unidades_torre2_numeros?: string;
-    variacion_unidades?: string;
-    numero_elevadores?: string;
-    elevadores_por_torre?: string;
-    fuente_agua?: string;
-    entidad_agua?: string;
-    tipo_cisterna?: string;
-    agua_potable?: string;
-    tratamiento_agua?: string;
-    entidad_electrica?: string;
-    planta_emergencia?: string;
-    sistema_seguridad?: string;
-    sistema_acceso?: string;
-    sistema_vigilancia?: string;
-    sistema_drenaje?: string;
-    planta_tratamiento?: string;
-    nombre_torre1?: string;
-    nombre_torre2?: string;
-}
-
-interface Pago {
-    pago?: string;
-    fecha?: string;
-    value?: string;
-}
-
-interface Estacionamiento {
-    Numero?: string;
-    Numero_Letras?: string;
-    Sotano?: string;
-    Sotano_Letras?: string;
-}
-
-interface Bodega {
-    Numero?: string;
-    Numero_Letras?: string;
-    Sotano?: string;
-    Sotano_Letras?: string;
-}
-
-interface DatosJuridicos {
-    EmpresaNombre?: string;
-    RepresentanteNombre?: string;
-    RepresentanteCargo?: string;
-    RepresentanteNacionalidad?: string;
-    RepresentanteEstadoCivil?: string;
-    RepresentanteProfesion?: string;
-    RepresentanteEdadLetras?: string;
-    ActaNotarialFecha?: string;
-    NotarioNombre?: string;
-    InscritoNumero?: string;
-    InscritoFolio?: string;
-    InscritoLibro?: string;
-    RepresentanteDPI?: string;
-    RepresentanteDPI_Letras?: string;
-}
-
-interface WebhookData {
-    TipoPersona?: "individual" | "juridica";
-    Compradores?: Comprador[];
-    Datos_Juridicos?: DatosJuridicos;
-    proyecto?: Proyecto;
-    Descripcion_del_Inmueble?: {
-        Apartamento?: string;
-        Torre?: string;
-        Nivel?: string;
-        Habitaciones?: string;
-        DescripcionApartamento?: string;
-        AreaConstruccionLetras?: string;
-        AreaConstruccionNumeros?: number;
-        ParqueosDescripcion?: string;
-        BodegasDescripcion?: string;
-        TerrazaBalconAreaLetras?: string;
-        TerrazaBalconAreaNumeros?: number;
-        Estacionamientos?: Estacionamiento[];
-        Bodegas?: Bodega[];
-    };
-    Condiciones_Economicas?: {
-        PrecioLetras?: string;
-        PrecioNumeros?: number;
-        ReservaLetras?: string;
-        ReservaNumeros?: number;
-        SegundoPagoLetras?: string;
-        SegundoPagoNumeros?: number;
-        CantidadPagosLetras?: string;
-        CantidadPagosNumeros?: number;
-        TercerPagoLetras?: string;
-        TercerPagoNumeros?: number;
-        SaldoFinanciar?: number;
-    };
-    Pagos?: Pago[];
-    Liquidacion_Final_y_Plazos?: {
-        PlazoMesesLetras?: string;
-        PlazoMesesNumeros?: number;
-        MesEntrega?: string;
-        AnioEntrega?: number;
-        UltimoPagoLetras?: string;
-        UltimoPagoNumeros?: number;
-    };
-    Datos_de_Notificacion_y_Cierre?: {
-        Direccion?: string;
-        FechaFirmaDia?: number;
-        FechaFirmaMes?: string;
-        FechaFirmaAnio?: number;
-        FechaLegalizacionDia?: number;
-        FechaLegalizacionMes?: string;
-        FechaLegalizacionAnio?: number;
-    };
-}
-
-const numberToWords = (num: number): string => {
-    if (num === 0) return "CERO";
-    if (num < 0) return "MENOS " + numberToWords(Math.abs(num));
-
-    const units = [
-        "", "UN", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE"
-    ];
-    const teens = [
-        "DIEZ", "ONCE", "DOCE", "TRECE", "CATORCE", "QUINCE", "DIECISÉIS", "DIECISIETE", "DIECIOCHO", "DIECINUEVE"
-    ];
-    const tens = [
-        "", "DIEZ", "VEINTE", "TREINTA", "CUARENTA", "CINCUENTA", "SESENTA", "SETENTA", "OCHENTA", "NOVENTA"
-    ];
-    const hundreds = [
-        "", "CIENTO", "DOSCIENTOS", "TRESCIENTOS", "CUATROCIENTOS", "QUINIENTOS", "SEISCIENTOS", "SETECIENTOS", "OCHOCIENTOS", "NOVECIENTOS"
-    ];
-
-    const convertGroup = (n: number): string => {
-        let res = "";
-        if (n >= 100) {
-            if (n === 100) return "CIEN";
-            res += hundreds[Math.floor(n / 100)];
-            n %= 100;
-            if (n > 0) res += " ";
-        }
-        if (n >= 20) {
-            if (n === 20) return res + "VEINTE";
-            if (n < 30) return res + "VEINTI" + units[n - 20];
-            res += tens[Math.floor(n / 10)];
-            n %= 10;
-            if (n > 0) res += " Y " + units[n];
-        } else if (n >= 10) {
-            res += teens[n - 10];
-        } else if (n > 0) {
-            res += units[n];
-        }
-        return res;
-    };
-
-    let result = "";
-
-    if (num >= 1000000) {
-        const millions = Math.floor(num / 1000000);
-        if (millions === 1) {
-            result += "UN MILLÓN ";
-        } else {
-            result += convertGroup(millions) + " MILLONES ";
-        }
-        num %= 1000000;
-    }
-
-    if (num >= 1000) {
-        const thousands = Math.floor(num / 1000);
-        if (thousands === 1) {
-            result += "MIL ";
-        } else {
-            result += convertGroup(thousands) + " MIL ";
-        }
-        num %= 1000;
-    }
-
-    if (num > 0) {
-        result += convertGroup(num);
-    }
-
-    return result.trim().toUpperCase();
-};
-
-const DocumentoPromesa: React.FC = () => {
+const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
+    showWebhookDataProp,
+    setShowWebhookDataProp,
+    hideControlBar = false,
+}) => {
     const { id } = useParams();
     const [data, setData] = useState<WebhookData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+
+    // Fallback internal state
+    const [internalShowWebhookData, setInternalShowWebhookData] =
+        useState<boolean>(false);
+
+    // Final state selection
+    const showWebhookData = showWebhookDataProp ?? internalShowWebhookData;
+    const setShowWebhookData =
+        setShowWebhookDataProp ?? setInternalShowWebhookData;
 
     useEffect(() => {
         if (id) {
@@ -223,149 +50,490 @@ const DocumentoPromesa: React.FC = () => {
                             `HTTP error! status: ${response.status}`,
                         );
                     }
-
                     const text = await response.text();
-
                     if (!text || text.trim() === "") {
-                        console.error("Respuesta vacía del webhook");
                         throw new Error("Respuesta vacía del servidor");
                     }
-
                     try {
                         return JSON.parse(text);
-                    } catch (e) {
-                        console.error("Error parsing JSON:", e);
-                        console.error("Texto recibido:", text);
+                    } catch {
                         throw new Error("Respuesta inválida del servidor");
                     }
                 })
-                .then((jsonData: any) => {
+                .then((jsonData: unknown) => {
                     let payload: WebhookData | null = null;
                     if (jsonData && typeof jsonData === "object") {
-                        const rawData = jsonData.data || (jsonData.status === "success" ? jsonData : null);
-                        
-                        if (rawData) {
-                            if (rawData.Inmueble && rawData.Precio) {
-                                const dt = rawData;
-                                
-                                let mesStr = dt.FechaDocumento ? dt.FechaDocumento.split('-')[1] : "01";
-                                const mesesNombres = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-                                let mesNombre = mesesNombres[parseInt(mesStr) - 1] || "enero";
+                        const root = (
+                            Array.isArray(jsonData)
+                                ? jsonData[0] || {}
+                                : jsonData
+                        ) as any;
+                        let dt: any = null;
+                        let rawPagos: any = null;
 
-                                const mappedCompradores = (dt.Compradores || []).map((c: any) => ({
-                                    ...c,
-                                    Direccion: c.Domicilio || c.Direccion
-                                }));
+                        if (root.data && !Array.isArray(root.data)) {
+                            dt = root.data;
+                            rawPagos = dt.Pagos;
+                        } else if (Array.isArray(root.data) && root.data[0]) {
+                            const dataArray = root.data;
+                            const container = dataArray[0]
+                                ? (dataArray[0] as any).document_promesa_firma
+                                : null;
+                            dt = container
+                                ? container.data
+                                : dataArray[0] || null;
+                            rawPagos = container
+                                ? container.Pagos
+                                : dt
+                                  ? dt.Pagos
+                                  : null;
+                        } else if (root.Compradores || root.Inmueble) {
+                            dt = root;
+                            rawPagos = dt.Pagos;
+                        }
 
-                                const totalPagosNum = (dt.Pagos || []).reduce((sum: number, p: any) => sum + parseFloat(p.value || "0"), 0);
+                        if (dt) {
+                            const first = (item: any) =>
+                                (Array.isArray(item) ? item[0] : item) || {};
+                            const inmueble = first(
+                                dt.Inmueble || dt.Descripcion_del_Inmueble,
+                            );
+                            const precio = first(
+                                dt.Precio || dt.Condiciones_Economicas,
+                            );
+                            const datosJur = first(dt.Datos_Juridicos);
+                            const proj = first(dt.proyecto);
 
-                                payload = {
-                                    TipoPersona: dt.TipoPersona,
-                                    Compradores: mappedCompradores,
-                                    Datos_Juridicos: dt.Datos_Juridicos,
-                                    Descripcion_del_Inmueble: {
-                                        Apartamento: dt.Inmueble.Apartamento,
-                                        Torre: dt.Inmueble.Torre,
-                                        Nivel: dt.Inmueble.Nivel?.toString(),
-                                        Habitaciones: dt.Inmueble.Habitaciones?.toString(),
-                                        DescripcionApartamento: dt.Inmueble.Modelo,
-                                        AreaConstruccionLetras: dt.Inmueble.AreaConstruccionLetras,
-                                        AreaConstruccionNumeros: dt.Inmueble.AreaConstruccionM2,
-                                        Estacionamientos: (dt.Inmueble.Estacionamientos || []).map((e: any) => ({
-                                            Numero: e.Numero,
-                                            Numero_Letras: e.Numero_Letras,
-                                            Sotano: e.Sotano || "1",
-                                            Sotano_Letras: e.Sotano_Letras || "UNO"
-                                        })),
-                                        Bodegas: (dt.Inmueble.Bodegas || []).map((b: any) => ({
-                                            Numero: b.Numero,
-                                            Numero_Letras: b.Numero_Letras,
-                                            Sotano: b.Sotano || "1",
-                                            Sotano_Letras: b.Sotano_Letras || "UNO"
-                                        })),
-                                        TerrazaBalconAreaLetras: dt.Inmueble.TerrazaAreaLetras || dt.Inmueble.BalconAreaLetras,
-                                        TerrazaBalconAreaNumeros: dt.Inmueble.TerrazaAreaM2 || dt.Inmueble.BalconAreaM2,
-                                    },
-                                    Condiciones_Economicas: {
-                                        PrecioLetras: dt.Precio.PrecioLetras,
-                                        PrecioNumeros: dt.Precio.PrecioFinal,
-                                        ReservaLetras: dt.Precio.ReservaLetras,
-                                        ReservaNumeros: dt.Precio.EngancheMonto,
-                                        SegundoPagoLetras: numberToWords(Math.round(totalPagosNum)),
-                                        SegundoPagoNumeros: totalPagosNum,
-                                        CantidadPagosLetras: dt.Precio.PlazoEngancheMeses ? numberToWords(dt.Precio.PlazoEngancheMeses).toLowerCase() : "",
-                                        CantidadPagosNumeros: dt.Precio.PlazoEngancheMeses,
-                                        TercerPagoLetras: dt.Precio.SaldoFinanciarLetras,
-                                        TercerPagoNumeros: dt.Precio.SaldoFinanciar,
-                                        SaldoFinanciar: dt.Precio.SaldoFinanciar
-                                    },
-                                    Pagos: dt.Pagos,
-                                    Liquidacion_Final_y_Plazos: {
-                                        PlazoMesesLetras: "",
-                                        PlazoMesesNumeros: dt.Precio.PlazoEngancheMeses,
-                                        MesEntrega: "", 
-                                        AnioEntrega: dt.Precio.FechaEntrega ? parseInt(dt.Precio.FechaEntrega.split('-')[0]) : 0,
-                                        UltimoPagoLetras: "",
-                                        UltimoPagoNumeros: 0
-                                    },
-                                    Datos_de_Notificacion_y_Cierre: dt.FechaDocumento ? {
-                                        Direccion: dt.Compradores && dt.Compradores.length > 0 ? (dt.Compradores[0].Domicilio || "") : "",
-                                        FechaFirmaDia: parseInt(dt.FechaDocumento.split('-')[2]),
-                                        FechaFirmaMes: mesNombre,
-                                        FechaFirmaAnio: parseInt(dt.FechaDocumento.split('-')[0]),
-                                        FechaLegalizacionDia: parseInt(dt.FechaDocumento.split('-')[2]),
-                                        FechaLegalizacionMes: mesNombre,
-                                        FechaLegalizacionAnio: parseInt(dt.FechaDocumento.split('-')[0])
-                                    } : undefined
-                                } as unknown as WebhookData;
-                            } else {
-                                payload = rawData as WebhookData;
+                            const stripCurrency = (str?: string) =>
+                                str
+                                    ? str
+                                          .replace(
+                                              /\s*(D[OÓ]LARES?|QUETZALES?)\s.*/i,
+                                              "",
+                                          )
+                                          .trim()
+                                    : "";
+
+                            const mesStr = dt.FechaDocumento
+                                ? (dt.FechaDocumento as string).split("-")[1]
+                                : "01";
+                            const mesesNombres = [
+                                "enero",
+                                "febrero",
+                                "marzo",
+                                "abril",
+                                "mayo",
+                                "junio",
+                                "julio",
+                                "agosto",
+                                "septiembre",
+                                "octubre",
+                                "noviembre",
+                                "diciembre",
+                            ];
+                            const mesNombre =
+                                mesesNombres[parseInt(mesStr) - 1] || "enero";
+
+                            const mappedCompradores = (
+                                dt.Compradores || []
+                            ).map((c: any) => ({
+                                ...c,
+                                Direccion: c.Domicilio || c.Direccion,
+                                Domicilio: c.Domicilio || c.Direccion,
+                            }));
+
+                            const totalPagosNum = (
+                                rawPagos ||
+                                dt.Pagos ||
+                                []
+                            ).reduce((sum: number, p: any) => {
+                                const v = parseFloat(p.value || p.Monto || 0);
+                                return sum + (isNaN(v) ? 0 : v);
+                            }, 0);
+
+                            const plazoMesesNum: number =
+                                precio.PlazoEngancheMeses ||
+                                dt.cuotas ||
+                                dt.PlazoEngancheMeses ||
+                                0;
+                            const plazoMesesLetras: string =
+                                plazoMesesNum > 0
+                                    ? numberToWords(plazoMesesNum).toLowerCase()
+                                    : "";
+
+                            let mesEntregaStr = "";
+                            const fechaEnt =
+                                precio.FechaEntrega ||
+                                dt.fecha_entrega ||
+                                dt.FechaEntrega;
+                            if (fechaEnt && fechaEnt.includes("-")) {
+                                const mesesNombresEnt = [
+                                    "enero",
+                                    "febrero",
+                                    "marzo",
+                                    "abril",
+                                    "mayo",
+                                    "junio",
+                                    "julio",
+                                    "agosto",
+                                    "septiembre",
+                                    "octubre",
+                                    "noviembre",
+                                    "diciembre",
+                                ];
+                                const partes = fechaEnt.split("-");
+                                const mesIdx = parseInt(partes[1]) - 1;
+                                const anioEnt = partes[0];
+                                mesEntregaStr = `${mesesNombresEnt[mesIdx] || ""} del año ${anioEnt}`;
                             }
+
+                            const isJuridica = dt.TipoPersona === "juridica";
+                            const firstComp = mappedCompradores[0] || {};
+
+                            payload = {
+                                TipoPersona:
+                                    dt.TipoPersona ||
+                                    (dt.nombre_entidad || datosJur.EmpresaNombre
+                                        ? "juridica"
+                                        : "individual"),
+                                Compradores: mappedCompradores,
+                                Datos_Juridicos: {
+                                    ...datosJur,
+                                    EmpresaNombre:
+                                        datosJur.EmpresaNombre ||
+                                        dt.nombre_entidad ||
+                                        dt.EmpresaNombre,
+                                    RepresentanteNombre:
+                                        datosJur.RepresentanteNombre ||
+                                        dt.representante_legal ||
+                                        dt.RepresentanteNombre,
+                                    RepresentanteCargo:
+                                        datosJur.RepresentanteCargo ||
+                                        dt.RepresentanteCargo ||
+                                        datosJur.Cargo ||
+                                        dt.Cargo ||
+                                        datosJur.Puesto ||
+                                        dt.Puesto,
+                                    RepresentanteEdadLetras:
+                                        datosJur.RepresentanteEdadLetras ||
+                                        datosJur.RepresentanteEdad_Letras ||
+                                        dt.RepresentanteEdad_Letras ||
+                                        (isJuridica
+                                            ? firstComp.Edad_Letras ||
+                                              firstComp.Edad_LeTras
+                                            : ""),
+                                    RepresentanteEstadoCivil:
+                                        datosJur.RepresentanteEstadoCivil ||
+                                        (isJuridica
+                                            ? firstComp.EstadoCivil
+                                            : ""),
+                                    RepresentanteProfesion:
+                                        datosJur.RepresentanteProfesion ||
+                                        (isJuridica ? firstComp.Profesion : ""),
+                                    RepresentanteNacionalidad:
+                                        datosJur.RepresentanteNacionalidad ||
+                                        (isJuridica
+                                            ? firstComp.Nacionalidad
+                                            : ""),
+                                    RepresentanteDPI_Letras:
+                                        datosJur.RepresentanteDPI_Letras ||
+                                        datosJur.RepresentanteDPILetras ||
+                                        dt.RepresentanteDPI_Letras ||
+                                        (isJuridica
+                                            ? firstComp.DPI_Letras
+                                            : ""),
+                                    RepresentanteDPI:
+                                        datosJur.RepresentanteDPI ||
+                                        dt.NIT_representante_legal ||
+                                        dt.RepresentanteDPI ||
+                                        (isJuridica ? firstComp.DPI : ""),
+                                    ActaNotarialFecha:
+                                        datosJur.ActaNotarialFecha ||
+                                        datosJur.FechaActa ||
+                                        datosJur.ActaFecha ||
+                                        dt.ActaNotarialFecha,
+                                    ActaFechaDia: (
+                                        datosJur.ActaNotarialFecha ||
+                                        dt.ActaNotarialFecha ||
+                                        ""
+                                    )?.split("-")?.[2],
+                                    ActaFechaMes:
+                                        mesesNombres[
+                                            parseInt(
+                                                (
+                                                    datosJur.ActaNotarialFecha ||
+                                                    dt.ActaNotarialFecha ||
+                                                    ""
+                                                )?.split("-")?.[1],
+                                            ) - 1
+                                        ],
+                                    ActaFechaAnio: (
+                                        datosJur.ActaNotarialFecha ||
+                                        dt.ActaNotarialFecha ||
+                                        ""
+                                    )?.split("-")?.[0],
+                                    NotarioNombre:
+                                        datosJur.NotarioNombre ||
+                                        datosJur.NombreNotario ||
+                                        datosJur.Notario ||
+                                        dt.NotarioNombre ||
+                                        dt.nombre_notario,
+                                    InscritoNumero:
+                                        datosJur.InscritoNumero ||
+                                        datosJur.RegistroNumero ||
+                                        dt.RegistroNumero,
+                                    InscritoFolio:
+                                        datosJur.InscritoFolio ||
+                                        datosJur.RegistroFolio ||
+                                        dt.RegistroFolio,
+                                    InscritoLibro:
+                                        datosJur.InscritoLibro ||
+                                        datosJur.RegistroLibro ||
+                                        dt.RegistroLibro,
+                                },
+                                Descripcion_del_Inmueble: {
+                                    Apartamento:
+                                        inmueble.Apartamento ||
+                                        dt.Apartamento ||
+                                        dt.id_inmueble
+                                            ?.split(" ")[0]
+                                            ?.replace("Apt", ""),
+                                    Torre:
+                                        inmueble.Torre || dt.Torre || "ETEREA",
+                                    Nivel: (
+                                        inmueble.Nivel ||
+                                        inmueble.Nivel_Numeros ||
+                                        dt.Nivel ||
+                                        dt.Nivel_Numeros
+                                    )?.toString(),
+                                    Nivel_Letras:
+                                        inmueble.Nivel_Letras ||
+                                        dt.Nivel_Letras,
+                                    Habitaciones: (
+                                        inmueble.Habitaciones ||
+                                        inmueble.NoDormitorios ||
+                                        dt.Habitaciones ||
+                                        dt.NoDormitorios
+                                    )?.toString(),
+                                    Habitaciones_Letras:
+                                        inmueble.Habitaciones_Letras ||
+                                        dt.Habitaciones_Letras,
+                                    DescripcionApartamento:
+                                        inmueble.Modelo ||
+                                        inmueble.DescripcionApartamento ||
+                                        dt.modelo ||
+                                        dt.Modelo,
+                                    AreaConstruccionLetras:
+                                        inmueble.AreaConstruccionLetras ||
+                                        dt.AreaConstruccionLetras,
+                                    AreaConstruccionNumeros:
+                                        inmueble.AreaConstruccionM2 ||
+                                        inmueble.AreaConstruccionNumeros ||
+                                        dt.AreaConstruccionM2,
+                                    ParqueosAreaLetras:
+                                        inmueble.ParqueosAreaLetras ||
+                                        dt.ParqueosAreaLetras,
+                                    ParqueosAreaNumeros:
+                                        inmueble.ParqueosAreaM2 ||
+                                        inmueble.ParqueosAreaNumeros ||
+                                        dt.ParqueosAreaM2,
+                                    TerrazaAreaLetras:
+                                        (inmueble.TerrazaAreaM2 ||
+                                            dt.TerrazaAreaM2 ||
+                                            0) > 0
+                                            ? inmueble.TerrazaAreaLetras ||
+                                              dt.TerrazaAreaLetras
+                                            : undefined,
+                                    TerrazaAreaNumeros:
+                                        inmueble.TerrazaAreaM2 ||
+                                        dt.TerrazaAreaM2,
+                                    BalconAreaLetras:
+                                        (inmueble.BalconAreaM2 ||
+                                            dt.balcon_mts_cuadrados ||
+                                            0) > 0
+                                            ? inmueble.BalconAreaLetras ||
+                                              dt.BalconAreaLetras
+                                            : undefined,
+                                    BalconAreaNumeros:
+                                        inmueble.BalconAreaM2 ||
+                                        dt.balcon_mts_cuadrados,
+                                    TerrazaBalconAreaLetras:
+                                        (inmueble.TerrazaAreaM2 ||
+                                            dt.TerrazaAreaM2 ||
+                                            0) > 0
+                                            ? inmueble.TerrazaAreaLetras ||
+                                              dt.TerrazaAreaLetras
+                                            : inmueble.BalconAreaLetras ||
+                                              dt.BalconAreaLetras,
+                                    TerrazaBalconAreaNumeros:
+                                        (inmueble.TerrazaAreaM2 ||
+                                            dt.TerrazaAreaM2 ||
+                                            0) > 0
+                                            ? inmueble.TerrazaAreaM2 ||
+                                              dt.TerrazaAreaM2
+                                            : inmueble.BalconAreaM2 ||
+                                              dt.balcon_mts_cuadrados,
+                                    Estacionamientos: (
+                                        inmueble.Estacionamientos ||
+                                        dt.Estacionamientos ||
+                                        []
+                                    ).map((e: any) => ({
+                                        Numero: e.Numero,
+                                        Numero_Letras: e.Numero_Letras,
+                                        Sotano: e.Sotano || "1",
+                                        Sotano_Letras: e.Sotano_Letras || "UNO",
+                                        Tipo: e.Tipo,
+                                    })),
+                                    Bodegas: (
+                                        inmueble.Bodegas ||
+                                        dt.Bodegas ||
+                                        []
+                                    ).map((b: any) => ({
+                                        Numero: b.Numero,
+                                        Numero_Letras: b.Numero_Letras,
+                                        Sotano: b.Sotano || "1",
+                                        Sotano_Letras: b.Sotano_Letras || "UNO",
+                                    })),
+                                },
+                                Condiciones_Economicas: {
+                                    PrecioLetras: stripCurrency(
+                                        precio.PrecioLetras || dt.PrecioLetras,
+                                    ),
+                                    PrecioNumeros:
+                                        precio.PrecioFinal ||
+                                        dt.PrecioFinal ||
+                                        dt.precio_total,
+                                    ReservaLetras: stripCurrency(
+                                        precio.ReservaLetras ||
+                                            dt.ReservaLetras,
+                                    ),
+                                    ReservaNumeros:
+                                        precio.EngancheMonto ||
+                                        dt.EngancheMonto ||
+                                        dt.enganche,
+                                    SegundoPagoLetras: numberToWords(
+                                        Math.round(totalPagosNum),
+                                    ),
+                                    SegundoPagoNumeros: totalPagosNum,
+                                    CantidadPagosLetras: plazoMesesLetras,
+                                    CantidadPagosNumeros: plazoMesesNum,
+                                    TercerPagoLetras: stripCurrency(
+                                        precio.SaldoFinanciarLetras ||
+                                            dt.SaldoFinanciarLetras,
+                                    ),
+                                    TercerPagoNumeros:
+                                        precio.SaldoFinanciar ||
+                                        dt.SaldoFinanciar,
+                                    SaldoFinanciar:
+                                        precio.SaldoFinanciar ||
+                                        dt.SaldoFinanciar,
+                                },
+                                Pagos: rawPagos || dt.Pagos,
+                                Liquidacion_Final_y_Plazos: {
+                                    PlazoMesesLetras: plazoMesesLetras,
+                                    PlazoMesesNumeros: plazoMesesNum,
+                                    MesEntrega: mesEntregaStr,
+                                    AnioEntrega: fechaEnt
+                                        ? parseInt(fechaEnt.split("-")[0])
+                                        : 0,
+                                    UltimoPagoLetras: stripCurrency(
+                                        precio.SaldoFinanciarLetras ||
+                                            dt.SaldoFinanciarLetras,
+                                    ),
+                                    UltimoPagoNumeros:
+                                        precio.SaldoFinanciar ||
+                                        dt.SaldoFinanciar,
+                                },
+                                FechaDocumento: dt.FechaDocumento,
+                                Datos_de_Notificacion_y_Cierre:
+                                    dt.FechaDocumento
+                                        ? {
+                                              Direccion:
+                                                  mappedCompradores &&
+                                                  mappedCompradores.length > 0
+                                                      ? mappedCompradores[0]
+                                                            .Domicilio_Letras ||
+                                                        mappedCompradores[0]
+                                                            .Domicilio ||
+                                                        ""
+                                                      : "",
+                                              FechaFirmaDia: parseInt(
+                                                  dt.FechaDocumento.split(
+                                                      "-",
+                                                  )[2],
+                                              ),
+                                              FechaFirmaMes: mesNombre,
+                                              FechaFirmaAnio: parseInt(
+                                                  dt.FechaDocumento.split(
+                                                      "-",
+                                                  )[0],
+                                              ),
+                                              FechaLegalizacionDia: parseInt(
+                                                  dt.FechaDocumento.split(
+                                                      "-",
+                                                  )[2],
+                                              ),
+                                              FechaLegalizacionMes: mesNombre,
+                                              FechaLegalizacionAnio: parseInt(
+                                                  dt.FechaDocumento.split(
+                                                      "-",
+                                                  )[0],
+                                              ),
+                                          }
+                                        : undefined,
+                                proyecto:
+                                    proj && Object.keys(proj).length > 5
+                                        ? proj
+                                        : {
+                                              total_unidades: "noventa y cinco",
+                                              total_unidades_numeros: "95",
+                                              unidades_torre1:
+                                                  "cuarenta y siete",
+                                              unidades_torre1_numeros: "47",
+                                              unidades_torre2:
+                                                  "cuarenta y ocho",
+                                              unidades_torre2_numeros: "48",
+                                              variacion_unidades: "diez",
+                                              numero_elevadores: "cuatro",
+                                              elevadores_por_torre: "dos",
+                                              fuente_agua:
+                                                  "pozo externo el Edificio",
+                                              entidad_agua:
+                                                  "SERVIBOSQUES, SOCIEDAD ANÓNIMA",
+                                              tipo_cisterna:
+                                                  "cisterna de concreto",
+                                              agua_potable: "no será potable",
+                                              tratamiento_agua:
+                                                  "potabilizar el agua",
+                                              entidad_electrica:
+                                                  "Empresa Eléctrica de Guatemala, Sociedad Anónima",
+                                              planta_emergencia:
+                                                  "una planta eléctrica de emergencia",
+                                              sistema_security:
+                                                  "gabinetes con extintores de incendios",
+                                              sistema_acceso:
+                                                  "Sistema de control de acceso",
+                                              sistema_vigilancia:
+                                                  "Circuito cerrado",
+                                              sistema_drenaje:
+                                                  "Sistema de drenajes pluviales y aguas negras",
+                                              planta_tratamiento:
+                                                  "planta de tratamiento de aguas residuales de uso ordinario",
+                                              nombre_torre1: "IGNEA",
+                                              nombre_torre2: "ETEREA",
+                                          },
+                            } as unknown as WebhookData;
                         }
                     }
 
                     if (payload) {
-                        if (!payload.proyecto) {
-                            payload.proyecto = {
-                                total_unidades: "noventa y cinco",
-                                total_unidades_numeros: "95",
-                                unidades_torre1: "cuarenta y siete",
-                                unidades_torre1_numeros: "47",
-                                unidades_torre2: "cuarenta y ocho",
-                                unidades_torre2_numeros: "48",
-                                variacion_unidades: "diez",
-                                numero_elevadores: "cuatro",
-                                elevadores_por_torre: "dos",
-                                fuente_agua: "pozo externo el Edificio",
-                                entidad_agua: "SERVIBOSQUES, SOCIEDAD ANÓNIMA",
-                                tipo_cisterna: "cisterna de concreto",
-                                agua_potable: "no será potable",
-                                tratamiento_agua: "potabilizar el agua",
-                                entidad_electrica:
-                                    "Empresa Eléctrica de Guatemala, Sociedad Anónima",
-                                planta_emergencia:
-                                    "una planta eléctrica de emergencia",
-                                sistema_seguridad:
-                                    "gabinetes con extintores de incendios",
-                                sistema_acceso: "Sistema de control de acceso",
-                                sistema_vigilancia: "Circuito cerrado",
-                                sistema_drenaje:
-                                    "Sistema de drenajes pluviales y aguas negras",
-                                planta_tratamiento:
-                                    "planta de tratamiento de aguas residuales de uso ordinario",
-                                nombre_torre1: "IGNEA",
-                                nombre_torre2: "ETEREA",
-                            };
-                        }
                         setData(payload);
                     }
                 })
                 .catch((error) =>
                     console.error("Error fetching document data:", error),
                 )
-                .finally(() => {
-                    setLoading(false);
-                });
+                .finally(() => setLoading(false));
         }
     }, [id]);
 
@@ -375,21 +543,21 @@ const DocumentoPromesa: React.FC = () => {
     ): T => {
         if (!data) return fallback;
         const keys = path.split(".");
-        let value: unknown = data;
+        let current: any = data;
         for (const key of keys) {
-            if (value && typeof value === "object" && key in value) {
-                value = (value as Record<string, unknown>)[key];
+            if (current && typeof current === "object" && key in current) {
+                current = (current as Record<string, unknown>)[key];
             } else {
                 return fallback;
             }
         }
-        return (value as T) ?? fallback;
+        return (current as T) ?? fallback;
     };
 
     const getComprador = (
         index: number,
         field: keyof Comprador,
-        fallback: string = `[COMPRADOR_${index + 1}_${field.toUpperCase()}]`,
+        fallback: string = `[COMPRADOR_${index + 1}_${field.toString().toUpperCase()}]`,
     ) => {
         const compradores = getVal<Comprador[]>("Compradores", []);
         if (compradores[index] && compradores[index][field]) {
@@ -399,145 +567,139 @@ const DocumentoPromesa: React.FC = () => {
     };
 
     const getDireccionComprador = () => {
-        const direccion = getVal<string>(
+        return getVal<string>(
             "Datos_de_Notificacion_y_Cierre.Direccion",
             "15 Calle 2-00 Zona 10, Ciudad de Guatemala",
         );
-        return direccion;
+    };
+
+    const getParqueosDescripcion = () => {
+        const ests = getVal<Estacionamiento[]>(
+            "Descripcion_del_Inmueble.Estacionamientos",
+            [],
+        );
+        if (ests.length === 0) return "Cero plazas de estacionamiento";
+
+        const countStr =
+            ests.length === 1
+                ? "UNA (1)"
+                : `${numberToWords(ests.length).toUpperCase()} (${ests.length})`;
+        const plazaStr = ests.length === 1 ? "plaza" : "plazas";
+        const identificadaStr =
+            ests.length === 1 ? "identificada" : "identificadas";
+        const ubicadaStr = ests.length === 1 ? "ubicada" : "ubicadas";
+
+        const numeros = ests.map((e) => e.Numero).join(", ");
+        const sotano = ests[0]?.Sotano || "1";
+
+        return `${countStr} ${plazaStr} de estacionamiento ${identificadaStr} con los números: ${numeros}, ${ubicadaStr} en el sótano número: ${sotano}.`;
     };
 
     const getFechaLegalizacion = () => {
-        const dia = getVal<number>(
-            "Datos_de_Notificacion_y_Cierre.FechaLegalizacionDia",
-            0,
-        );
-        const mes = getVal<string>(
-            "Datos_de_Notificacion_y_Cierre.FechaLegalizacionMes",
-            "[MES_LEGALIZACION]",
-        );
-        const anio = getVal<number>(
-            "Datos_de_Notificacion_y_Cierre.FechaLegalizacionAnio",
-            0,
-        );
-
-        if (dia !== 0 && mes !== "[MES_LEGALIZACION]" && anio !== 0) {
-            const anioStr = anio.toString();
-            const anioProc =
-                anioStr === "2026"
-                    ? "veintiséis"
-                    : anioStr === "2025"
-                      ? "veinticinco"
-                      : anioStr.length === 4
-                        ? anioStr.slice(-2)
-                        : anioStr;
-            return { dia: dia.toString(), mes, anio: anioProc };
-        }
-
-        return { dia: "23", mes: "enero", anio: "veintiséis" };
+        const d = (data?.FechaDocumento || "").split("-");
+        if (d.length < 3) return { dia: "[DIA]", mes: "[MES]", anio: "[AÑO]" };
+        const f = new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]));
+        const meses = [
+            "enero",
+            "febrero",
+            "marzo",
+            "abril",
+            "mayo",
+            "junio",
+            "julio",
+            "agosto",
+            "septiembre",
+            "octubre",
+            "noviembre",
+            "diciembre",
+        ];
+        return {
+            dia: f.getUTCDate().toString(),
+            mes: meses[f.getUTCMonth()],
+            anio: numberToWordsYear(f.getUTCFullYear()).toLowerCase(),
+        };
     };
 
     const getFechaFirma = () => {
-        const dia = getVal<number>(
-            "Datos_de_Notificacion_y_Cierre.FechaFirmaDia",
-            0,
-        );
-        const mes = getVal<string>(
-            "Datos_de_Notificacion_y_Cierre.FechaFirmaMes",
-            "[MES_FIRMA]",
-        );
-        const anio = getVal<number>(
-            "Datos_de_Notificacion_y_Cierre.FechaFirmaAnio",
-            0,
-        );
-
-        if (dia !== 0 && mes !== "[MES_FIRMA]" && anio !== 0) {
-            const anioStr = anio.toString();
-            const anioProc =
-                anioStr === "2026"
-                    ? "veintiséis"
-                    : anioStr === "2025"
-                      ? "veinticinco"
-                      : anioStr.length === 4
-                        ? anioStr.slice(-2)
-                        : anioStr;
-            return { dia: dia.toString(), mes, anio: anioProc };
-        }
-
-        return { dia: "25", mes: "enero", anio: "veintiséis" };
+        const d = (data?.FechaDocumento || "").split("-");
+        if (d.length < 3) return { dia: "[DIA]", mes: "[MES]", anio: "[AÑO]" };
+        const f = new Date(parseInt(d[0]), parseInt(d[1]) - 1, parseInt(d[2]));
+        const meses = [
+            "enero",
+            "febrero",
+            "marzo",
+            "abril",
+            "mayo",
+            "junio",
+            "julio",
+            "agosto",
+            "septiembre",
+            "octubre",
+            "noviembre",
+            "diciembre",
+        ];
+        return {
+            dia: f.getUTCDate().toString(),
+            mes: meses[f.getUTCMonth()],
+            anio: numberToWordsYear(f.getUTCFullYear()).toLowerCase(),
+        };
     };
 
     const getPlazoMeses = () => {
-        const plazoLetras = getVal<string>(
+        const letras = getVal<string>(
             "Liquidacion_Final_y_Plazos.PlazoMesesLetras",
-            "[PLAZO_LETRAS]",
+            "veintidós",
         );
-        const plazoNumeros = getVal<number>(
+        const numeros = getVal<number>(
             "Liquidacion_Final_y_Plazos.PlazoMesesNumeros",
-            0,
+            22,
         );
 
-        if (plazoLetras !== "[PLAZO_LETRAS]" && plazoNumeros !== 0) {
-            return { letras: plazoLetras, numeros: plazoNumeros.toString() };
-        }
-
-        const pagos = getVal<Pago[]>("Pagos", []);
-        if (pagos.length > 0) {
-            const lastPago = pagos[pagos.length - 1];
-            if (lastPago.fecha) {
-                const currentDate = new Date();
-                const lastPaymentDate = new Date(lastPago.fecha);
-                const monthsDiff =
-                    (lastPaymentDate.getFullYear() -
-                        currentDate.getFullYear()) *
-                        12 +
-                    (lastPaymentDate.getMonth() - currentDate.getMonth());
-                const diff = monthsDiff > 0 ? monthsDiff : 22;
-                return {
-                    letras: numberToWords(diff).toLowerCase(),
-                    numeros: diff.toString(),
-                };
-            }
-        }
-        return { letras: "veintidós", numeros: "22" };
+        return { letras, numeros: numeros.toString() };
     };
 
     const getMesEntrega = () => {
-        const mesEntrega = getVal<string>(
-            "Liquidacion_Final_y_Plazos.MesEntrega",
-            "[MES_ENTREGA]",
-        );
-        const anioEntrega = getVal<number>(
-            "Liquidacion_Final_y_Plazos.AnioEntrega",
-            0,
+        const dEnt = getVal<any>("Liquidacion_Final_y_Plazos", {});
+        const mes = dEnt.MesEntrega || "[FECHA_ENTREGA]";
+        // Si ya contiene el año o "de", lo retornamos tal cual (o con el prefijo "en el mes de")
+        if (
+            mes.toLowerCase().includes("del año") ||
+            mes.toLowerCase().includes("de 20")
+        ) {
+            return `en el mes de ${mes}`;
+        }
+        return `en el mes de ${mes} del año ${dEnt.AnioEntrega || "[AÑO]"}`;
+    };
+
+    const getFechaEntrega = () => {
+        const dEnt = getVal<any>("Liquidacion_Final_y_Plazos", {});
+        const mesStr = dEnt.MesEntrega || "";
+        const anio = dEnt.AnioEntrega;
+
+        // Si tenemos el año y podemos identificar el mes por nombre
+        const mesesNombres = [
+            "enero",
+            "febrero",
+            "marzo",
+            "abril",
+            "mayo",
+            "junio",
+            "julio",
+            "agosto",
+            "septiembre",
+            "octubre",
+            "noviembre",
+            "diciembre",
+        ];
+        const mesIdx = mesesNombres.findIndex((m) =>
+            mesStr.toLowerCase().includes(m),
         );
 
-        if (mesEntrega !== "[MES_ENTREGA]" && anioEntrega !== 0) {
-            return `${mesEntrega} de ${anioEntrega}`;
+        if (mesIdx !== -1 && anio) {
+            return `${(mesIdx + 1).toString().padStart(2, "0")}/${anio}`;
         }
-        const pagos = getVal<Pago[]>("Pagos", []);
-        if (pagos.length > 0) {
-            const lastPago = pagos[pagos.length - 1];
-            if (lastPago.fecha) {
-                const lastDate = new Date(lastPago.fecha);
-                const meses = [
-                    "enero",
-                    "febrero",
-                    "marzo",
-                    "abril",
-                    "mayo",
-                    "junio",
-                    "julio",
-                    "agosto",
-                    "septiembre",
-                    "octubre",
-                    "noviembre",
-                    "diciembre",
-                ];
-                const mes = meses[lastDate.getMonth()];
-                return `${mes} del año ${lastDate.getFullYear()}`;
-            }
-        }
-        return "diciembre del año 2027";
+
+        return mesStr;
     };
 
     const getSaldoFinal = () => {
@@ -550,80 +712,13 @@ const DocumentoPromesa: React.FC = () => {
             0,
         );
 
-        if (letras !== "[SALDO_LETRAS]" && numeros !== 0 && letras && numeros) {
-            return {
-                letras,
-                numeros: numeros.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                }),
-            };
-        }
-
-        const saldoFin = getVal<number>(
-            "Condiciones_Economicas.SaldoFinanciar",
-            0,
-        );
-        if (saldoFin) {
-            const val = saldoFin;
-            const text = numberToWords(Math.floor(val));
-            return {
-                letras: text,
-                numeros: val.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                }),
-            };
-        }
-
-        const precioRaw = getVal<number>(
-            "Condiciones_Economicas.PrecioNumeros",
-            0,
-        );
-        const reservaRaw = getVal<number>(
-            "Condiciones_Economicas.ReservaNumeros",
-            0,
-        );
-        const segundoRaw = getVal<number>(
-            "Condiciones_Economicas.SegundoPagoNumeros",
-            0,
-        );
-
-        if (precioRaw > 0) {
-            const saldo = precioRaw - reservaRaw - segundoRaw;
-            return {
-                letras: numberToWords(Math.floor(saldo)),
-                numeros: saldo.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                }),
-            };
-        }
-
-        return { letras: "[SALDO_LETRAS]", numeros: "[SALDO_NUMEROS]" };
-    };
-
-    const getParqueosDescripcion = () => {
-        const desc = getVal<string>(
-            "Descripcion_del_Inmueble.ParqueosDescripcion",
-            "",
-        );
-        if (desc && desc !== "[DESCRIPCION_PARQUEOS]") return desc;
-
-        const ests = getVal<Estacionamiento[]>(
-            "Descripcion_del_Inmueble.Estacionamientos",
-            [],
-        );
-        if (!Array.isArray(ests) || ests.length === 0)
-            return "Cero plazas de estacionamiento";
-
-        const numLetras = numberToWords(ests.length).toLowerCase();
-        const numeros = ests.map((e) => e.Numero).join(", ");
-        const sotanos = Array.from(new Set(ests.map((e) => e.Sotano))).join(
-            " y ",
-        );
-
-        return `${numLetras} (${ests.length}) plazas de estacionamiento identificadas con los números: ${numeros}, ubicadas en el sótano número: ${sotanos}`;
+        return {
+            letras,
+            numeros: (numeros || 0).toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            }),
+        };
     };
 
     if (loading) {
@@ -637,7 +732,7 @@ const DocumentoPromesa: React.FC = () => {
                     bottom: 0,
                     width: "100vw",
                     height: "100vh",
-                    backgroundColor: "#0f172a", // Dark navy from image
+                    backgroundColor: "#0f172a",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
@@ -647,86 +742,19 @@ const DocumentoPromesa: React.FC = () => {
                 }}
             >
                 <style>{`
-                    body { 
-                        margin: 0 !important; 
-                        padding: 0 !important; 
-                        overflow: hidden !important; 
-                        background-color: #0f172a !important;
-                    }
-                    
-                    .loader-minimalist {
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        gap: 2rem;
-                        text-align: center;
-                        max-width: 400px;
-                    }
-
-                    .spinner-emerald {
-                        width: 50px;
-                        height: 50px;
-                        border: 3px solid rgba(16, 185, 129, 0.1);
-                        border-top: 3px solid #10b981;
-                        border-radius: 50%;
-                        animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-                    }
-
-                    @keyframes spin {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-
-                    .main-text {
-                        font-size: 1.5rem;
-                        font-weight: 600;
-                        color: #ffffff;
-                        margin-bottom: 0.5rem;
-                        letter-spacing: -0.02em;
-                    }
-
-                    .sub-text {
-                        color: #94a3b8;
-                        font-size: 1rem;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        gap: 8px;
-                        font-weight: 400;
-                    }
-
-                    .dot-container {
-                        display: flex;
-                        gap: 4px;
-                    }
-
-                    .dot-emerald {
-                        width: 4px;
-                        height: 4px;
-                        background: #10b981;
-                        border-radius: 50%;
-                        animation: dotPulse 1.4s infinite ease-in-out;
-                    }
-
-                    .dot-emerald:nth-child(2) { animation-delay: 0.2s; }
-                    .dot-emerald:nth-child(3) { animation-delay: 0.4s; }
-
-                    @keyframes dotPulse {
-                        0%, 100% { transform: scale(0.8); opacity: 0.4; }
-                        50% { transform: scale(1.2); opacity: 1; }
-                    }
+                    body { margin: 0; padding: 0; overflow: hidden; background-color: #0f172a; }
+                    .loader-minimalist { display: flex; flexDirection: column; alignItems: center; gap: 2rem; color: #fff; }
+                    .spinner-emerald { width: 50px; height: 50px; border: 3px solid rgba(16, 185, 129, 0.1); border-top: 3px solid #10b981; border-radius: 50%; animation: spin 0.8s linear infinite; }
+                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
                 `}</style>
                 <div className="loader-minimalist">
                     <div className="spinner-emerald"></div>
-                    <div>
-                        <div className="main-text">Generando Documento</div>
-                        <div className="sub-text">
-                            Analizando compromiso de compraventa
-                            <div className="dot-container">
-                                <div className="dot-emerald"></div>
-                                <div className="dot-emerald"></div>
-                                <div className="dot-emerald"></div>
-                            </div>
+                    <div style={{ textAlign: "center", marginTop: "20px" }}>
+                        <div style={{ fontSize: "1.5rem", fontWeight: 600 }}>
+                            Generando Documento
+                        </div>
+                        <div style={{ color: "#94a3b8" }}>
+                            Analizando compromiso de compraventa...
                         </div>
                     </div>
                 </div>
@@ -735,1910 +763,141 @@ const DocumentoPromesa: React.FC = () => {
         );
     }
 
+    const tipoPersona = data?.TipoPersona || "individual";
+
     return (
-        <div className="documento-promesa">
-            <style>{`
-
-        .documento-promesa {
-          font-family: 'Arial', 'Helvetica', sans-serif;
-          font-size: 11pt;
-          line-height: 1.5;
-          width: 210mm;
-          max-width: 95vw;
-          min-height: 297mm;
-          margin: 40px auto;
-          background-color: #ffffff !important;
-          color: #1e293b !important;
-          padding: 25mm 20mm;
-          box-sizing: border-box;
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08) !important;
-          border: 1px solid #e2e8f0;
-          border-radius: 4px;
-        }
-
-        @media (max-width: 768px) {
-          .documento-promesa {
-            width: 210mm;
-            max-width: 100%;
-            padding: 10mm 10mm;
-            margin: 5px auto;
-          }
-        }
-
-        
-
-        .document-title {
-
-          text-align: center;
-
-          font-weight: bold;
-
-          font-size: 12pt;
-
-          margin-bottom: 25px;
-
-          line-height: 1.4;
-
-        }
-
-        
-
-        p {
-
-          text-align: justify;
-
-          margin-bottom: 15px;
-
-          text-indent: 0;
-
-        }
-
-        
-
-        .clause-title {
-
-          font-weight: bold;
-
-          text-decoration: underline;
-
-          display: inline;
-
-        }
-
-        
-
-        .dynamic-data,
-        .highlight-yellow,
-        .highlight-blue,
-        .highlight-red {
-          font-weight: 700;
-          color: #059669; /* Un verde esmeralda un poco más oscuro para mejor legibilidad en blanco */
-          background: rgba(16, 185, 129, 0.05); /* Sutil fondo verde */
-          padding: 0 2px;
-          border-radius: 2px;
-          text-decoration: none;
-        }
-
-        
-
-        .party-name {
-
-          font-weight: bold;
-
-        }
-
-        
-
-        .bold {
-
-          font-weight: bold;
-
-        }
-
-        
-
-        .letter-list {
-
-          margin-left: 20px;
-
-        }
-
-        
-
-        .letter-item {
-
-          margin-bottom: 8px;
-
-        }
-
-        
-
-        .section-spacing {
-
-          margin-top: 15px;
-
-          margin-bottom: 15px;
-
-        }
-
-        
-
-        .indented {
-
-          margin-left: 20px;
-
-        }
-
-        
-
-        .signature-line {
-
-          width: 350px;
-
-          border-bottom: 1px solid black;
-
-          margin-bottom: 50px;
-
-        }
-
-      `}</style>
-
-            {/* Título del Documento */}
-            <div className="document-title">
+        <div
+            style={{
+                display: "flex",
+                flexDirection: "column",
+                width: "100%",
+                minHeight: "100vh",
+                backgroundColor: "#f8fafc",
+            }}
+        >
+            {!hideControlBar && (
                 <div
-                    id="inicio"
+                    className="no-print"
                     style={{
-                        fontSize: "14pt",
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        marginBottom: "20px",
+                        padding: "12px 20px",
+                        backgroundColor: "#ffffff",
+                        borderBottom: "1px solid #e2e8f0",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 100,
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
                     }}
                 >
-                    CONTRATO DE PROMESA DE COMPRAVENTA
-                </div>
-
-                <div
-                    style={{
-                        fontSize: "12pt",
-                        textAlign: "center",
-                        marginBottom: "5px",
-                    }}
-                >
-                    APARTAMENTO{" "}
-                    <span className="dynamic-data">
-                        {getVal("Descripcion_del_Inmueble.Apartamento")}
-                    </span>
-                </div>
-
-                <div
-                    style={{
-                        fontSize: "12pt",
-                        textAlign: "center",
-                        marginBottom: "5px",
-                    }}
-                >
-                    TORRE{" "}
-                    <span className="dynamic-data">
-                        {getVal("Descripcion_del_Inmueble.Torre")}
-                    </span>
-                </div>
-
-                <div
-                    style={{
-                        fontSize: "10pt",
-                        textAlign: "center",
-                        fontStyle: "italic",
-                    }}
-                >
-                    COMPLEJO DE APARTAMENTOS "BRAVANTE"
-                </div>
-            </div>
-
-            <div className="section-spacing">
-                <p>
-                    Yo, VENANCIO GÓMEZ (único apellido), quien declaro ser de
-                    cincuenta y cinco años de edad, casado, Contador Público y
-                    Auditor , guatemalteco, de este domicilio, me identifico con
-                    el Documento Personal de Identificación -DPI- con Código
-                    Único de Identificación -CUI- dos mil quinientos cuarenta,
-                    setenta y nueve mil doscientos veintinueve, mil
-                    cuatrocientos uno (2540 79229 1401), extendido por el
-                    Registro Nacional de las Personas de la República de
-                    Guatemala, comparezco en mi calidad de{" "}
-                    <span className="bold">
-                        ADMINISTRADOR ÚNICO Y REPRESENTANTE LEGAL
-                    </span>{" "}
-                    de la entidad{" "}
-                    <span className="bold">BRAVANTE, SOCIEDAD ANÓNIMA</span>{" "}
-                    calidad que acredita con mi nombramiento como tal contenido
-                    en el acta notarial autorizada en esta ciudad el veintisiete
-                    de octubre de dos mil veinticinco , por la Notaria Lilian
-                    Elizabeth Azurdia Pérez de Quiroz , el cual se encuentra
-                    debidamente inscrito en el Registro Mercantil General de la
-                    República de Guatemala bajo el número de registro
-                    ochocientos doce mil veintisiete (812027) , folio quinientos
-                    cuarenta y cuatro (544) , del libro ochocientos cincuenta y
-                    tres (853) de Auxiliares de Comercio, entidad en adelante
-                    referida simple e indistintamente como{" "}
-                    <span className="party-name">
-                        "LA PARTE PROMITENTE VENDEDORA"
-                    </span>{" "}
-                    o{" "}
-                    <span className="party-name">
-                        "LA PROMITENTE VENDEDORA"
-                    </span>
-                    ;
-                </p>
-
-                <p>
-                    {(() => {
-                        const tipoPersona = getVal<string>(
-                            "TipoPersona",
-                            "individual",
-                        );
-                        const datosJuridicos = getVal<DatosJuridicos>(
-                            "Datos_Juridicos",
-                            {},
-                        );
-                        const compradores = getVal<Comprador[]>(
-                            "Compradores",
-                            [],
-                        );
-
-                        if (tipoPersona === "juridica") {
-                            return (
-                                <>
-                                    Yo,{" "}
-                                    <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteNombre ||
-                                            "[NOMBRE_REPRESENTANTE]"}
-                                    </span>
-                                    , quien declaro ser de{" "}
-                                    <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteEdadLetras ||
-                                            "[EDAD_REPRESENTANTE]"}
-                                    </span>{" "}
-                                    años de edad,{" "}
-                                    <span className="highlight-yellow">
-                                        {(datosJuridicos.RepresentanteEstadoCivil ||
-                                            "[ESTADO_CIVIL_REPRESENTANTE]").toLowerCase()}
-                                    </span>
-                                    ,{" "}
-                                    <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteProfesion ||
-                                            "[PROFESION_REPRESENTANTE]"}
-                                    </span>
-                                    ,{" "}
-                                    <span className="highlight-yellow">
-                                        {(datosJuridicos.RepresentanteNacionalidad ||
-                                            "guatemalteco").toLowerCase()}
-                                    </span>
-                                    , de este domicilio, me identifico con el
-                                    Documento Personal de Identificación -DPI-,
-                                    con Código Único de Identificación -CUI-
-                                    número{" "}
-                                    <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteDPI_Letras ||
-                                            "[DPI_LETRAS_REPRESENTANTE]"}
-                                    </span>{" "}
-                                    (
-                                    <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteDPI ||
-                                            "[DPI_REPRESENTANTE]"}
-                                    </span>
-                                    ), extendido por el Registro Nacional de las
-                                    Personas de la República de Guatemala,
-                                    comparezco en mi calidad de{" "}
-                                    <span className="bold">
-                                        {datosJuridicos.RepresentanteCargo ||
-                                            "[CARGO_REPRESENTANTE]"}
-                                    </span>{" "}
-                                    de la entidad{" "}
-                                    <span className="bold">
-                                        {datosJuridicos.EmpresaNombre ||
-                                            "[NOMBRE_EMPRESA]"}
-                                    </span>
-                                    , calidad que acredita con mi nombramiento
-                                    como tal contenido en el acta notarial
-                                    autorizada en esta ciudad el día{" "}
-                                    <span className="highlight-yellow">
-                                        {datosJuridicos.ActaNotarialFecha ||
-                                            "[FECHA_ACTA]"}
-                                    </span>
-                                    , por el Notario{" "}
-                                    <span className="highlight-yellow">
-                                        {datosJuridicos.NotarioNombre ||
-                                            "[NOTARIO_ACTA]"}
-                                    </span>
-                                    , el cual se encuentra debidamente inscrito
-                                    en el Registro Mercantil General de la
-                                    República de Guatemala bajo el número de
-                                    registro{" "}
-                                    <span className="highlight-yellow">
-                                        {datosJuridicos.InscritoNumero ||
-                                            "[NUMERO_REGISTRO]"}
-                                    </span>
-                                    , folio{" "}
-                                    <span className="highlight-yellow">
-                                        {datosJuridicos.InscritoFolio ||
-                                            "[FOLIO_REGISTRO]"}
-                                    </span>
-                                    , del libro{" "}
-                                    <span className="highlight-yellow">
-                                        {datosJuridicos.InscritoLibro ||
-                                            "[LIBRO_REGISTRO]"}
-                                    </span>{" "}
-                                    de Auxiliares de Comercio, en
-                                    adelante referida simple e indistintamente
-                                    como{" "}
-                                    <span className="party-name">
-                                        "LA PARTE PROMITENTE COMPRADORA"
-                                    </span>
-                                    ,{" "}
-                                    <span className="party-name">
-                                        "LOS PROMITENTES COMPRADORES"
-                                    </span>{" "}
-                                    o{" "}
-                                    <span className="party-name">
-                                        "EL PROMITENTE COMPRADOR"
-                                    </span>
-                                    .
-                                </>
-                            );
-                        }
-
-                        // Default to Individual (Single or Multiple)
-                        if (compradores.length > 1) {
-                            return (
-                                <>
-                                    NOSOTROS:{" "}
-                                    {compradores.map((c, idx) => {
-                                        const roman = [
-                                            "I)",
-                                            "II)",
-                                            "III)",
-                                            "IV)",
-                                            "V)",
-                                            "VI)",
-                                        ];
-                                        const numRomano = roman[idx] || `${idx + 1})`;
-                                        return (
-                                            <React.Fragment key={idx}>
-                                                {numRomano}{" "}
-                                                <span className="highlight-yellow">
-                                                    {c.Nombre}
-                                                </span>
-                                                , quien declaro ser de{" "}
-                                                <span className="highlight-yellow">
-                                                    {c.Edad_Letras}
-                                                </span>{" "}
-                                                años de edad,{" "}
-                                                <span className="highlight-yellow">
-                                                    {(c.EstadoCivil || "").toLowerCase()}
-                                                </span>
-                                                ,{" "}
-                                                <span className="highlight-yellow">
-                                                    {c.Profesion}
-                                                </span>
-                                                ,{" "}
-                                                <span className="highlight-yellow">
-                                                    {(c.Nacionalidad || "guatemalteco").toLowerCase()}
-                                                </span>
-                                                , de este domicilio, me identifico con el Documento
-                                                Personal de Identificación -DPI-,
-                                                con Código Único de Identificación
-                                                -CUI- número{" "}
-                                                <span className="highlight-yellow">
-                                                    {c.DPI_Letras}
-                                                </span>{" "}
-                                                (
-                                                <span className="highlight-yellow">
-                                                    {c.DPI}
-                                                </span>
-                                                ), extendido por el Registro
-                                                Nacional de las Personas de la
-                                                República de Guatemala
-                                                {idx < compradores.length - 1
-                                                    ? "; y "
-                                                    : ""}
-                                            </React.Fragment>
-                                        );
-                                    })}
-                                    ; en adelante referido simple e
-                                    indistintamente como{" "}
-                                    <span className="party-name">
-                                        "LA PARTE PROMITENTE COMPRADORA"
-                                    </span>
-                                    ,{" "}
-                                    <span className="party-name">
-                                        "LOS PROMITENTES COMPRADORES"
-                                    </span>{" "}
-                                    o{" "}
-                                    <span className="party-name">
-                                        "EL PROMITENTE COMPRADOR"
-                                    </span>
-                                    .
-                                </>
-                            );
-                        } else {
-                            return (
-                                <>
-                                    Yo,{" "}
-                                    <span className="highlight-yellow">
-                                        {getComprador(0, "Nombre")}
-                                    </span>
-                                    , quien declaro ser de{" "}
-                                    <span className="highlight-yellow">
-                                        {getComprador(0, "Edad_Letras")}
-                                    </span>{" "}
-                                    años de edad,{" "}
-                                    <span className="highlight-yellow">
-                                        {(getComprador(0, "EstadoCivil") || "").toLowerCase()}
-                                    </span>
-                                    ,{" "}
-                                    <span className="highlight-yellow">
-                                        {getComprador(0, "Profesion")}
-                                    </span>
-                                    ,{" "}
-                                    <span className="highlight-yellow">
-                                        {(getComprador(0, "Nacionalidad", "guatemalteco") || "").toLowerCase()}
-                                    </span>
-                                    , de este domicilio, me
-                                    identifico con el Documento Personal de
-                                    Identificación -DPI-, con Código Único de
-                                    Identificación -CUI- número{" "}
-                                    <span className="highlight-yellow">
-                                        {getComprador(0, "DPI_Letras")}
-                                    </span>{" "}
-                                    (
-                                    <span className="highlight-yellow">
-                                        {getComprador(0, "DPI")}
-                                    </span>
-                                    ), extendido por el Registro Nacional de las
-                                    Personas de la República de Guatemala; en
-                                    adelante referido simple e indistintamente
-                                    como{" "}
-                                    <span className="party-name">
-                                        "LA PARTE PROMITENTE COMPRADORA"
-                                    </span>
-                                    ,{" "}
-                                    <span className="party-name">
-                                        "LOS PROMITENTES COMPRADORES"
-                                    </span>{" "}
-                                    o{" "}
-                                    <span className="party-name">
-                                        "EL PROMITENTE COMPRADOR"
-                                    </span>
-                                    .
-                                </>
-                            );
-                        }
-                    })()}
-                </p>
-
-                <p>
-                    Los comparecientes, en las calidades con que actuamos de
-                    forma voluntaria manifestamos ser de los datos de
-                    identificación y generales aquí consignados, hallarnos en el
-                    libre ejercicio de nuestros derechos civiles, tener
-                    suficientes facultades para el otorgamiento de este acto,
-                    por lo que otorgamos{" "}
-                    <span className="party-name">
-                        CONTRATO DE PROMESA DE COMPRAVENTA DE BIENES INMUEBLES Y
-                        BIEN MUEBLE (ACCIÓN)
-                    </span>{" "}
-                    contenido en las siguientes cláusulas:
-                </p>
-            </div>
-
-            <div id="clausula-primera" className="section-spacing">
-                <p>
-                    <span className="clause-title">PRIMERA: ANTECEDENTES.</span>{" "}
-                    Yo, VENANCIO GÓMEZ (único apellido), en representación de la
-                    entidad BRAVANTE, SOCIEDAD ANÓNIMA, manifiesto que mi
-                    representada, está desarrollando la construcción del
-                    Proyecto de Apartamentos denominado BRAVANTE ubicado en
-                    Finca Cumbres de Vista Hermosa, Zona 5 del municipio de
-                    Santa Catarina Pinula, departamento de Guatemala, a quien de
-                    acá en adelante denominaremos "El Proyecto". El Proyecto
-                    contará con dos torres de nueve niveles cada una, más cuatro
-                    sótanos, y estará distribuido de la siguiente forma:{" "}
-                    <span className="bold">a) cuatro niveles de sótanos</span>{" "}
-                    los cuales serán utilizados para estacionamientos de
-                    vehículos, distribuidos así:{" "}
-                    <span className="bold">i) Sótano uno:</span> El cual quedará
-                    a nivel de calle, este será utilizado para estacionamiento
-                    de vehículos de propietarios y visitas.{" "}
-                    <span className="bold">
-                        ii) Sótanos dos, tres y cuatro:
-                    </span>{" "}
-                    Estos son subterráneos los tres, pero por temas de
-                    topografía, el sótano dos quedará en algún área a nivel de
-                    calle, y será utilizado exclusivamente para el
-                    estacionamiento de vehículos de los propietarios de los
-                    apartamentos del edificio, así como bodegas en los sótanos
-                    uno, dos y cuatro; y parqueos para motos en el sótano
-                    cuatro. y{" "}
-                    <span className="bold">
-                        b) Del primero hasta el noveno nivel,
-                    </span>{" "}
-                    los cuales serán destinados exclusivamente a apartamentos
-                    para vivienda y áreas de circulación peatonal, áreas de
-                    servicio y soporte a los mismos. El{" "}
-                    <span className="bold">Proyecto</span> tiene planificado
-                    contar con aproximadamente{" "}
-                    {getVal("proyecto.total_unidades", "[TOTAL_UNIDADES]")} (
-                    {getVal(
-                        "proyecto.total_unidades_numeros",
-                        "[TOTAL_UNIDADES_NUMEROS]",
-                    )}
-                    ) unidades de apartamentos, es decir,{" "}
-                    {getVal("proyecto.unidades_torre1", "[UNIDADES_TORRE1]")} (
-                    {getVal(
-                        "proyecto.unidades_torre1_numeros",
-                        "[UNIDADES_TORRE1_NUMEROS]",
-                    )}
-                    ) unidades de apartamentos en la torre número uno y{" "}
-                    {getVal("proyecto.unidades_torre2", "[UNIDADES_TORRE2]")} (
-                    {getVal(
-                        "proyecto.unidades_torre2_numeros",
-                        "[UNIDADES_TORRE2_NUMEROS]",
-                    )}
-                    ) unidades de apartamentos en la torre número dos, pudiendo
-                    variar el número de apartamentos en más o menos{" "}
-                    {getVal(
-                        "proyecto.variacion_unidades",
-                        "[VARIACION_UNIDADES]",
-                    )}{" "}
-                    apartamentos, a criterio de la Promitente Vendedora. El{" "}
-                    <span className="bold">Proyecto</span> contará además con lo
-                    siguiente: <span className="bold">a)</span>{" "}
-                    {getVal(
-                        "proyecto.numero_elevadores",
-                        "[NUMERO_ELEVADORES]",
-                    )}{" "}
-                    elevadores en total,{" "}
-                    {getVal(
-                        "proyecto.elevadores_por_torre",
-                        "[ELEVADORES_POR_TORRE]",
-                    )}{" "}
-                    por cada torre. <span className="bold">b)</span> Servicio de
-                    agua. El agua será suministrada por{" "}
-                    {getVal("proyecto.fuente_agua", "[FUENTE_AGUA]")}, propiedad
-                    de la entidad{" "}
-                    {getVal("proyecto.entidad_agua", "[ENTIDAD_AGUA]")}. Así
-                    mismo, el edificio contará con{" "}
-                    {getVal("proyecto.tipo_cisterna", "[TIPO_CISTERNA]")}. Es
-                    relevante mencionar que el agua de dicho pozo{" "}
-                    {getVal("proyecto.agua_potable", "[AGUA_POTABLE]")}, por lo
-                    que la <span className="bold">Promitente Compradora</span>{" "}
-                    deberá{" "}
-                    {getVal("proyecto.tratamiento_agua", "[TRATAMIENTO_AGUA]")}{" "}
-                    para su consumo. <span className="bold">c)</span> La
-                    electricidad será suministrada por la{" "}
-                    {getVal(
-                        "proyecto.entidad_electrica",
-                        "[ENTIDAD_ELECTRICA]",
-                    )}
-                    , siendo la Promitente Compradora la responsable de la
-                    contratación y pago de su servicio en forma directa para su
-                    apartamento, y el edificio contará con{" "}
-                    {getVal(
-                        "proyecto.planta_emergencia",
-                        "[PLANTA_EMERGENCIA]",
-                    )}{" "}
-                    para suministro de energía a áreas comunes, los cuales son
-                    pasillos, elevadores y lobby del edificio.{" "}
-                    <span className="bold">d)</span> Contará con{" "}
-                    {getVal(
-                        "proyecto.sistema_seguridad",
-                        "[SISTEMA_SEGURIDAD]",
-                    )}{" "}
-                    en cada nivel. <span className="bold">e)</span>{" "}
-                    {getVal("proyecto.sistema_acceso", "[SISTEMA_ACCESO]")} en
-                    ingreso vehicular.{" "}
-                    {getVal(
-                        "proyecto.sistema_vigilancia",
-                        "[SISTEMA_VIGILANCIA]",
-                    )}{" "}
-                    en áreas comunes y lobbies. <span className="bold">f)</span>{" "}
-                    Tuberías para las instalaciones eléctricas, hidráulicas,
-                    sanitarias y otras debidamente ocultas, con sus respectivas
-                    cajas y placas correspondientes a dichos servicios, a
-                    ubicarse en pasillos y áreas de los apartamentos, en sótanos
-                    las mismas serán expuestas. <span className="bold">g)</span>{" "}
-                    {getVal("proyecto.sistema_drenaje", "[SISTEMA_DRENAJE]")},
-                    así como{" "}
-                    {getVal(
-                        "proyecto.planta_tratamiento",
-                        "[PLANTA_TRATAMIENTO]",
-                    )}
-                    . Los Edificios podrán denominarse de la siguiente forma,
-                    para la torre número uno{" "}
-                    <span className="bold">
-                        "{getVal("proyecto.nombre_torre1", "[NOMBRE_TORRE1]")}"
-                    </span>
-                    , y para la torre número dos{" "}
-                    <span className="bold">
-                        "{getVal("proyecto.nombre_torre2", "[NOMBRE_TORRE2]")}"
-                    </span>
-                    , los cuales serán sometidos al régimen de propiedad
-                    horizontalmente dividida y su respectivo reglamento, así
-                    como estarán sujetos a las servidumbres que la promitente{" "}
-                    vendedora considere para el proyecto, y del cual formarán
-                    parte, entre otros: El apartamento{" "}
-                    <span className="highlight-yellow">
-                        {getVal("Descripcion_del_Inmueble.Apartamento")}
-                    </span>{" "}
-                    Torre{" "}
-                    <span className="highlight-yellow">
-                        {getVal("Descripcion_del_Inmueble.Torre")}
-                    </span>
-                    , ubicado en el nivel{" "}
-                    <span className="highlight-yellow">
-                        {getVal("Descripcion_del_Inmueble.Nivel")}
-                    </span>{" "}
-                    del Complejo;{" "}
-                    <span className="highlight-red">
-                        las{" "}
-                        {(() => {
-                            const ests = getVal<Estacionamiento[]>(
-                                "Descripcion_del_Inmueble.Estacionamientos",
-                                [],
-                            );
-                            const count = Array.isArray(ests) ? ests.length : 0;
-                            return numberToWords(count).toUpperCase();
-                        })()}{" "}
-                        (
-                        {(() => {
-                            const ests = getVal<Estacionamiento[]>(
-                                "Descripcion_del_Inmueble.Estacionamientos",
-                                [],
-                            );
-                            return Array.isArray(ests) ? ests.length : 0;
-                        })()}
-                        ) plazas de estacionamiento identificadas con los
-                        números:
-                    </span>
-                </p>
-
-                {(() => {
-                    const estacionamientos = getVal<Estacionamiento[]>(
-                        "Descripcion_del_Inmueble.Estacionamientos",
-                        [],
-                    );
-
-                    if (
-                        !Array.isArray(estacionamientos) ||
-                        estacionamientos.length === 0
-                    )
-                        return null;
-
-                    return (
-                        <div style={{ marginLeft: "20px", marginTop: "10px" }}>
-                            {estacionamientos.map(
-                                (p: Estacionamiento, idx: number) => (
-                                    <p
-                                        key={idx}
-                                        style={{
-                                            margin: "5px 0",
-                                            textIndent: "0",
-                                        }}
-                                    >
-                                        o){" "}
-                                        <span className="highlight-red">
-                                            {p.Numero_Letras ??
-                                                "[NUMERO_LETRAS_ESTACIONAMIENTO]"}
-                                        </span>{" "}
-                                        (
-                                        <span className="highlight-red">
-                                            {p.Numero ??
-                                                "[NUMERO_ESTACIONAMIENTO]"}
-                                        </span>
-                                        ), ubicada en el sótano número:{" "}
-                                        <span className="highlight-red">
-                                            {p.Sotano_Letras ??
-                                                "[SOTANO_LETRAS_ESTACIONAMIENTO]"}
-                                        </span>{" "}
-                                        (
-                                        <span className="highlight-red">
-                                            {p.Sotano ??
-                                                "[SOTANO_ESTACIONAMIENTO]"}
-                                        </span>
-                                        );
-                                    </p>
-                                ),
-                            )}
-                        </div>
-                    );
-                })()}
-
-                <p style={{ marginTop: "15px" }}>
-                    y las{" "}
-                    <span className="highlight-red">
-                        {(() => {
-                            const bodegas = getVal<Bodega[]>(
-                                "Descripcion_del_Inmueble.Bodegas",
-                                [],
-                            );
-                            return numberToWords(bodegas.length).toUpperCase();
-                        })()}
-                    </span>{" "}
-                    (
-                    <span className="highlight-red">
-                        {(() => {
-                            const bodegas = getVal<Bodega[]>(
-                                "Descripcion_del_Inmueble.Bodegas",
-                                [],
-                            );
-                            return bodegas.length;
-                        })()}
-                    </span>
-                    ) bodegas, identificadas con los números:
-                </p>
-
-                {(() => {
-                    const bodegas = getVal<Bodega[]>(
-                        "Descripcion_del_Inmueble.Bodegas",
-                        [],
-                    );
-
-                    if (!Array.isArray(bodegas) || bodegas.length === 0)
-                        return null;
-
-                    return (
-                        <div style={{ marginLeft: "20px", marginTop: "10px" }}>
-                            {bodegas.map((b: Bodega, idx: number) => (
-                                <p
-                                    key={idx}
-                                    style={{ margin: "5px 0", textIndent: "0" }}
-                                >
-                                    o){" "}
-                                    <span className="highlight-red">
-                                        {b.Numero_Letras ??
-                                            "[NUMERO_LETRAS_BODEGA]"}
-                                    </span>{" "}
-                                    (
-                                    <span className="highlight-red">
-                                        {b.Numero ?? "[NUMERO_BODEGA]"}
-                                    </span>
-                                    ), ubicada en el sótano número:{" "}
-                                    <span className="highlight-red">
-                                        {b.Sotano_Letras ??
-                                            "[SOTANO_LETRAS_BODEGA]"}
-                                    </span>{" "}
-                                    (
-                                    <span className="highlight-red">
-                                        {b.Sotano ?? "[SOTANO_BODEGA]"}
-                                    </span>
-                                    );
-                                </p>
-                            ))}
-                        </div>
-                    );
-                })()}
-
-                <p style={{ marginTop: "15px" }}>
-                    así como el título de acción correspondiente y relacionado
-                    al proyecto. La denominación de dicho complejo podrá variar
-                    al constituirse el referido Régimen.
-                </p>
-            </div>
-
-            <div id="clausula-segunda" className="section-spacing">
-                <p>
-                    <span className="clause-title">
-                        SEGUNDA: PROMESA DE COMPRAVENTA.
-                    </span>{" "}
-                    LA PARTE PROMITENTE VENDEDORA, manifiesto que por el
-                    presente instrumento prometo vender a{" "}
-                    <span className="highlight-yellow">
-                        {(() => {
-                            const tipoPersona = getVal<string>(
-                                "TipoPersona",
-                                "individual",
-                            );
-                            const datosJuridicos = getVal<DatosJuridicos>(
-                                "Datos_Juridicos",
-                                {},
-                            );
-                            const compradores = getVal<Comprador[]>(
-                                "Compradores",
-                                [],
-                            );
-
-                            if (tipoPersona === "juridica") {
-                                return `la entidad ${datosJuridicos.EmpresaNombre || "[NOMBRE_EMPRESA]"}, por medio de su representante legal`;
-                            }
-
-                            if (compradores.length > 1) {
-                                const nombres = compradores.map(
-                                    (c) => c.Nombre,
-                                );
-                                const last = nombres.pop();
-                                return (
-                                    "los señores " +
-                                    nombres.join(", ") +
-                                    " y " +
-                                    last
-                                );
-                            }
-
-                            return "el señor " + getComprador(0, "Nombre");
-                        })()}
-                    </span>{" "}
-                    los bienes indicados en la cláusula que antecede, que se
-                    describen así: <span className="bold">a)</span> El
-                    apartamento identificado como Apartamento{" "}
-                    <span className="highlight-yellow">
-                        {getVal("Descripcion_del_Inmueble.Apartamento")}
-                    </span>{" "}
-                    Torre{" "}
-                    <span className="highlight-yellow">
-                        {getVal("Descripcion_del_Inmueble.Torre")}
-                    </span>
-                    , ubicado en el nivel{" "}
-                    <span className="highlight-yellow">
-                        {getVal("Descripcion_del_Inmueble.Nivel")}
-                    </span>{" "}
-                    del Complejo; apartamento que consta de{" "}
-                    <span className="highlight-yellow">
-                        {getVal("Descripcion_del_Inmueble.Habitaciones")}
-                    </span>{" "}
-                    habitaciones,{" "}
-                    <span className="highlight-yellow">
-                        {getVal(
-                            "Descripcion_del_Inmueble.DescripcionApartamento",
-                            "[DESCRIPCION_APARTAMENTO]",
-                        )}
-                    </span>
-                </p>
-
-                <p>
-                    Y contará con un área aproximada de{" "}
-                    <span className="highlight-yellow">
-                        {getVal(
-                            "Descripcion_del_Inmueble.AreaConstruccionLetras",
-                        )}
-                    </span>{" "}
-                    (
-                    <span className="highlight-yellow">
-                        {getVal(
-                            "Descripcion_del_Inmueble.AreaConstruccionNumeros",
-                        )}
-                    </span>{" "}
-                    metros cuadrados) de construcción;{" "}
-                    <span className="bold">b)</span>{" "}
-                    <span className="highlight-red">
-                        {getParqueosDescripcion()}
-                    </span>
-                    ; <span className="bold">c)</span> Una terraza o balcón, con
-                    un área aproximada de{" "}
-                    <span className="highlight-red">
-                        {getVal(
-                            "Descripcion_del_Inmueble.TerrazaBalconAreaLetras",
-                            "[AREA_TERRAZA_LETRAS]",
-                        )}
-                    </span>{" "}
-                    (
-                    <span className="highlight-red">
-                        {getVal(
-                            "Descripcion_del_Inmueble.TerrazaBalconAreaNumeros",
-                            "[AREA_TERRAZA_NUMEROS]",
-                        )}
-                    </span>{" "}
-                    metros cuadrados); y <span className="bold">d)</span>
-                    El bien mueble (acción) de la entidad relacionada y
-                    pertinente al proyecto.
-                </p>
-
-                <p>
-                    Los acabados y equipamiento estándar con los que contará el
-                    apartamento son los siguientes:
-                </p>
-
-                <div style={{ marginLeft: "20px" }}>
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Acabado alisado en paredes y cielos más pintura
-                        blanca;
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Piso de madera de ingeniería en habitaciones;
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Azulejo de porcelanato, colocados en área de piso,
-                        paredes de duchas y respaldo de artefactos;
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Mamparas de vidrio en duchas de baño, según diseño;
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Puertas lisas enchapadas en madera con marcos
-                        completos;
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Cerradura principal tipo manija satinadas y chapa
-                        digital;
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Cerraduras tipo manija satinadas;
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Zócalo de PVC imitación madera de diez centímetros
-                        (10cm.);
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Ventanería de aluminio línea europea con vidrio
-                        laminado para aislamiento acústico, de ocho milímetros
-                        (8mm);
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Inodoros "one piece" doble descarga;
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Grifería cromada en duchas;
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Lavamanos blanco con grifo cromado y gabinete de
-                        melamina;
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Gabinetes de cocina en melamina con top de cuarzo,
-                        según diseño;
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Lavatrastos inoxidable con grifo cromado;
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Closets completos en melamina, según diseño;
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Luminarias empotrables en cielo Led, según diseño
-                        eléctrico;
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Placas de interruptores y tomacorrientes blancas;
-                    </p>
-
-                    <p style={{ margin: "3px 0", textIndent: "0" }}>
-                        - Calentador de agua eléctrico;
-                    </p>
-                </div>
-
-                <p style={{ marginTop: "15px" }}>
-                    Los adquirentes tendrán derecho a utilizar las áreas o
-                    amenidades comunes con las que contará el proyecto
-                    "Bravante".
-                </p>
-
-                <p>
-                    El inmueble ofrecido en este compromiso de compraventa,
-                    soportará las servidumbres que se detallan en el Régimen de
-                    Propiedad Horizontal que BRAVANTE, SOCIEDAD ANÓNIMA, ha
-                    definido con el objeto de darle armonía, orden y uniformidad
-                    al proyecto, principalmente en cuanto al uso de áreas
-                    comunes, reglas de convivencia y cuotas que se fijen.
-                </p>
-
-                <p>
-                    Manifestamos las partes que aceptamos que el área de los
-                    bienes objeto de este contrato podrá variar en más o menos
-                    hasta en un dos por ciento (2%).
-                </p>
-            </div>
-
-            {/* Continuación - Página 4 */}
-
-            <div className="section-spacing">
-                <p>
-                    Es convenido por las partes que la promesa de compraventa
-                    constituye una obligación conjunta, en el entendido que LA
-                    PARTE PROMITENTE VENDEDORA no cumple si no vende todos los
-                    bienes inmuebles y el bien mueble (acción) antes mencionados
-                    y la PARTE PROMITENTE COMPRADORA tampoco cumple si no compra
-                    todos los bienes inmuebles y el bien mueble (acción) antes
-                    mencionados en su conjunto. La PARTE PROMITENTE COMPRADORA
-                    prometo comprar dichos bienes inmuebles y bien mueble
-                    (acción) en su conjunto, y ambas partes manifestamos que la
-                    promesa de compraventa y la compraventa futura, están
-                    sujetas a las estipulaciones y condiciones que se expresan
-                    en este contrato.
-                </p>
-            </div>
-
-            <div id="clausula-tercera" className="section-spacing">
-                <p>
-                    <span className="clause-title">TERCERA:</span> La promesa de
-                    compraventa que se otorga en este acto se sujetará a las
-                    estipulaciones siguientes:{" "}
-                    <span className="bold">I) PRECIO:</span> El precio total de
-                    la compraventa de los bienes prometidos en venta descritos
-                    en la cláusula que antecede es de{" "}
-                    <span className="highlight-yellow">
-                        {getVal<string>(
-                            "Condiciones_Economicas.PrecioLetras",
-                            "[PRECIO_LETRAS]",
-                        )
-                            .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
-                            .toUpperCase()}{" "}
-                        DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
-                        {(() => {
-                            const val = getVal<number>(
-                                "Condiciones_Economicas.PrecioNumeros",
-                                0,
-                            );
-                            return val !== 0
-                                ? val.toLocaleString("en-US", {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                  })
-                                : "[PRECIO_NUMEROS]";
-                        })()}
-                        )
-                    </span>{" "}
-                    , el cual incluye el IMPUESTO AL VALOR AGREGADO y el
-                    IMPUESTO DEL TIMBRE correspondiente; para lo cual en su
-                    momento se podrán redactar dos documentos, el de la
-                    compraventa de inmuebles y el de la compraventa de mueble
-                    (acción), cada uno con su precio correspondiente.{" "}
-                    <span className="bold">II) VARIACIÓN DEL PRECIO:</span>{" "}
-                    Manifiesto como la Promitente Compradora que acepto de forma
-                    expresa que en caso de nuevas leyes que regulen nuevos
-                    impuestos relacionados con el objeto de este contrato y su
-                    respectiva construcción o se aumenten los existentes, acepto
-                    que en esa misma medida y proporción se aumentará el valor
-                    de los bienes prometidos en venta, siempre que se acredite
-                    fehacientemente el aumento en que dichas disposiciones han
-                    afectado al precio pactado, aceptando consecuentemente dicha
-                    variación como valor a cancelar de los bienes objeto de esta
-                    promesa, cuyo pago se hará conforme y en conjunto al precio
-                    antes establecido y según lo que se establece en el presente
-                    contrato. <span className="bold">III) MONEDA DE PAGO:</span>{" "}
-                    Las partes libre y expresamente pactamos que el precio de
-                    este contrato se pague en Dólares de los Estados Unidos de
-                    Norte América. No obstante, la PARTE PROMITENTE COMPRADORA,
-                    mediante previa autorización por escrito de la PARTE
-                    PROMITENTE VENDEDORA, podrá efectuar el pago en Quetzales,
-                    para cuyo efecto la PARTE PROMITENTE COMPRADORA autorizo a
-                    la PROMITENTE VENDEDORA a aplicar la tasa de cambio
-                    referencial para la VENTA de dólares de los Estados Unidos
-                    de América que publique el Banco Agromercantil de Guatemala,
-                    Sociedad Anónima, el día en que deba efectuarse el pago.{" "}
-                    <span className="bold">IV) FORMA DE PAGO:</span> LA PARTE
-                    PROMITENTE COMPRADORA pagará el valor de los bienes
-                    prometidos en venta de la siguiente forma:
-                </p>
-
-                <p>
-                    <span className="bold">a)</span> Un primer pago por la
-                    cantidad de{" "}
-                    <span className="highlight-yellow">
-                        {getVal<string>(
-                            "Condiciones_Economicas.ReservaLetras",
-                            "[RESERVA_LETRAS]",
-                        )
-                            .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
-                            .toUpperCase()}{" "}
-                        DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
-                        {(() => {
-                            const val = getVal<number>(
-                                "Condiciones_Economicas.ReservaNumeros",
-                                0,
-                            );
-                            return val !== 0
-                                ? val.toLocaleString("en-US", {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                  })
-                                : "[RESERVA_NUMEROS]";
-                        })()}
-                        )
-                    </span>{" "}
-                    en concepto de reserva, que Yo, la parte Promitente
-                    Vendedora manifiesto que tengo recibido a mi entera
-                    satisfacción.
-                </p>
-
-                <p>
-                    <span className="bold">b)</span> Un segundo pago por la
-                    cantidad total de{" "}
-                    <span className="highlight-yellow">
-                        {getVal<string>(
-                            "Condiciones_Economicas.SegundoPagoLetras",
-                            "[SEGUNDO_PAGO_LETRAS]",
-                        )
-                            .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
-                            .toUpperCase()}{" "}
-                        DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
-                        {(() => {
-                            const val = getVal<number>(
-                                "Condiciones_Economicas.SegundoPagoNumeros",
-                                0,
-                            );
-                            return val !== 0
-                                ? val.toLocaleString("en-US", {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                  })
-                                : "[SEGUNDO_PAGO_NUMEROS]";
-                        })()}
-                        )
-                    </span>{" "}
-                    , que la parte Promitente Compradora entregará mediante{" "}
-                    <span className="highlight-red">
-                        {getVal(
-                            "Condiciones_Economicas.CantidadPagosLetras",
-                            "veintidós",
-                        )}
-                    </span>{" "}
-                    (
-                    <span className="highlight-red">
-                        {getVal(
-                            "Condiciones_Economicas.CantidadPagosNumeros",
-                            "22",
-                        )}
-                    </span>
-                    ) pagos a la Promitente Vendedora, de la siguiente forma:
-                </p>
-
-                <div style={{ marginLeft: "20px" }}>
-                    {(() => {
-                        const pagos = getVal<Pago[]>("Pagos", []);
-
-                        if (!Array.isArray(pagos) || pagos.length === 0)
-                            return null;
-
-                        const meses = [
-                            "enero",
-                            "febrero",
-                            "marzo",
-                            "abril",
-                            "mayo",
-                            "junio",
-                            "julio",
-                            "agosto",
-                            "septiembre",
-                            "octubre",
-                            "noviembre",
-                            "diciembre",
-                        ];
-
-                        return pagos.map((p: Pago, idx: number) => {
-                            if (!p.fecha || !p.value) return null;
-
-                            const fecha = new Date(p.fecha);
-                            const dia = fecha.getDate();
-                            const mes = meses[fecha.getMonth()];
-                            const anio = fecha.getFullYear();
-
-                            const valorNum = parseFloat(p.value);
-                            const valorTexto = numberToWords(
-                                Math.floor(valorNum),
-                            );
-
-                            return (
-                                <p
-                                    key={idx}
-                                    style={{ margin: "5px 0", textIndent: "0" }}
-                                >
-                                    {idx + 1}) El día{" "}
-                                    <span className="highlight-red">{dia}</span>{" "}
-                                    de{" "}
-                                    <span className="highlight-red">{mes}</span>{" "}
-                                    del año{" "}
-                                    <span className="highlight-red">
-                                        {anio}
-                                    </span>
-                                    , la cantidad de{" "}
-                                    <span className="highlight-red">
-                                        {valorTexto.toUpperCase()} DÓLARES DE
-                                        LOS ESTADOS UNIDOS DE NORTE AMÉRICA
-                                        (USD.
-                                        {valorNum.toLocaleString("en-US", {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                        })}
-                                        )
-                                    </span>
-                                    ;
-                                </p>
-                            );
-                        });
-                    })()}
-                </div>
-
-                <p style={{ marginTop: "15px" }}>
-                    <span className="bold">c)</span> El saldo del precio total
-                    de la compraventa, es decir la cantidad de{" "}
-                    <span className="highlight-yellow">
-                        {getSaldoFinal()
-                            .letras.replace(
-                                /\s*(quetzales|dólares|dólar)\s*$/i,
-                                "",
-                            )
-                            .toUpperCase()}{" "}
-                        DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
-                        {getSaldoFinal().numeros})
-                    </span>{" "}
-                    , será pagado por la PARTE PROMITENTE COMPRADORA, el día en
-                    que se otorgue la escritura pública de compraventa
-                    definitiva de los bienes inmuebles y el bien mueble (acción)
-                    objeto de este contrato y se haga entrega de los mismos.{" "}
-                    <span className="bold">V) PLAZO:</span>
-                    El plazo para el otorgamiento de la escritura pública de
-                    compraventa respectiva será de{" "}
-                    <span className="highlight-yellow">
-                        {getPlazoMeses().letras} ({getPlazoMeses().numeros})
-                    </span>{" "}
-                    meses contados a partir del día siguiente de la firma del
-                    presente contrato, es decir, el día{" "}
-                    <span className="highlight-yellow">{getMesEntrega()}</span>,
-                    fecha en la cual LA PARTE PROMITENTE VENDEDORA deberá tener
-                    concluida la construcción del apartamento objeto de este
-                    contrato y debidamente entregado a la PARTE PROMITENTE
-                    COMPRADORA, quien deberá haber cumplido con todas y cada una
-                    de las obligaciones aquí estipuladas a su cargo.
-                </p>
-            </div>
-
-            <div id="clausula-cuarta" className="section-spacing">
-                <p>
-                    <span className="clause-title">
-                        CUARTA: TERMINACIÓN ANTICIPADA.
-                    </span>{" "}
-                    Sin perjuicio de otros derechos que correspondan a LA PARTE
-                    PROMITENTE VENDEDORA conforme este contrato, la PARTE
-                    PROMITENTE VENDEDORA podrá resolver en cualquier momento el
-                    presente contrato, sin necesidad de declaración judicial
-                    previa o posterior, y dar por terminado en forma anticipada
-                    el mismo sin responsabilidad de mi parte, si LA PARTE
-                    PROMITENTE COMPRADORA no cumple con una sola de sus
-                    obligaciones de pago en la fecha, monto y forma aquí
-                    pactados, dicho incumplimiento constituirá una condición
-                    resolutoria expresa de este contrato. En caso ocurra el
-                    hecho constitutivo de la condición resolutoria expresa, La
-                    PARTE PROMITENTE VENDEDORA tengo el derecho de disponer de
-                    los bienes objetos de este contrato en cualquier forma y
-                    podré negociar, prometer en venta, vender o ceder los mismos
-                    a un tercero, sin que haya necesidad que preceda orden o
-                    resolución judicial o autorización alguna de LA PARTE
-                    PROMITENTE COMPRADORA, procediéndose de conformidad con lo
-                    expuesto en las cláusulas subsiguientes especialmente lo
-                    relacionado al cumplimiento del pago indemnizatorio. Este
-                    contrato también podrá darse por terminado por decisión
-                    unilateral de la PARTE PROMITENTE VENDEDORA, o de la parte
-                    PROMITENTE COMPRADORA, sin necesidad de justificar causa
-                    alguna, pero en todo caso, las partes se obligan al
-                    cumplimiento del pago indemnizatorio regulado en las
-                    cláusulas siguientes. De igual manera, en caso que la PARTE
-                    PROMITENTE COMPRADORA, durante el plazo del presente
-                    contrato fuere sujeto de procesos judiciales de cualquier
-                    índole o naturaleza que conlleve la posibilidad de concluir
-                    con sentencia alguna de índole condenatoria que afecte mi
-                    libertad y/o capacidad de pago, por el presente acto
-                    confiero facultad especial a LA PARTE PROMITENTE VENDEDORA
-                    para resolver el presente contrato sin responsabilidad
-                    indemnizatoria y/o legal alguna sujetándome al procedimiento
-                    de devolución de los montos dados en concepto de enganche,
-                    según lo estipulado en el presente contrato en cuanto a la
-                    forma y plazo.
-                </p>
-            </div>
-
-            <div id="clausula-quinta" className="section-spacing">
-                <p>
-                    <span className="clause-title">
-                        QUINTA: CLAUSULA INDEMNIZATORIA DE LA PARTE PROMITENTE
-                        VENDEDORA.
-                    </span>{" "}
-                    Las partes renunciamos expresamente a la aplicación del
-                    artículo un mil cuatrocientos cuarenta y dos (1,442) del
-                    Código Civil vigente, de manera que los pagos recibidos a
-                    cuenta del precio no constituirán el equivalente a los daños
-                    y perjuicios, ni la PARTE PROMITENTE VENDEDORA estaré en la
-                    obligación de restituir el doble de lo que hubiese recibido.
-                    En relación a daños y perjuicios resultantes de la
-                    inejecución a falta de cumplimiento del contrato, las partes
-                    manifestamos que se regulará la relación contractual de
-                    conformidad con lo que se establece en ésta y la siguiente
-                    cláusula. El incumplimiento o el retardo en el cumplimiento
-                    por parte de PROMITENTE VENDEDORA, se regirá por las
-                    estipulaciones siguientes, pero cobrarán efecto, sí y solo
-                    sí la PARTE PROMITENTE COMPRADORA he cumplido a cabalidad y
-                    en tiempo con mis obligaciones de pago. Si la Parte
-                    Vendedora decido resolver el presente contrato sin
-                    justificar causa alguna o sin haber sido motivado por la
-                    condición resolutoria expresa, deberé devolver a la parte
-                    PROMITENTE COMPRADORA los montos recibidos a cuenta del
-                    precio del apartamento sumado a un interés anual del tres
-                    por ciento (3%) en concepto de daños y perjuicios, en un
-                    plazo no mayor, de seis (6) meses a partir de la fecha que
-                    se le notifique a la parte PROMITENTE COMPRADORA, calculado
-                    de la siguiente forma: Por cada pago recibido por LA PARTE
-                    PROMITENTE VENDEDORA y efectivamente disponible, a partir de
-                    ese día se calculará el interés, el cual no será
-                    capitalizable; calculándose el intereses sobre cada pago
-                    efectivamente recibido.
-                </p>
-            </div>
-
-            <div id="clausula-sexta" className="section-spacing">
-                <p>
-                    <span className="clause-title">
-                        SEXTA: CLÁUSULA INDEMNIZATORIA DE LA PARTE PROMITENTE
-                        COMPRADORA.
-                    </span>{" "}
-                    En caso de incumplimiento por parte de LA PARTE PROMITENTE
-                    COMPRADORA, dará derecho A LA PARTE PROMITENTE VENDEDORA a
-                    proceder de la siguiente forma: 1) a dar por concluida la
-                    negociación sin ningún tipo de procedimiento posterior y 2)
-                    cobrar por concepto de indemnización y perjuicios, los
-                    siguientes montos en los siguientes casos:
-                </p>
-
-                <div className="indented">
-                    <p>
-                        A. Desistir de la compra, encontrándose ya en trámite de
-                        análisis de crédito, o por ser denegado por la entidad
-                        Bancaria o Financiera,{" "}
-                        <span className="highlight-red">
-                            DIEZ MIL DÓLARES DE LOS ESTADOS UNIDOS DE NORTE
-                            AMÉRICA (USD.10,000.00)
-                        </span>
-                        .
-                    </p>
-
-                    <p>
-                        B. El cinco por ciento (5%) del valor total de la
-                        compraventa pactada en la promesa de compraventa de
-                        bienes inmuebles y mueble (acción) por desistir de la
-                        compra encontrándose el expediente ya aprobado por
-                        cualquier entidad bancaria o financiera.
-                    </p>
-
-                    <p>
-                        C. El cinco por ciento (5%) del valor total de la
-                        compraventa pactada en la promesa de compraventa de
-                        bienes inmuebles y mueble (acción) más un fee de{" "}
-                        <span className="highlight-red">
-                            CINCO MIL DÓLARES DE LOS ESTADOS UNIDOS DE NORTE
-                            AMÉRICA (USD.5,000.00)
-                        </span>
-                        , por desistir de la compra después de haber pedido
-                        cambios y mejoras en el inmueble y estos se hubieran ya
-                        realizado, siendo No reintegrable el monto pagado por
-                        las mejoras ya realizadas.
-                    </p>
-
-                    <p>
-                        D. En compras de contado, se penalizará de la siguiente
-                        forma:
-                    </p>
-
-                    <div style={{ marginLeft: "20px" }}>
-                        <p>
-                            I. Por desistimiento después de haber firmado la
-                            promesa de compraventa de bienes inmuebles y muebles
-                            acción, se penalizará con un cinco por ciento (5%),
-                            del valor de lo prometido en compraventa.
-                        </p>
-
-                        <p>
-                            II. El cinco por ciento (5%) del valor total de la
-                            compraventa pactada en la promesa de compraventa de
-                            bienes inmuebles y mueble (acción) más un fee de{" "}
-                            <span className="highlight-red">
-                                CINCO MIL DÓLARES DE LOS ESTADOS UNIDOS DE NORTE
-                                AMÉRICA (USD.5,000.00)
-                            </span>
-                            , por desistir de la compra después de haber pedido
-                            cambios y mejoras en el inmueble y estos se hubieran
-                            ya realizado, siendo No reintegrable el monto pagado
-                            por las mejoras ya realizadas.
-                        </p>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                        <button
+                            onClick={() => setShowWebhookData(!showWebhookData)}
+                            style={{
+                                padding: "8px 16px",
+                                borderRadius: "6px",
+                                fontWeight: 600,
+                                cursor: "pointer",
+                                border: "1px solid #3b82f6",
+                                backgroundColor: showWebhookData
+                                    ? "#3b82f6"
+                                    : "#ffffff",
+                                color: showWebhookData ? "#ffffff" : "#3b82f6",
+                                transition: "all 0.2s",
+                            }}
+                        >
+                            {showWebhookData
+                                ? "Ocultar Webhook Data"
+                                : "Ver Webhook Data"}
+                        </button>
+                        <button
+                            onClick={() => window.print()}
+                            style={{
+                                padding: "8px 16px",
+                                borderRadius: "6px",
+                                fontWeight: 600,
+                                cursor: "pointer",
+                                border: "none",
+                                backgroundColor: "#6366f1",
+                                color: "#ffffff",
+                                boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                            }}
+                        >
+                            Imprimir / PDF
+                        </button>
                     </div>
                 </div>
+            )}
 
-                <p>
-                    El desistimiento por cualquier otra razón no contemplada en
-                    los presentes incisos será revisado directamente por el
-                    Consejo Administrativo de la entidad vendedora, quien
-                    asignará la penalización en relación a la causa del
-                    desistimiento, acordando desde ya que en ningún caso podrá
-                    ser menor de{" "}
-                    <span className="highlight-red">
-                        CUATRO MIL DÓLARES DE LOS ESTADOS UNIDOS DE NORTE
-                        AMÉRICA (USD.4,000.00)
-                    </span>
-                    .
-                </p>
-
-                <p>
-                    En todos los casos anteriores, la penalización se descontará
-                    directamente del monto del enganche o reserva que el cliente
-                    hubiera cancelado a la fecha del desistimiento, acordando
-                    las partes que el plazo para el reintegro del saldo a favor
-                    DE LA PARTE PROMITENTE COMPRADORA, deberá realizarse en un
-                    plazo no mayor a seis (6) meses, a partir de la fecha del
-                    desistimiento o aplicación de la penalización.
-                </p>
-            </div>
-
-            <div id="clausula-septima" className="section-spacing">
-                <p>
-                    <span className="clause-title">
-                        SÉPTIMA: CESIÓN DE DERECHOS.
-                    </span>{" "}
-                    LA PARTE PROMITENTE COMPRADORA no podré negociar, ceder,
-                    enajenar, o de cualquier otra forma disponer de las
-                    obligaciones o derechos que adquiere en este contrato, salvo
-                    que cuente con la aprobación previa y por escrito de LA
-                    PARTE PROMITENTE VENDEDORA. LA PARTE PROMITENTE VENDEDORA,
-                    por mi parte, quedo en libertad de negociar, ceder, o
-                    enajenar los derechos y obligaciones que adquiero en este
-                    contrato, parcial o totalmente, dando posterior aviso a LA
-                    PARTE PROMITENTE COMPRADORA.
-                </p>
-            </div>
-
-            <div id="clausula-octava" className="section-spacing">
-                <p>
-                    <span className="clause-title">
-                        OCTAVA: PREEMINENCIA DEL PRESENTE CONTRATO.
-                    </span>{" "}
-                    EI PROMITENTE COMPRADOR Y EL PROMITENTE VENDEDOR
-                    manifestamos que el texto del contrato contenido en el
-                    presente documento privado, prevalecerá sobre cualquier otro
-                    documento o acuerdo, cotización, oral o escrito, respecto
-                    del objeto del presente contrato. Por consiguiente, los
-                    documentos que hubieren sido firmados con anterioridad por
-                    nosotros los otorgantes, carecerán de validez en todo lo que
-                    fueren contradictorios, incongruentes, estipulen condiciones
-                    distintas a lo pactado en este documento privado o que
-                    aparecieren contrarias a las intenciones de las partes
-                    contratantes. Continuamos manifestando ambas partes que
-                    cualquier modificación, adhesión o anexo al presente
-                    contrato para que se considere parte integrante del mismo,
-                    debe de constar por escrito y firmado por ambas partes.
-                </p>
-            </div>
-
-            <div id="clausula-novena" className="section-spacing">
-                <p>
-                    <span className="clause-title">
-                        NOVENA: LUGAR PARA RECIBIR NOTIFICACIONES.
-                    </span>{" "}
-                    Para todos los efectos legales que correspondan, las partes
-                    contratantes señalamos como lugares para recibir toda clase
-                    de notificaciones, citaciones y emplazamientos, las
-                    direcciones: <span className="bold">a)</span> LA PARTE
-                    PROMITENTE COMPRADORA, la ubicada en{" "}
-                    <span className="highlight-yellow">
-                        {getDireccionComprador()}
-                    </span>
-                    , departamento de Guatemala; y,{" "}
-                    <span className="bold">b)</span> La PARTE PROMITENTE
-                    VENDEDORA, la ubicada en el Boulevard Rafael Landívar, diez
-                    guión cero cinco (10-05), zona dieciséis (16), Paseo Cayalá,
-                    Edificio D uno (D1) oficina doscientos dos (202) segundo
-                    nivel, del Municipio de Guatemala, Departamento de
-                    Guatemala. Cualquier cambio de dirección de cualquiera de
-                    las partes deberá avisarse por escrito con acuse de
-                    recepción a la otra, y en tanto no se haga, se tendrán por
-                    bien hechas las notificaciones, citaciones y emplazamientos
-                    que se efectúen en los lugares indicados.
-                </p>
-            </div>
-
-            <div id="clausula-decima" className="section-spacing">
-                <p>
-                    <span className="clause-title">
-                        DÉCIMA: CONFIDENCIALIDAD.
-                    </span>{" "}
-                    LA PARTE PROMITENTE COMPRADORA me obligo a mantener bajo
-                    estricta confidencialidad toda la información que en virtud
-                    del presente contrato le fuera suministrada por la PARTE
-                    PROMITENTE VENDEDORA, así como deberé mantener bajo esta
-                    misma reserva el texto de este contrato.
-                </p>
-            </div>
-
-            <div id="clausula-decima-primera" className="section-spacing">
-                <p>
-                    <span className="clause-title">
-                        DÉCIMA PRIMERA: CLAUSULA COMPROMISORIA.
-                    </span>{" "}
-                    Las partes contratantes convenimos en que de producirse
-                    cualquier controversia, conflicto o disputa entre nosotras,
-                    derivada directa o indirectamente de este contrato, de su
-                    interpretación y/o de su ejecución o cumplimiento, se
-                    resolverá en la forma siguiente:{" "}
-                    <span className="bold">a)</span> Mediante la vía directa,
-                    con o sin intermediación de un conciliador;{" "}
-                    <span className="bold">b)</span> De no ser posible la
-                    solución por la vía directa dentro de los tres meses
-                    siguientes de suscitado el conflicto, ambas partes
-                    renunciamos expresamente al fuero de nuestro domicilio y
-                    jurisdicción, y a la competencia de los tribunales de
-                    justicia de Guatemala, y mediante esta cláusula
-                    compromisoria acordamos desde ya someter la controversia,
-                    conflicto o disputa a un Arbitraje de Equidad de conformidad
-                    con el Reglamento de Conciliación y Arbitraje del{" "}
-                    <span className="bold">
-                        CENAC (Centro de Conciliación y Arbitraje de la Cámara
-                        de Comercio de Guatemala),
-                    </span>{" "}
-                    el cual las partes contratantes aceptamos desde ahora en
-                    forma irrevocable.
-                </p>
-
-                <p>
-                    Acordamos los contratantes que desde ya autorizamos al{" "}
-                    <span className="bold">CENAC</span> para que nombre al
-                    árbitro de conformidad con su reglamento, así mismo,
-                    acordamos que el arbitraje, se llevará a cabo en la Ciudad
-                    de Guatemala, en idioma español, y se decidirá por un solo
-                    árbitro. Adicionalmente, acordamos las partes contratantes
-                    que el <span className="bold">CENAC</span> será la
-                    institución encargada de administrar los procedimientos de
-                    conciliación y arbitraje según sea el caso, de conformidad
-                </p>
-
-                <p>
-                    con su normativa. El laudo arbitral no se podrá impugnar, y
-                    las partes aceptamos desde ya que constituirá título
-                    ejecutivo suficiente, perfecto y eficaz.
-                </p>
-            </div>
-
-            <div id="clausula-decima-segunda" className="section-spacing">
-                <p>
-                    <span className="clause-title">
-                        DÉCIMA SEGUNDA: ACEPTACIÓN:
-                    </span>{" "}
-                    En los términos expuestos y en las calidades con las que
-                    actuamos, los comparecientes declaramos la plena conformidad
-                    y aceptación con el contenido íntegro del presente contrato
-                    y luego de haberlo leído y bien enterados de su contenido,
-                    objeto, validez y efectos legales, lo ratificamos, aceptamos
-                    y firmamos, sin reserva alguna, el{" "}
-                    <span className="highlight-red">{getFechaFirma().dia}</span>{" "}
-                    de{" "}
-                    <span className="highlight-red">{getFechaFirma().mes}</span>{" "}
-                    de dos mil{" "}
-                    <span className="highlight-red">
-                        {getFechaFirma().anio}
-                    </span>
-                    , quedando contenido el mismo en cuatro (4) hojas de papel
-                    bond, impresas en su lado anverso y reverso.
-                </p>
-            </div>
-
-            {/* Firmas del Contrato */}
-
-            {/* Firmas del Contrato */}
-            <div id="firmas" style={{ marginTop: "100px" }}>
-                {(() => {
-                    const tipoPersona = getVal<string>(
-                        "TipoPersona",
-                        "individual",
-                    );
-                    const compradores = getVal<Comprador[]>("Compradores", []);
-                    const datosJuridicos = getVal<DatosJuridicos>(
-                        "Datos_Juridicos",
-                        {},
-                    );
-
-                    // Lista de firmantes: Vendedor + (Empresa if Juridica else Compradores)
-                    const firmantes = [
-                        { label: "POR LA PARTE VENDEDORA" },
-                        ...(tipoPersona === "juridica"
-                            ? [
-                                  {
-                                      label: `POR LA ENTIDAD ${datosJuridicos.EmpresaNombre || "[NOMBRE_EMPRESA]"}`,
-                                  },
-                              ]
-                            : compradores.map(() => ({
-                                  label: "POR LA PARTE COMPRADORA",
-                              }))),
-                    ];
-
-                    const rows = [];
-                    for (let i = 0; i < firmantes.length; i += 2) {
-                        rows.push(firmantes.slice(i, i + 2));
-                    }
-
-                    return rows.map((row, rowIndex) => (
-                        <div
-                            key={rowIndex}
-                            style={{
-                                display: "flex",
-                                justifyContent:
-                                    row.length === 1
-                                        ? "center"
-                                        : "space-between",
-                                marginBottom: "50px",
-                            }}
-                        >
-                            {row.map((firmante, colIndex) => (
-                                <div key={colIndex} style={{ width: "45%" }}>
-                                    <div
-                                        style={{
-                                            width: "100%",
-                                            borderBottom: "1px solid black",
-                                        }}
-                                    ></div>
-                                    <p
-                                        style={{
-                                            textAlign: "center",
-                                            fontSize: "9pt",
-                                            marginTop: "5px",
-                                        }}
-                                    >
-                                        {firmante.label}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                    ));
-                })()}
-            </div>
-
-            <div className="section-spacing" style={{ marginTop: "40px" }}>
-                <p>
-                    En la Ciudad de Guatemala el{" "}
-                    <span className="highlight-red">
-                        {getFechaLegalizacion().dia}
-                    </span>{" "}
-                    de{" "}
-                    <span className="highlight-red">
-                        {getFechaLegalizacion().mes}
-                    </span>{" "}
-                    de dos mil{" "}
-                    <span className="highlight-red">
-                        {getFechaLegalizacion().anio}
-                    </span>
-                    , Yo, el infrascrito Notario hago constar que las{" "}
-                    {(() => {
-                        const tipoPersona = getVal<string>(
-                            "TipoPersona",
-                            "individual",
-                        );
-                        const compradores = getVal<Comprador[]>(
-                            "Compradores",
-                            [],
-                        );
-                        // Signatures count: 1 Vendedor + (1 if Juridica else N if Individual)
-                        const count =
-                            1 +
-                            (tipoPersona === "juridica"
-                                ? 1
-                                : compradores.length);
-                        const words = [
-                            "CERO",
-                            "UNA",
-                            "DOS",
-                            "TRES",
-                            "CUATRO",
-                            "CINCO",
-                            "SEIS",
-                        ];
-                        return words[count] || count.toString();
-                    })()}{" "}
-                    firmas que anteceden calzan en un Contrato de Promesa de
-                    Compraventa de Bienes Inmuebles y Bien Mueble (Acción), y
-                    son auténticas por haber sido puestas en mi presencia el día
-                    de hoy por: <span className="bold">a) VENANCIO GÓMEZ</span>{" "}
-                    (único apellido), quien se identifica con el Documento
-                    Personal de Identificación -DPI- con Código Único de
-                    Identificación -CUI- dos mil quinientos cuarenta, setenta y
-                    nueve mil doscientos veintinueve, mil cuatrocientos uno
-                    (2540 79229 1401), extendido por el Registro Nacional de las
-                    Personas de la República de Guatemala, quien comparece en su
-                    calidad de{" "}
-                    <span className="bold">
-                        ADMINISTRADOR ÚNICO Y REPRESENTANTE LEGAL
-                    </span>{" "}
-                    de la entidad{" "}
-                    <span className="bold">BRAVANTE, SOCIEDAD ANÓNIMA</span>{" "}
-                    calidad que acredita con su nombramiento como tal contenido
-                    en el acta notarial autorizada en esta ciudad el veintisiete
-                    de octubre de dos mil veinticinco, por la Notaria Lilian
-                    Elizabeth Azurdia Pérez de Quiroz, el cual se encuentra
-                    debidamente inscrito en el Registro Mercantil General de la
-                    República de Guatemala bajo el número de registro
-                    ochocientos doce mil veintisiete (812027), folio quinientos
-                    cuarenta y cuatro (544), del libro ochocientos cincuenta y
-                    tres (853) de Auxiliares de Comercio; y
-                </p>
-
-                {(() => {
-                    const tipoPersona = getVal<string>(
-                        "TipoPersona",
-                        "individual",
-                    );
-                    const datosJuridicos = getVal<DatosJuridicos>(
-                        "Datos_Juridicos",
-                        {},
-                    );
-                    const compradores = getVal<Comprador[]>("Compradores", []);
-
-                    if (tipoPersona === "juridica") {
-                        return (
-                            <p style={{ marginTop: "10px" }}>
-                                <span className="bold">
-                                    b){" "}
-                                    <span className="highlight-yellow">
-                                        {datosJuridicos.RepresentanteNombre ||
-                                            "[NOMBRE_REPRESENTANTE]"}
-                                    </span>
-                                </span>
-                                , quien se identifica con el Documento Personal
-                                de Identificación -DPI-, con Código Único de
-                                Identificación -CUI- número{" "}
-                                <span className="highlight-yellow">
-                                    {datosJuridicos.RepresentanteDPI_Letras ||
-                                        "[DPI_LETRAS_REPRESENTANTE]"}{" "}
-                                    (
-                                    {datosJuridicos.RepresentanteDPI ||
-                                        "[DPI_NUMEROS_REPRESENTANTE]"}
-                                    )
-                                </span>{" "}
-                                extendido por el Registro Nacional de las
-                                Personas de la República de Guatemala, quien
-                                comparece en su calidad de{" "}
-                                <span className="bold">
-                                    {datosJuridicos.RepresentanteCargo ||
-                                        "[CARGO_REPRESENTANTE]"}
-                                </span>{" "}
-                                de la entidad{" "}
-                                <span className="bold">
-                                    {datosJuridicos.EmpresaNombre ||
-                                        "[NOMBRE_EMPRESA]"}
-                                </span>{" "}
-                                calidad que acredita con su nombramiento como
-                                tal contenido en el acta notarial autorizada en
-                                esta ciudad el día{" "}
-                                <span className="highlight-yellow">
-                                    {datosJuridicos.ActaNotarialFecha ||
-                                        "[FECHA_ACTA]"}
-                                </span>
-                                , por el Notario{" "}
-                                <span className="highlight-yellow">
-                                    {datosJuridicos.NotarioNombre ||
-                                        "[NOTARIO_ACTA]"}
-                                </span>
-                                , el cual se encuentra debidamente inscrito en
-                                el Registro Mercantil General de la República de
-                                Guatemala bajo el número de registro{" "}
-                                <span className="highlight-yellow">
-                                    {datosJuridicos.InscritoNumero ||
-                                        "[NUMERO_REGISTRO]"}
-                                </span>
-                                , folio{" "}
-                                <span className="highlight-yellow">
-                                    {datosJuridicos.InscritoFolio ||
-                                        "[FOLIO_REGISTRO]"}
-                                </span>
-                                , del libro{" "}
-                                <span className="highlight-yellow">
-                                    {datosJuridicos.InscritoLibro ||
-                                        "[LIBRO_REGISTRO]"}
-                                </span>{" "}
-                                de Auxiliares de Comercio; quienes vuelven a
-                                firmar la presente acta, ante el infrascrito
-                                Notario quien de todo lo relacionado Doy Fe.
-                            </p>
-                        );
-                    }
-
-                    if (!Array.isArray(compradores)) return null;
-
-                    return compradores.map((c: Comprador, idx: number) => (
-                        <p key={idx} style={{ marginTop: "10px" }}>
-                            <span className="bold">
-                                {String.fromCharCode(98 + idx)}){" "}
-                                <span className="highlight-yellow">
-                                    {c.Nombre ??
-                                        `[NOMBRE_COMPRADOR_${idx + 1}]`}
-                                </span>
-                            </span>
-                            , quien se identifica con el Documento Personal de
-                            Identificación -DPI-, con Código Único de
-                            Identificación -CUI- número{" "}
-                            <span className="highlight-yellow">
-                                {c.DPI_Letras ?? `[DPI_LETRAS_${idx + 1}]`} (
-                                {c.DPI ?? `[DPI_NUMEROS_${idx + 1}]`})
-                            </span>{" "}
-                            extendido por el Registro Nacional de las Personas
-                            de la República de Guatemala;
-                            {idx === compradores.length - 1
-                                ? " quienes vuelven a firmar la presente acta, ante el infrascrito Notario quien de todo lo relacionado Doy Fe."
-                                : ""}
-                        </p>
-                    ));
-                })()}
-            </div>
-
-            <div style={{ marginTop: "80px" }}>
-                {(() => {
-                    const tipoPersona = getVal<string>(
-                        "TipoPersona",
-                        "individual",
-                    );
-                    const compradores = getVal<Comprador[]>("Compradores", []);
-                    // Total de firmas: 1 Vendedor + (1 if Juridica else N if Individual)
-                    const totalFirmas =
-                        1 +
-                        (tipoPersona === "juridica" ? 1 : compradores.length);
-
-                    const rows = [];
-                    const firmasArray = Array(totalFirmas).fill(null);
-
-                    for (let i = 0; i < firmasArray.length; i += 2) {
-                        rows.push(firmasArray.slice(i, i + 2));
-                    }
-
-                    return rows.map((row, rowIndex) => (
-                        <div
-                            key={rowIndex}
-                            style={{
-                                display: "flex",
-                                justifyContent:
-                                    row.length === 1
-                                        ? "center"
-                                        : "space-between",
-                                marginBottom: "60px",
-                            }}
-                        >
-                            {row.map((_, colIndex) => (
-                                <div key={colIndex} style={{ width: "45%" }}>
-                                    <div
-                                        style={{
-                                            width: "100%",
-                                            borderBottom: "1px solid black",
-                                        }}
-                                    ></div>
-                                </div>
-                            ))}
-                        </div>
-                    ));
-                })()}
-
+            {showWebhookData && (
                 <div
+                    className="no-print"
                     style={{
-                        marginTop: "40px",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
+                        margin: "20px",
+                        padding: "20px",
+                        backgroundColor: "#1e293b",
+                        color: "#e2e8f0",
+                        borderRadius: "8px",
+                        maxHeight: "400px",
+                        overflow: "auto",
+                        fontSize: "12px",
+                        fontFamily: "monospace",
                     }}
                 >
-                    <p
-                        style={{
-                            fontWeight: "bold",
-                            fontSize: "11pt",
-                            marginBottom: "40px",
-                        }}
-                    >
-                        ANTE MÍ:
-                    </p>
+                    <h3 style={{ marginTop: 0, color: "#38bdf8" }}>
+                        Payload del Webhook:
+                    </h3>
+                    <pre>{JSON.stringify(data, null, 2)}</pre>
                 </div>
+            )}
+
+            <div
+                className="content-area"
+                style={{
+                    display: "flex",
+                    width: "100%",
+                    justifyContent: "center",
+                    padding: "40px 0",
+                    backgroundColor: "#f8fafc",
+                }}
+            >
+                <style>{`
+                    @media print {
+                        .no-print { display: none !important; }
+                        body { background: white !important; }
+                        .content-area { padding: 0 !important; background: white !important; }
+                    }
+                `}</style>
+                {tipoPersona === "juridica" ? (
+                    <JuridicaTemplate
+                        data={data}
+                        getVal={getVal}
+                        getComprador={getComprador}
+                        getParqueosDescripcion={getParqueosDescripcion}
+                        getFechaLegalizacion={getFechaLegalizacion}
+                        getFechaFirma={getFechaFirma}
+                        getSaldoFinal={getSaldoFinal}
+                        getDireccionComprador={getDireccionComprador}
+                        getPlazoMeses={getPlazoMeses}
+                        getFechaEntrega={getFechaEntrega}
+                        getMesEntrega={getMesEntrega}
+                    />
+                ) : (
+                    <IndividualTemplate
+                        data={data}
+                        getVal={getVal}
+                        getComprador={getComprador}
+                        getParqueosDescripcion={getParqueosDescripcion}
+                        getFechaLegalizacion={getFechaLegalizacion}
+                        getFechaFirma={getFechaFirma}
+                        getSaldoFinal={getSaldoFinal}
+                        getDireccionComprador={getDireccionComprador}
+                        getPlazoMeses={getPlazoMeses}
+                        getFechaEntrega={getFechaEntrega}
+                        getMesEntrega={getMesEntrega}
+                    />
+                )}
             </div>
         </div>
     );
