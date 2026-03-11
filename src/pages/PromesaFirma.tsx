@@ -2,16 +2,12 @@ import React, { useState, useEffect, useRef } from "react";
 import UploadBox from "../components/UploadBox";
 import DocumentoPromesa from "../components/DocumentoPromesa";
 import { useParams } from "react-router-dom";
-
-interface FileUpload {
-    file: File | null;
-    preview: string | null;
-}
+import type { FileUpload } from "../types";
 
 const PromesaFirma: React.FC = () => {
     const { id } = useParams();
     const [urlId, setUrlId] = useState<string | null>(null);
-    const [nameclient] = useState<string>("");
+    const [nameclient, setName] = useState<string>("");
     const [copied, setCopied] = useState(false);
 
     const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
@@ -192,6 +188,22 @@ const PromesaFirma: React.FC = () => {
 
     useEffect(() => {
         setUrlId(id || null);
+
+        if (id) {
+            const formData = new FormData();
+            formData.append("id", id);
+            fetch(`${import.meta.env.VITE_API_URL}/bravantegetusers`, {
+                method: "POST",
+                body: formData,
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    setName(data.Nombre || "");
+                })
+                .catch((error) => {
+                    console.error("Error al verificar el usuario:", error);
+                });
+        }
     }, [id]);
 
     const [files, setFiles] = useState<Record<string, FileUpload>>({

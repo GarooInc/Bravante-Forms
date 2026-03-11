@@ -2,11 +2,7 @@ import React from 'react';
 import { IoCloudUpload } from "react-icons/io5";
 import { MdDeleteOutline } from "react-icons/md";
 import { FaFilePdf } from "react-icons/fa";
-
-interface FileUpload {
-  file: File | null;
-  preview: string | null;
-}
+import type { FileUpload } from '../types';
 
 interface UploadBoxProps {
   type: string;

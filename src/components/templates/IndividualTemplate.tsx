@@ -29,7 +29,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
         <div className="documento-promesa shadow-xl">
             <DocumentStyles />
 
-            <div className="document-header">
+            <div id="inicio" className="document-header">
                 <div
                     style={{
                         fontSize: "28pt",
