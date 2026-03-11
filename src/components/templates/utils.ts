@@ -91,3 +91,11 @@ export const numberToWordsYear = (year: number): string => {
     // Fallback using original numberToWords if the specific year isn't hardcoded
     return numberToWords(year);
 };
+
+export const toTitleCase = (str: string): string => {
+    if (!str) return str;
+    const minor = new Set(['de', 'del', 'la', 'el', 'los', 'las', 'y', 'e', 'en', 'con', 'a', 'por']);
+    return str.toLowerCase().split(' ').map((w, i) =>
+        (i === 0 || !minor.has(w)) ? w.charAt(0).toUpperCase() + w.slice(1) : w
+    ).join(' ');
+};

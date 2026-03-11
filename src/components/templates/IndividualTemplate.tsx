@@ -7,7 +7,7 @@ import type {
     Pago,
 } from "./types";
 import { DocumentStyles } from "./DocumentStyles";
-import { numberToWords } from "./utils";
+import { numberToWords, numberToWordsYear, toTitleCase } from "./utils";
 
 export const IndividualTemplate: React.FC<TemplateProps> = ({
     data,
@@ -19,7 +19,6 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
     getSaldoFinal,
     getDireccionComprador,
     getPlazoMeses,
-    getFechaEntrega,
     getMesEntrega,
 }) => {
     if (!data) return null;
@@ -97,7 +96,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         ADMINISTRADOR ÚNICO Y REPRESENTANTE LEGAL de la entidad
                         BRAVANTE, SOCIEDAD ANÓNIMA
                     </span>{" "}
-                    calidad que acredita con mi nombramiento como tal contenido
+                    calidad que acredito con mi nombramiento como tal contenido
                     en el acta notarial autorizada en esta ciudad el veintisiete
                     de octubre de dos mil veinticinco, por la Notaria Lilian
                     Elizabeth Azurdia Pérez de Quiroz, el cual se encuentra
@@ -137,7 +136,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                                 </span>
                                                 , quien declaro ser de{" "}
                                                 <span className="highlight-yellow">
-                                                    {c.Edad_Letras}
+                                                    {(c.Edad_Letras || "").toLowerCase()}
                                                 </span>{" "}
                                                 años de edad,{" "}
                                                 <span className="highlight-yellow">
@@ -147,7 +146,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                                 </span>
                                                 ,{" "}
                                                 <span className="highlight-yellow">
-                                                    {c.Profesion}
+                                                    {toTitleCase(c.Profesion || "")}
                                                 </span>
                                                 ,{" "}
                                                 <span className="highlight-yellow">
@@ -207,7 +206,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                     </span>
                                     , quien declaro ser de{" "}
                                     <span className="highlight-yellow">
-                                        {getComprador(0, "Edad_Letras")}
+                                        {(getComprador(0, "Edad_Letras") || "").toLowerCase()}
                                     </span>{" "}
                                     años de edad,{" "}
                                     <span className="highlight-yellow">
@@ -217,7 +216,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                     </span>
                                     ,{" "}
                                     <span className="highlight-yellow">
-                                        {getComprador(0, "Profesion")}
+                                        {toTitleCase(getComprador(0, "Profesion") || "")}
                                     </span>
                                     ,{" "}
                                     <span className="highlight-yellow">
@@ -551,24 +550,15 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     LA PARTE PROMITENTE VENDEDORA, manifiesto que por el
                     presente instrumento prometo vender a{" "}
                     {(() => {
-                        const nac = (
-                            getComprador(0, "Nacionalidad", "guatemalteco") ||
-                            ""
-                        ).toLowerCase();
-                        const prep = nac.endsWith("a")
-                            ? "la señora "
-                            : "el señor ";
-
                         if (compradores.length > 1) {
                             const nombres = compradores.map((c) => c.Nombre);
                             return (
-                                "los señores " +
                                 nombres.slice(0, -1).join(", ") +
                                 " y " +
                                 nombres.slice(-1)
                             );
                         }
-                        return prep + getComprador(0, "Nombre");
+                        return getComprador(0, "Nombre");
                     })()}{" "}
                     los bienes indicados en la cláusula que antecede, que se
                     describen así: <span className="bold">a)</span> El
@@ -597,10 +587,10 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         ({getVal("Descripcion_del_Inmueble.Habitaciones")})
                     </span>{" "}
                     habitaciones,{" "}
-                    {getVal("Descripcion_del_Inmueble.NumeroBR") && (
+                    {getVal<string>("Descripcion_del_Inmueble.NumeroBR") && (
                         <>
                             <span className="highlight-yellow">
-                                {getVal("Descripcion_del_Inmueble.NumeroBR")}
+                                {getVal<string>("Descripcion_del_Inmueble.NumeroBR")}
                             </span>{" "}
                             baños,{" "}
                         </>
@@ -827,24 +817,32 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         return pagos.map((p, idx) => {
                             if (!p.fecha || !p.value) return null;
                             const f = new Date(p.fecha);
+                            const diaNum = f.getUTCDate();
+                            const diaLetras = numberToWords(diaNum).toLowerCase();
+                            const anioLetras = numberToWordsYear(f.getUTCFullYear()).toLowerCase();
+                            const cuotaLetras = numberToWords(idx + 1).toLowerCase();
                             return (
                                 <p
                                     key={idx}
                                     style={{ margin: "5px 0", textIndent: "0" }}
                                 >
-                                    {idx + 1}) El día{" "}
+                                    El día{" "}
                                     <span className="highlight-red">
-                                        {f.getUTCDate()}
+                                        {diaLetras} ({diaNum})
                                     </span>{" "}
                                     de{" "}
                                     <span className="highlight-red">
                                         {meses[f.getUTCMonth()]}
                                     </span>{" "}
-                                    del año{" "}
+                                    de{" "}
                                     <span className="highlight-red">
-                                        {f.getUTCFullYear()}
+                                        {anioLetras}
                                     </span>
-                                    , la cantidad de{" "}
+                                    {" "}se pagará la cuota número{" "}
+                                    <span className="highlight-red">
+                                        {cuotaLetras} ({idx + 1})
+                                    </span>{" "}
+                                    por la cantidad de{" "}
                                     <span className="highlight-red">
                                         {numberToWords(
                                             Math.floor(parseFloat(p.value)),
@@ -878,7 +876,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     </span>{" "}
                     meses, es decir, el día{" "}
                     <span className="highlight-yellow">
-                        {getMesEntrega()} ({getFechaEntrega()})
+                        {getMesEntrega()}
                     </span>
                     .
                 </p>
