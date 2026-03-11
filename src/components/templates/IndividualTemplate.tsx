@@ -350,30 +350,27 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     en ingreso vehicular. Circuito cerrado en áreas comunes y
                     lobbies.{" "}
                     <span className="bold">
-                        f) Tuberías para las instalaciones de agua fría
+                        f) Tuberías para las instalaciones eléctricas,
+                        hidráulicas, sanitarias y otras debidamente ocultas
                     </span>
-                    . <span className="bold">g) Tubería para drenajes</span>{" "}
-                    primarios y secundarios.{" "}
-                    <span className="bold">
-                        h) Un espacio para gimnasio equipado
-                    </span>
-                    . <span className="bold">i) Áreas de servicio</span> para
-                    personal contratado del complejo.{" "}
-                    <span className="bold">j) Áreas de juegos para niños</span>.{" "}
-                    <span className="bold">
-                        k) Salones de juegos y de usos múltiples
-                    </span>
-                    .{" "}
-                    <span className="bold">
-                        l) Áreas de estar para adultos y jóvenes
-                    </span>
-                    . <span className="bold">m) Sky Lounge</span> en azotea de
-                    cada torre.{" "}
-                    <span className="bold">
-                        n) Área administrativa para el proyecto
-                    </span>
-                    .
+                    , con sus respectivas cajas y placas correspondientes a
+                    dichos servicios, a ubicarse en pasillos y áreas de los
+                    apartamentos, en sótanos las mismas serán expuestas.{" "}
+                    <span className="bold">g) Sistema de drenajes</span>{" "}
+                    pluviales y aguas negras, así como planta de tratamiento de
+                    aguas residuales de uso ordinario.
                 </p>
+                <p>
+                    Los Edificios podrán denominarse de la siguiente forma, para
+                    la torre número uno{" "}
+                    <span className="bold">"IGNEA"</span>, y para la torre número
+                    dos <span className="bold">"ETEREA"</span>, los cuales serán
+                    sometidos al régimen de propiedad horizontalmente dividida y
+                    su respectivo reglamento, así como estarán sujetos a las
+                    servidumbres que la promitente vendedora considere para el
+                    proyecto, y del cual formarán parte, entre otros:
+                </p>
+
                 <p>
                     El apartamento{" "}
                     <span className="highlight-red">
