@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import UploadBox from '../components/UploadBox';
 import { useParams } from 'react-router-dom';
-
-interface FileUpload {
-  file: File | null;
-  preview: string | null;
-}
+import type { FileUpload } from '../types';
 
 const Comprobante: React.FC = () => {
   const { id, cuota } = useParams();

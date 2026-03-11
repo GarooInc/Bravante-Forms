@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import UploadBox from "./components/UploadBox";
-
-interface FileUpload {
-    file: File | null;
-    preview: string | null;
-}
+import type { FileUpload } from "./types";
 
 const DocumentUploadForm: React.FC = () => {
     const { id } = useParams();

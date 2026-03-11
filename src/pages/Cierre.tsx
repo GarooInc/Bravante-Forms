@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import UploadBox from '../components/UploadBox';
 import { useParams } from 'react-router-dom';
-
-interface FileUpload {
-  file: File | null;
-  preview: string | null;
-}
+import type { FileUpload } from '../types';
 
 const Cierre: React.FC = () => {
   const { id } = useParams();
@@ -81,7 +77,7 @@ const Cierre: React.FC = () => {
     const validImageTypes = ['image/png', 'image/jpeg', 'image/jpg'];
     const validDocTypes = [...validImageTypes, 'application/pdf'];
 
-    if (type === 'recibo') {
+    if (type === 'formato_apartado' || type === 'contrato') {
       return validDocTypes.includes(file.type);
     }
     return validImageTypes.includes(file.type);
@@ -110,7 +106,7 @@ const Cierre: React.FC = () => {
         formData.append('autorizaciones_especiales', autorizacionesEspeciales ? '1' : '0');
         formData.append('id', urlId);
 
-        const response = await fetch('https://agentsprod.redtec.ai/webhook/cierre', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/cierre`, {
           method: 'POST',
           body: formData,
         });
@@ -145,7 +141,7 @@ const Cierre: React.FC = () => {
   };
 
   const allFilesUploaded = files.cheque.file && files.formato_apartado.file && files.contrato.file;
-  const uploadedCount = Object.values(files).filter(f => f.file).length + (autorizacionesEspeciales ? 1 : 0);
+  const uploadedCount = Object.values(files).filter(f => f.file).length;
 
   return (
     <div className="min-h-screen bg-white p-6">
@@ -224,12 +220,12 @@ const Cierre: React.FC = () => {
             <div className="mt-8 mb-6">
               <div className="flex items-center justify-between text-sm mb-2">
                 <span className="font-medium">Progreso de carga</span>
-                <span className="badge badge-outline ">{uploadedCount} de 4</span>
+                <span className="badge badge-outline ">{uploadedCount} de 3</span>
               </div>
               <progress
                 className=" progress w-full "
                 value={uploadedCount}
-                max="4"
+                max="3"
               ></progress>
             </div>
 
