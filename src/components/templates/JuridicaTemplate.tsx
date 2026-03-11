@@ -7,7 +7,7 @@ import type {
     Pago,
 } from "./types";
 import { DocumentStyles } from "./DocumentStyles";
-import { numberToWords } from "./utils";
+import { numberToWords, numberToWordsYear, toTitleCase } from "./utils";
 
 export const JuridicaTemplate: React.FC<TemplateProps> = ({
     data,
@@ -19,7 +19,6 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
     getSaldoFinal,
     getDireccionComprador,
     getPlazoMeses,
-    getFechaEntrega,
     getMesEntrega,
 }) => {
     if (!data) return null;
@@ -122,7 +121,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     </span>
                     , quien declaro ser de{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.RepresentanteEdadLetras ||
+                        {(datosJuridicos.RepresentanteEdadLetras || "").toLowerCase() ||
                             "[EDAD_LETRAS_REPRESENTANTE]"}
                     </span>{" "}
                     años de edad,{" "}
@@ -134,7 +133,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     </span>
                     ,{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.RepresentanteProfesion || "[PROFESION]"}
+                        {toTitleCase(datosJuridicos.RepresentanteProfesion || "") || "[PROFESION]"}
                     </span>
                     ,{" "}
                     <span className="highlight-yellow">
@@ -161,20 +160,19 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     <span className="bold highlight-yellow">
                         {datosJuridicos.EmpresaNombre || "[NOMBRE_EMPRESA]"}
                     </span>
-                    , calidad que acredita con mi acta de nombramiento
+                    , calidad que acredito con mi acta de nombramiento
                     debidamente inscrita en el Registro Mercantil General de la
                     República... bajo el número{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.InscritoNumero ||
-                            "[NÚMERO_INSCRIPCIÓN]"}
+                        {(() => { const v = datosJuridicos.InscritoNumero; if (!v || v.startsWith('[')) return <span className="blank-field" title="Número de inscripción en el Registro Mercantil">&nbsp;</span>; const n = parseInt(v); return !isNaN(n) ? `${numberToWords(n).toLowerCase()} (${n})` : v; })()}
                     </span>
                     , folio{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.InscritoFolio || "[FOLIO_INSCRIPCIÓN]"}
+                        {(() => { const v = datosJuridicos.InscritoFolio; if (!v || v.startsWith('[')) return <span className="blank-field" title="Folio de inscripción en el Registro Mercantil">&nbsp;</span>; const n = parseInt(v); return !isNaN(n) ? `${numberToWords(n).toLowerCase()} (${n})` : v; })()}
                     </span>
                     , del libro{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.InscritoLibro || "[LIBRO_INSCRIPCIÓN]"}
+                        {(() => { const v = datosJuridicos.InscritoLibro; if (!v || v.startsWith('[')) return <span className="blank-field" title="Libro de inscripción en el Registro Mercantil">&nbsp;</span>; const n = parseInt(v); return !isNaN(n) ? `${numberToWords(n).toLowerCase()} (${n})` : v; })()}
                     </span>
                     ; en adelante referida como{" "}
                     <span className="party-name">
@@ -247,11 +245,22 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                         {getVal("proyecto.total_unidades", "noventa y cinco")} (
                         {getVal("proyecto.total_unidades_numeros", "95")})
                     </span>{" "}
-                    unidades de apartamentos, es decir, cuarenta y siete (47)
-                    unidades de apartamentos en la torre número uno y cuarenta y
-                    ocho (48) unidades de apartamentos en la torre número dos,
-                    pudiendo variar el número de apartamentos en más o menos
-                    diez apartamentos, a criterio de la Promitente Vendedora.
+                    unidades de apartamentos, es decir,{" "}
+                    <span className="highlight-yellow">
+                        {getVal("proyecto.unidades_torre1", "cuarenta y siete")}{" "}
+                        ({getVal("proyecto.unidades_torre1_numeros", "47")})
+                    </span>{" "}
+                    unidades de apartamentos en la torre número uno y{" "}
+                    <span className="highlight-yellow">
+                        {getVal("proyecto.unidades_torre2", "cuarenta y ocho")}{" "}
+                        ({getVal("proyecto.unidades_torre2_numeros", "48")})
+                    </span>{" "}
+                    unidades de apartamentos en la torre número dos, pudiendo
+                    variar el número de apartamentos en más o menos{" "}
+                    <span className="highlight-yellow">
+                        {getVal("proyecto.variacion_unidades", "diez")}
+                    </span>{" "}
+                    apartamentos, a criterio de la Promitente Vendedora.
                 </p>
                 <p>
                     El Proyecto contará además con lo siguiente:{" "}
@@ -508,6 +517,14 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                         ({getVal("Descripcion_del_Inmueble.Habitaciones")})
                     </span>{" "}
                     habitaciones,{" "}
+                    {getVal<string>("Descripcion_del_Inmueble.NumeroBR") && (
+                        <>
+                            <span className="highlight-yellow">
+                                {getVal<string>("Descripcion_del_Inmueble.NumeroBR")}
+                            </span>{" "}
+                            baños,{" "}
+                        </>
+                    )}
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.DescripcionApartamento",
@@ -674,11 +691,11 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     la siguiente forma:
                 </p>
                 <p>
-                    a) Reserva:{" "}
+                    a) Enganche:{" "}
                     <span className="highlight-yellow">
                         {getVal<string>(
                             "Condiciones_Economicas.ReservaLetras",
-                            "[RESERVA_LETRAS]",
+                            "[ENGANCHE_LETRAS]",
                         )
                             .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
                             .toUpperCase()}{" "}
@@ -689,27 +706,8 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                         ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                         )
                     </span>
-                    , que la PARTE PROMITENTE VENDEDORA declara tener por
-                    recibidos a su entera satisfacción con anterioridad a este
-                    acto.
-                </p>
-                <p>
-                    b) Segundo Pago:{" "}
-                    <span className="highlight-yellow">
-                        {getVal<string>(
-                            "Condiciones_Economicas.SegundoPagoLetras",
-                            "[SEGUNDO_PAGO_LETRAS]",
-                        )
-                            .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
-                            .toUpperCase()}{" "}
-                        DÓLARES (USD.
-                        {getVal<number>(
-                            "Condiciones_Economicas.SegundoPagoNumeros",
-                            0,
-                        ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                        )
-                    </span>
-                    , que la parte Promitente Compradora entregará mediante{" "}
+                    , que la PARTE PROMITENTE COMPRADORA pagará a LA PARTE
+                    PROMITENTE VENDEDORA mediante{" "}
                     <span className="highlight-red">
                         {getVal(
                             "Condiciones_Economicas.CantidadPagosLetras",
@@ -723,7 +721,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                             "20",
                         )}
                     </span>
-                    ) pagos:
+                    ) pagos, de la siguiente forma:
                 </p>
                 <div style={{ marginLeft: "20px" }}>
                     {(() => {
@@ -747,24 +745,32 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                         return pagos.map((p, idx) => {
                             if (!p.fecha || !p.value) return null;
                             const f = new Date(p.fecha);
+                            const diaNum = f.getUTCDate();
+                            const diaLetras = numberToWords(diaNum).toLowerCase();
+                            const anioLetras = numberToWordsYear(f.getUTCFullYear()).toLowerCase();
+                            const cuotaLetras = numberToWords(idx + 1).toLowerCase();
                             return (
                                 <p
                                     key={idx}
                                     style={{ margin: "5px 0", textIndent: "0" }}
                                 >
-                                    {idx + 1}) El día{" "}
+                                    El día{" "}
                                     <span className="highlight-red">
-                                        {f.getUTCDate()}
+                                        {diaLetras} ({diaNum})
                                     </span>{" "}
                                     de{" "}
                                     <span className="highlight-red">
                                         {meses[f.getUTCMonth()]}
                                     </span>{" "}
-                                    del año{" "}
+                                    de{" "}
                                     <span className="highlight-red">
-                                        {f.getUTCFullYear()}
+                                        {anioLetras}
                                     </span>
-                                    , la cantidad de{" "}
+                                    {" "}se pagará la cuota número{" "}
+                                    <span className="highlight-red">
+                                        {cuotaLetras} ({idx + 1})
+                                    </span>{" "}
+                                    por la cantidad de{" "}
                                     <span className="highlight-red">
                                         {numberToWords(
                                             Math.floor(parseFloat(p.value)),
@@ -783,7 +789,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     })()}
                 </div>
                 <p>
-                    c) El saldo final es de{" "}
+                    b) El saldo final es de{" "}
                     <span className="highlight-yellow">
                         {getSaldoFinal().letras.toUpperCase()} DÓLARES (USD.
                         {getSaldoFinal().numeros})
@@ -798,7 +804,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     </span>{" "}
                     meses, es decir, el día{" "}
                     <span className="highlight-yellow">
-                        {getMesEntrega()} ({getFechaEntrega()})
+                        {getMesEntrega()}
                     </span>
                     .
                 </p>
@@ -1177,33 +1183,41 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     contenido en el acta notarial autorizada en esta ciudad el
                     día{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.ActaFechaDia || "[DIA]"}
+                        {datosJuridicos.ActaFechaDia || (
+                            <span className="blank-field" title="Día del acta notarial">&nbsp;</span>
+                        )}
                     </span>{" "}
                     de{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.ActaFechaMes || "[MES]"}
+                        {datosJuridicos.ActaFechaMes || (
+                            <span className="blank-field" title="Mes del acta notarial">&nbsp;</span>
+                        )}
                     </span>{" "}
                     de{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.ActaFechaAnio || "[AÑO]"}
+                        {datosJuridicos.ActaFechaAnio || (
+                            <span className="blank-field" title="Año del acta notarial">&nbsp;</span>
+                        )}
                     </span>
                     , por el Notario{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.NotarioNombre || "[NOMBRE_NOTARIO]"}
+                        {datosJuridicos.NotarioNombre || (
+                            <span className="blank-field" title="Nombre del Notario autorizante">&nbsp;</span>
+                        )}
                     </span>
                     , el cual se encuentra debidamente inscrito en el Registro
                     Mercantil General de la República de Guatemala bajo el
                     número de registro{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.InscritoNumero || "[NÚMERO]"}
+                        {(() => { const v = datosJuridicos.InscritoNumero; if (!v || v.startsWith('[')) return <span className="blank-field" title="Número de registro en el Registro Mercantil">&nbsp;</span>; const n = parseInt(v); return !isNaN(n) ? `${numberToWords(n).toLowerCase()} (${n})` : v; })()}
                     </span>
                     , folio{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.InscritoFolio || "[FOLIO]"}
+                        {(() => { const v = datosJuridicos.InscritoFolio; if (!v || v.startsWith('[')) return <span className="blank-field" title="Folio de registro en el Registro Mercantil">&nbsp;</span>; const n = parseInt(v); return !isNaN(n) ? `${numberToWords(n).toLowerCase()} (${n})` : v; })()}
                     </span>
                     , del libro{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.InscritoLibro || "[LIBRO]"}
+                        {(() => { const v = datosJuridicos.InscritoLibro; if (!v || v.startsWith('[')) return <span className="blank-field" title="Libro de registro en el Registro Mercantil">&nbsp;</span>; const n = parseInt(v); return !isNaN(n) ? `${numberToWords(n).toLowerCase()} (${n})` : v; })()}
                     </span>{" "}
                     de Auxiliares de Comercio; quienes vuelven a firmar la
                     presente acta, ante el infrascrito Notario quien de todo lo

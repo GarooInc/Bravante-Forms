@@ -162,6 +162,8 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                                     : "";
 
                             let mesEntregaStr = "";
+                            let diaEntregaNum = 0;
+                            let diaEntregaLetras = "";
                             const fechaEnt =
                                 precio.FechaEntrega ||
                                 dt.fecha_entrega ||
@@ -183,8 +185,9 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                                 ];
                                 const partes = fechaEnt.split("-");
                                 const mesIdx = parseInt(partes[1]) - 1;
-                                const anioEnt = partes[0];
-                                mesEntregaStr = `${mesesNombresEnt[mesIdx] || ""} del año ${anioEnt}`;
+                                mesEntregaStr = mesesNombresEnt[mesIdx] || "";
+                                diaEntregaNum = partes[2] ? parseInt(partes[2]) : 0;
+                                diaEntregaLetras = diaEntregaNum > 0 ? numberToWords(diaEntregaNum).toLowerCase() : "";
                             }
 
                             const isJuridica = dt.TipoPersona === "juridica";
@@ -209,7 +212,10 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                                         dt.RepresentanteNombre,
                                     RepresentanteCargo:
                                         datosJur.RepresentanteCargo ||
+                                        datosJur.cargo ||
                                         dt.RepresentanteCargo ||
+                                        dt.RepresentanteLegal?.Cargo ||
+                                        dt.representante_cargo ||
                                         datosJur.Cargo ||
                                         dt.Cargo ||
                                         datosJur.Puesto ||
@@ -300,12 +306,20 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                                             ?.replace("Apt", ""),
                                     Torre:
                                         inmueble.Torre || dt.Torre || "ETEREA",
-                                    Nivel: (
-                                        inmueble.Nivel ||
-                                        inmueble.Nivel_Numeros ||
-                                        dt.Nivel ||
-                                        dt.Nivel_Numeros
-                                    )?.toString(),
+                                    Nivel: (() => {
+                                        const raw =
+                                            inmueble.Nivel ??
+                                            inmueble.Nivel_Numeros ??
+                                            dt.Nivel ??
+                                            dt.Nivel_Numeros;
+                                        if (raw === undefined || raw === null) return undefined;
+                                        const str = raw.toString();
+                                        if (str === "") return undefined;
+                                        const num = parseInt(str);
+                                        if (!isNaN(num) && num <= 0)
+                                            return `S${Math.abs(num) || 1}`;
+                                        return str;
+                                    })(),
                                     Nivel_Letras:
                                         inmueble.Nivel_Letras ||
                                         dt.Nivel_Letras,
@@ -319,10 +333,24 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                                         inmueble.Habitaciones_Letras ||
                                         dt.Habitaciones_Letras,
                                     DescripcionApartamento:
-                                        inmueble.Modelo ||
+                                        (inmueble.Apartamento?.includes(
+                                            " / ",
+                                        )
+                                            ? inmueble.Apartamento.split(
+                                                  " / ",
+                                              )
+                                                  .slice(1)
+                                                  .join(" / ")
+                                            : undefined) ||
                                         inmueble.DescripcionApartamento ||
+                                        dt.nombre_modelo ||
+                                        dt.NombreModelo ||
                                         dt.modelo ||
                                         dt.Modelo,
+                                    NumeroBR:
+                                        dt.NumeroBR ||
+                                        inmueble.NumeroBR ||
+                                        dt.numeroBR,
                                     AreaConstruccionLetras:
                                         inmueble.AreaConstruccionLetras ||
                                         dt.AreaConstruccionLetras,
@@ -436,6 +464,8 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                                     AnioEntrega: fechaEnt
                                         ? parseInt(fechaEnt.split("-")[0])
                                         : 0,
+                                    DiaEntrega: diaEntregaNum,
+                                    DiaEntregaLetras: diaEntregaLetras,
                                     UltimoPagoLetras: stripCurrency(
                                         precio.SaldoFinanciarLetras ||
                                             dt.SaldoFinanciarLetras,
@@ -567,6 +597,16 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
     };
 
     const getDireccionComprador = () => {
+        if (getVal<string>("TipoPersona", "") === "juridica") {
+            return (
+                getVal<string>("DatosFiscales.Direccion", "") ||
+                getVal<string>("Datos_Juridicos.DireccionFiscal", "") ||
+                getVal<string>(
+                    "Datos_de_Notificacion_y_Cierre.Direccion",
+                    "15 Calle 2-00 Zona 10, Ciudad de Guatemala",
+                )
+            );
+        }
         return getVal<string>(
             "Datos_de_Notificacion_y_Cierre.Direccion",
             "15 Calle 2-00 Zona 10, Ciudad de Guatemala",
@@ -661,14 +701,12 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
     const getMesEntrega = () => {
         const dEnt = getVal<any>("Liquidacion_Final_y_Plazos", {});
         const mes = dEnt.MesEntrega || "[FECHA_ENTREGA]";
-        // Si ya contiene el año o "de", lo retornamos tal cual (o con el prefijo "en el mes de")
-        if (
-            mes.toLowerCase().includes("del año") ||
-            mes.toLowerCase().includes("de 20")
-        ) {
-            return `en el mes de ${mes}`;
-        }
-        return `en el mes de ${mes} del año ${dEnt.AnioEntrega || "[AÑO]"}`;
+        const dia = dEnt.DiaEntrega as number | undefined;
+        const diaLetras = dEnt.DiaEntregaLetras as string | undefined;
+        const anio = dEnt.AnioEntrega as number | undefined;
+        const anioTexto = anio ? numberToWordsYear(anio).toLowerCase() : "[AÑO]";
+        const diaStr = diaLetras && dia ? `${diaLetras} (${dia}) de ` : "";
+        return `${diaStr}${mes} de ${anioTexto}`;
     };
 
     const getFechaEntrega = () => {
