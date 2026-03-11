@@ -39,7 +39,7 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
     useEffect(() => {
         if (id) {
             setLoading(true);
-            fetch("https://agentsprod.redtec.ai/webhook/promesa-document", {
+            fetch(`${import.meta.env.VITE_API_URL}/promesa-document`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id }),
@@ -918,7 +918,6 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                         getSaldoFinal={getSaldoFinal}
                         getDireccionComprador={getDireccionComprador}
                         getPlazoMeses={getPlazoMeses}
-                        getFechaEntrega={getFechaEntrega}
                         getMesEntrega={getMesEntrega}
                     />
                 ) : (
@@ -932,7 +931,6 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                         getSaldoFinal={getSaldoFinal}
                         getDireccionComprador={getDireccionComprador}
                         getPlazoMeses={getPlazoMeses}
-                        getFechaEntrega={getFechaEntrega}
                         getMesEntrega={getMesEntrega}
                     />
                 )}

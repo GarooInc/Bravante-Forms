@@ -162,6 +162,5 @@ export interface TemplateProps {
     getSaldoFinal: () => { letras: string; numeros: string };
     getDireccionComprador: () => string;
     getPlazoMeses: () => { letras: string; numeros: string };
-    getFechaEntrega: () => string;
     getMesEntrega: () => string;
 }

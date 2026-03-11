@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from "react";
 import UploadBox from "../components/UploadBox";
 import { useParams } from "react-router-dom";
-
-interface FileUpload {
-    file: File | null;
-    preview: string | null;
-}
+import type { FileUpload } from "../types";
 
 const Promesa: React.FC = () => {
     const { id } = useParams();
@@ -131,7 +127,7 @@ const Promesa: React.FC = () => {
                 formData.append("id", urlId);
 
                 const response = await fetch(
-                    "https://agentsprod.redtec.ai/webhook/promesa",
+                    `${import.meta.env.VITE_API_URL}/promesa`,
                     {
                         method: "POST",
                         body: formData,
