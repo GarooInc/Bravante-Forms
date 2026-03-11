@@ -16,7 +16,6 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
     getParqueosDescripcion,
     getFechaLegalizacion,
     getFechaFirma,
-    getSaldoFinal,
     getDireccionComprador,
     getPlazoMeses,
     getMesEntrega,
