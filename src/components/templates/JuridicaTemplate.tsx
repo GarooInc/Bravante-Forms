@@ -342,11 +342,12 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     </span>
                     , ubicado en el nivel{" "}
                     <span className="highlight-red">
-                        {getVal(
-                            "Descripcion_del_Inmueble.Nivel_Letras",
-                            "[NIVEL_LETRAS]",
-                        )}{" "}
-                        ({getVal("Descripcion_del_Inmueble.Nivel")})
+                        {(() => {
+                            const val = getVal("Descripcion_del_Inmueble.Nivel_Letras", "[NIVEL_LETRAS]");
+                            return val !== "[NIVEL_LETRAS]" && val !== "[DATO_FALTANTE]"
+                                ? `${val} (${getVal("Descripcion_del_Inmueble.Nivel")})`
+                                : getVal("Descripcion_del_Inmueble.Nivel");
+                        })()}
                     </span>{" "}
                     del Complejo;{" "}
                     {(() => {
@@ -518,19 +519,21 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     </span>
                     , ubicado en el nivel{" "}
                     <span className="highlight-yellow">
-                        {getVal(
-                            "Descripcion_del_Inmueble.Nivel_Letras",
-                            "[NIVEL_LETRAS]",
-                        )}{" "}
-                        ({getVal("Descripcion_del_Inmueble.Nivel")})
+                        {(() => {
+                            const val = getVal("Descripcion_del_Inmueble.Nivel_Letras", "[NIVEL_LETRAS]");
+                            return val !== "[NIVEL_LETRAS]" && val !== "[DATO_FALTANTE]"
+                                ? `${val} (${getVal("Descripcion_del_Inmueble.Nivel")})`
+                                : getVal("Descripcion_del_Inmueble.Nivel");
+                        })()}
                     </span>{" "}
                     del Complejo; apartamento que consta de{" "}
                     <span className="highlight-yellow">
-                        {getVal(
-                            "Descripcion_del_Inmueble.Habitaciones_Letras",
-                            "[HAB_LETRAS]",
-                        )}{" "}
-                        ({getVal("Descripcion_del_Inmueble.Habitaciones")})
+                        {(() => {
+                            const val = getVal("Descripcion_del_Inmueble.Habitaciones_Letras", "[HAB_LETRAS]");
+                            return val !== "[HAB_LETRAS]" && val !== "[DATO_FALTANTE]"
+                                ? `${val} (${getVal("Descripcion_del_Inmueble.Habitaciones")})`
+                                : getVal("Descripcion_del_Inmueble.Habitaciones");
+                        })()}
                     </span>{" "}
                     habitaciones,{" "}
                     {getVal<string>("Descripcion_del_Inmueble.NumeroBR") && (
