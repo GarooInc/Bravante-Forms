@@ -709,36 +709,6 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
         return `${diaStr}${mes} de ${anioTexto}`;
     };
 
-    const getFechaEntrega = () => {
-        const dEnt = getVal<any>("Liquidacion_Final_y_Plazos", {});
-        const mesStr = dEnt.MesEntrega || "";
-        const anio = dEnt.AnioEntrega;
-
-        // Si tenemos el año y podemos identificar el mes por nombre
-        const mesesNombres = [
-            "enero",
-            "febrero",
-            "marzo",
-            "abril",
-            "mayo",
-            "junio",
-            "julio",
-            "agosto",
-            "septiembre",
-            "octubre",
-            "noviembre",
-            "diciembre",
-        ];
-        const mesIdx = mesesNombres.findIndex((m) =>
-            mesStr.toLowerCase().includes(m),
-        );
-
-        if (mesIdx !== -1 && anio) {
-            return `${(mesIdx + 1).toString().padStart(2, "0")}/${anio}`;
-        }
-
-        return mesStr;
-    };
 
     const getSaldoFinal = () => {
         const letras = getVal<string>(

@@ -164,7 +164,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                                 Único de Identificación -CUI-
                                                 número{" "}
                                                 <span className="highlight-yellow">
-                                                    {c.DPI_Letras}
+                                                    {(c.DPI_Letras || "").toLowerCase()}
                                                 </span>{" "}
                                                 ({c.DPI}), extendido por el
                                                 Registro Nacional de las
@@ -233,18 +233,18 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                     con Código Único de Identificación -CUI-
                                     número{" "}
                                     <span className="highlight-yellow">
-                                        {getComprador(0, "DPI_Letras")}
+                                        {(getComprador(0, "DPI_Letras") || "").toLowerCase()}
                                     </span>{" "}
                                     ({getComprador(0, "DPI")}), extendido por el
                                     Registro Nacional de las Personas de la
                                     República de Guatemala; quien en adelante
                                     seré referido simple e indistintamente como{" "}
                                     <span className="party-name">
-                                        "EL PROMITENTE COMPRADOR"
+                                        "LA PARTE PROMITENTE COMPRADORA"
                                     </span>{" "}
                                     o{" "}
                                     <span className="party-name">
-                                        "LA PARTE PROMITENTE COMPRADORA"
+                                        "EL PROMITENTE COMPRADOR"
                                     </span>
                                     .
                                 </>
@@ -351,30 +351,27 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     en ingreso vehicular. Circuito cerrado en áreas comunes y
                     lobbies.{" "}
                     <span className="bold">
-                        f) Tuberías para las instalaciones de agua fría
+                        f) Tuberías para las instalaciones eléctricas,
+                        hidráulicas, sanitarias y otras debidamente ocultas
                     </span>
-                    . <span className="bold">g) Tubería para drenajes</span>{" "}
-                    primarios y secundarios.{" "}
-                    <span className="bold">
-                        h) Un espacio para gimnasio equipado
-                    </span>
-                    . <span className="bold">i) Áreas de servicio</span> para
-                    personal contratado del complejo.{" "}
-                    <span className="bold">j) Áreas de juegos para niños</span>.{" "}
-                    <span className="bold">
-                        k) Salones de juegos y de usos múltiples
-                    </span>
-                    .{" "}
-                    <span className="bold">
-                        l) Áreas de estar para adultos y jóvenes
-                    </span>
-                    . <span className="bold">m) Sky Lounge</span> en azotea de
-                    cada torre.{" "}
-                    <span className="bold">
-                        n) Área administrativa para el proyecto
-                    </span>
-                    .
+                    , con sus respectivas cajas y placas correspondientes a
+                    dichos servicios, a ubicarse en pasillos y áreas de los
+                    apartamentos, en sótanos las mismas serán expuestas.{" "}
+                    <span className="bold">g) Sistema de drenajes</span>{" "}
+                    pluviales y aguas negras, así como planta de tratamiento de
+                    aguas residuales de uso ordinario.
                 </p>
+                <p>
+                    Los Edificios podrán denominarse de la siguiente forma, para
+                    la torre número uno{" "}
+                    <span className="bold">"IGNEA"</span>, y para la torre número
+                    dos <span className="bold">"ETEREA"</span>, los cuales serán
+                    sometidos al régimen de propiedad horizontalmente dividida y
+                    su respectivo reglamento, así como estarán sujetos a las
+                    servidumbres que la promitente vendedora considere para el
+                    proyecto, y del cual formarán parte, entre otros:
+                </p>
+
                 <p>
                     El apartamento{" "}
                     <span className="highlight-red">
@@ -590,14 +587,6 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         })()}
                     </span>{" "}
                     habitaciones,{" "}
-                    {getVal<string>("Descripcion_del_Inmueble.NumeroBR") && (
-                        <>
-                            <span className="highlight-yellow">
-                                {getVal<string>("Descripcion_del_Inmueble.NumeroBR")}
-                            </span>{" "}
-                            baños,{" "}
-                        </>
-                    )}
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.DescripcionApartamento",
@@ -624,22 +613,46 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     <span className="highlight-red">
                         {getParqueosDescripcion()}
                     </span>
-                    ; <span className="bold">c)</span> Una terraza o balcón, con
-                    un área aproximada de{" "}
-                    <span className="highlight-red">
-                        {getVal(
-                            "Descripcion_del_Inmueble.TerrazaBalconAreaLetras",
-                        )}
-                    </span>{" "}
-                    (
-                    <span className="highlight-red">
-                        {getVal(
-                            "Descripcion_del_Inmueble.TerrazaBalconAreaNumeros",
-                        )}
-                    </span>{" "}
-                    metros cuadrados); y <span className="bold">d)</span> El
-                    bien mueble (acción) de la entidad relacionada y pertinente
-                    al proyecto.
+                    ;{" "}
+                    {getVal<string>("Descripcion_del_Inmueble.BodegasDescripcion") && (
+                        <>
+                            <span className="bold">c)</span>{" "}
+                            <span className="highlight-red">
+                                {getVal<string>("Descripcion_del_Inmueble.BodegasDescripcion")}
+                            </span>
+                            ,{" "}
+                        </>
+                    )}
+                    {getVal<number>("Descripcion_del_Inmueble.BalconAreaNumeros") ? (
+                        <>
+                            <span className="bold">d)</span> Un balcón, con un
+                            área aproximada de{" "}
+                            <span className="highlight-red">
+                                {getVal<string>("Descripcion_del_Inmueble.BalconAreaLetras")}
+                            </span>{" "}
+                            (
+                            <span className="highlight-red">
+                                {getVal<number>("Descripcion_del_Inmueble.BalconAreaNumeros")}
+                            </span>
+                            {" "}metros cuadrados);{" "}
+                        </>
+                    ) : null}
+                    {getVal<number>("Descripcion_del_Inmueble.TerrazaAreaNumeros") ? (
+                        <>
+                            <span className="bold">d)</span> Una terraza de
+                            aproximadamente{" "}
+                            <span className="highlight-red">
+                                {getVal<string>("Descripcion_del_Inmueble.TerrazaAreaLetras")}
+                            </span>{" "}
+                            (
+                            <span className="highlight-red">
+                                {getVal<number>("Descripcion_del_Inmueble.TerrazaAreaNumeros")}
+                            </span>
+                            M2), y{" "}
+                        </>
+                    ) : null}
+                    <span className="bold">e)</span> El bien mueble (acción) de
+                    la entidad relacionada y pertinente al proyecto.
                 </p>
                 <p>
                     Los acabados y equipamiento estándar con los que contará el
@@ -654,19 +667,19 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     </p>
                     <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
                         <li style={{ marginBottom: "5px" }}>
-                            <span style={{ fontWeight: "bold", textDecoration: "underline" }}>En sala, comedor and habitaciones:</span> Piso de madera de
+                            <span style={{ fontWeight: "bold", textDecoration: "underline" }}>En sala, comedor y habitaciones:</span> Piso de madera de
                             ingeniería roble color "sand" o similar, duelas de 6"
                             de ancho y acabado satinado; instaladas con adhesivo
                             para pisos de madera.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
-                            <span style={{ fontWeight: "bold", textDecoration: "underline" }}>En cocina and baños:</span> Piso de porcelanato español, en
+                            <span style={{ fontWeight: "bold", textDecoration: "underline" }}>En cocina y baños:</span> Piso de porcelanato español, en
                             formato 60x120cms, imitación piedra color beige o
                             similar.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
                             <span style={{ fontWeight: "bold", textDecoration: "underline" }}>En áreas de servicio:</span> Piso de cerámica esmaltada, en
-                            formato 45x45 cms, imitación concreto color gris o
+                            formato 45x45 cms, imitación concreto color beige o
                             similar. Zócalo del mismo material de 10 cms., de alto.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
@@ -689,7 +702,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                             habitaciones o tabla RH en baños, con acabado liso.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
-                            <span style={{ fontWeight: "bold" }}>Paredes divisorias entre área social and habitaciones</span> incluyen relleno de aislante termo-acústico de fibra
+                            <span style={{ fontWeight: "bold" }}>Paredes divisorias entre área social y habitaciones</span> incluyen relleno de aislante termo-acústico de fibra
                             celulosa.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
@@ -704,12 +717,12 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
                         <li style={{ marginBottom: "5px" }}>
                             Cielo falso de tablayeso a 2.80 m de altura sobre nivel
-                            de piso en área social and habitaciones, con acabado
+                            de piso en área social y habitaciones, con acabado
                             liso.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
                             Cielo falso de tabla RH a 2.60 m de altura sobre nivel
-                            de piso en baños and área de servicio, con acabado liso.
+                            de piso en baños y área de servicio, con acabado liso.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
                             Cenefa oculta de tablayeso para cortinero en dintel de
@@ -747,7 +760,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
                         <li style={{ marginBottom: "5px" }}>
                             Zócalos de madera de 5" de alto perfil cuadrado mismo
-                            color de las puertas, en área social, pasillos and
+                            color de las puertas, en área social, pasillos y
                             habitaciones.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
@@ -756,11 +769,11 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         </li>
                         <li style={{ marginBottom: "5px" }}>
                             Cerradura de entrada tipo cerrojo digital electrónico
-                            de códigos and conectividad wifi.
+                            de códigos y conectividad wifi.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
                             Cerradura en habitaciones tipo manija con llave, acabado
-                            nickel satinado. En baños, closets and área de servicio,
+                            nickel satinado. En baños, closets y área de servicio,
                             tipo manija sin llave, acabado nickel satinado.
                         </li>
                     </ul>
@@ -770,7 +783,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     </p>
                     <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
                         <li style={{ marginBottom: "5px" }}>
-                            Paredes de duchas and respaldo de sanitarios forradas
+                            Paredes de duchas y respaldo de sanitarios forradas
                             piso a cielo con porcelanato español, en formato
                             60x120cms, imitación piedra color beige o similar.
                         </li>
@@ -780,16 +793,16 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         </li>
                         <li style={{ marginBottom: "5px" }}>
                             Inodoro línea europea color blanco de tanque bajo con
-                            mecanismo de doble descarga 4,5/3L, tapa and asiento con
+                            mecanismo de doble descarga 4,5/3L, tapa y asiento con
                             caída amortiguada.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
                             Lavamanos línea europea color blanco de submontar
                             rectangular, bajo encimera de sinterizado alpine white,
-                            and mueble flotado de melamina con salpicadera de 10cms.
+                            y mueble flotado de melamina con salpicadera de 10cms.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
-                            Grifería cromada monomando en lavamanos and duchas.
+                            Grifería cromada monomando en lavamanos y duchas.
                             Cabezal de duchas tipo plato.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
@@ -807,12 +820,12 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     </p>
                     <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
                         <li style={{ marginBottom: "5px" }}>
-                            Paredes de ducha and respaldo de sanitarios forradas piso
+                            Paredes de ducha y respaldo de sanitarios forradas piso
                             a cielo con cerámico esmaltado en formato 45x45cms,
-                            imitación concreto color gris o similar.
+                            imitación concreto color beige o similar.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
-                            Inodoro de tanque color blanco, taza redonda and descarga
+                            Inodoro de tanque color blanco, taza redonda y descarga
                             de manecilla.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
@@ -832,16 +845,16 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     </p>
                     <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
                         <li style={{ marginBottom: "5px" }}>
-                            Interruptores análogos and tomacorrientes duplex con
+                            Interruptores análogos y tomacorrientes duplex con
                             placas color blanco brillante, tomacorrientes GFCI en
-                            baños and cocina.
+                            baños y cocina.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
-                            Placas de salida previstas para punto de red en salas and
+                            Placas de salida previstas para punto de red en salas y
                             habitaciones.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
-                            Lámparas tipo ojo de buey en cielo, acabado blanco and
+                            Lámparas tipo ojo de buey en cielo, acabado blanco y
                             luz LED cálida.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
@@ -856,7 +869,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         <li style={{ marginBottom: "5px" }}>Cielo suspendido imitación madera para exterior.</li>
                         <li style={{ marginBottom: "5px" }}>
                             Piso de porcelanato español antideslizante, en formato
-                            60x120 cms, imitación piedra color gris o similar.
+                            60x120 cms, imitación piedra color beige o similar.
                             Zócalo del mismo material de 10 cms., de alto.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
@@ -887,9 +900,9 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
                         <li style={{ marginBottom: "5px" }}>
                             Cocina con interior de melamina seda notte de 18mm o
-                            similar, frentes and puertas de muebles base and aéreos en
+                            similar, frentes y puertas de muebles base y aéreos en
                             tablero alvic color cashmere Md de 18 mm o similar.
-                            Frente and puertas de muebles aéreos en tablero maderado
+                            Frente y puertas de muebles aéreos en tablero maderado
                             alvic velasquez 02 de 18 mm o similar. Gavetas con riel
                             merivobox Blum Cierre suave. Bisagras blumotion cierre
                             suave. Zócalo de pvc color aluminio. Uñero tipo gola de
@@ -917,7 +930,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
                         <li style={{ marginBottom: "5px" }}>
                             Walk in closet, módulos de melamina importada de 15 mm
-                            color lino cancun o similar, con entrepaños and
+                            color lino cancun o similar, con entrepaños y
                             colgadores, gavetas con riel tipo euro cierre suave, no
                             incluye respaldo.
                         </li>
@@ -940,7 +953,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
                         <li style={{ marginBottom: "5px" }}>
                             Pileta de un lavadero de fibra de vidrio color blanco
-                            con soporte de metal and chorro cromado.
+                            con soporte de metal y chorro cromado.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
                             Calentador de agua eléctrico; de paso en apartamentos
@@ -948,7 +961,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                             tres duchas o más.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
-                            Tomas de agua and drenaje en cajilla para lavadora, and
+                            Tomas de agua y drenaje en cajilla para lavadora, y
                             ducto de 4" hacia el exterior para secadora.
                         </li>
                         <li style={{ marginBottom: "5px" }}>
@@ -965,7 +978,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                             Refrigerador Samsung de 25 a 27 pies³ French door color
                             acero.
                         </li>
-                        <li style={{ marginBottom: "5px" }}>Cooktop eléctrico de 30" Kitchenaid</li>
+                        <li style={{ marginBottom: "5px" }}>Cooktop eléctrico de 30" Kitchenaid.</li>
                         <li style={{ marginBottom: "5px" }}>
                             Downdraft extractor de olores Kitchenaid oculto dentro
                             de gabinete con blower.
@@ -975,17 +988,23 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         <li style={{ marginBottom: "5px" }}>Dishwasher de 24" Samsung color acero.</li>
                         <li style={{ marginBottom: "5px" }}>Instalación de dichos electrodomésticos.</li>
                         <li style={{ marginBottom: "5px" }}>
-                            Nota: La marca and el color podrían variar por falta de
+                            Nota: La marca y el color podrían variar por falta de
                             disponibilidad en el mercado.
                         </li>
                     </ul>
                 </div>
                 <p style={{ marginTop: "15px" }}>
                     Los adquirentes tendrán derecho a utilizar las áreas o
-                    amenidades comunes y el título de acción le dará derecho a
-                    El inmueble ofrecido en promesa de venta, soportará las
-                    servidumbres que se detallan en el Régimen de Propiedad
-                    Horizontal adscrito a cada unidad habitacional.
+                    amenidades comunes con las que contará el proyecto
+                    "Bravante".
+                </p>
+                <p>
+                    El inmueble ofrecido en este compromiso de compraventa,
+                    soportará las servidumbres que se detallan en el Régimen de
+                    Propiedad Horizontal que BRAVANTE, SOCIEDAD ANÓNIMA, ha
+                    definido con el objeto de darle armonía, orden y uniformidad
+                    al proyecto, principalmente en cuanto al uso de áreas
+                    comunes, reglas de convivencia y cuotas que se fijen.
                 </p>
                 <p>
                     Manifestamos las partes que aceptamos que el área de los
@@ -994,15 +1013,18 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                 </p>
                 <p>
                     Es convenido por las partes que la promesa de compraventa
-                    constituye una obligación conjunta, toda vez que se trata de
-                    un todo indivisible, para cuya realización de la compraventa
-                    definitiva es requisito indispensable que se formalicen
-                    simultáneamente los títulos de propiedad del inmueble y el
-                    título de acción de El Bien Mueble (acción). LA PARTE
-                    PROMITENTE COMPRADORA{" "}
+                    constituye una obligación conjunta, en el entendido que LA
+                    PARTE PROMITENTE VENDEDORA no cumple si no vende todos los
+                    bienes inmuebles y el bien mueble (acción) antes mencionados
+                    y la PARTE PROMITENTE COMPRADORA tampoco cumple si no compra
+                    todos los bienes inmuebles y el bien mueble (acción) antes
+                    mencionados en su conjunto. La PARTE PROMITENTE COMPRADORA{" "}
                     {compradores.length > 1 ? "prometemos" : "prometo"} comprar
                     dichos bienes inmuebles y bien mueble (acción) en su
-                    conjunto.
+                    conjunto, y ambas partes manifestamos que la promesa de
+                    compraventa y la compraventa futura, están sujetas a las
+                    estipulaciones y condiciones que se expresan en este
+                    contrato.
                 </p>
             </div>
 
@@ -1011,9 +1033,9 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     <span className="clause-title">TERCERA:</span> La promesa de
                     compraventa que se otorga en este acto se sujetará a las
                     estipulaciones siguientes:{" "}
-                    <span className="bold">I) PRECIO:</span> El precio total por
-                    el cual se promete la compraventa de los bienes inmuebles
-                    descritos en la cláusula segunda anterior es de{" "}
+                    <span className="bold">I) PRECIO:</span> El precio total de
+                    la compraventa de los bienes prometidos en venta descritos
+                    en la cláusula que antecede es de{" "}
                     <span className="bold highlight-yellow">
                         {getVal<string>(
                             "Condiciones_Economicas.PrecioLetras",
@@ -1021,64 +1043,101 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         )
                             .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
                             .toUpperCase()}{" "}
-                        DOLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
+                        DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
                         {getVal<number>(
                             "Condiciones_Economicas.PrecioNumeros",
                             0,
                         ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                        )
+                        D.00), el cual incluye el IMPUESTO AL VALOR AGREGADO y
+                        el IMPUESTO DEL TIMBRE correspondiente;
                     </span>{" "}
-                    el cual ya incluye el Impuesto al Valor Agregado
-                    correspondientes.
+                    para lo cual en su momento se podrían redactar dos
+                    documentos, el de la compraventa de inmuebles y el de la
+                    compraventa de mueble (acción), cada uno con su precio
+                    correspondiente.
                 </p>
                 <p>
-                    <span className="bold">II) VARIACIÓN DEL PRECIO:</span> El
-                    precio estipulado en el numeral romano uno (I) de esta
-                    Cláusula, podrá variar por modificaciones al diseño o los
-                    acabados solicitadas por la PARTE PROMITENTE COMPRADORA las
-                    cuales deberán ser autorizadas previamente y por escrito por
-                    la PARTE PROMITENTE VENDEDORA; lo cual deberá hacerse
-                    constar en anexo al presente contrato.{" "}
-                    <span className="bold">III) MONEDA DE PAGO:</span> Todos los
-                    pagos a que se obliga la PARTE PROMITENTE COMPRADORA por
-                    este contrato, deberán hacerse en Dólares de los Estados
-                    Unidos de América.{" "}
-                    <span className="bold">IV) FORMA DE PAGO:</span> La PARTE
-                    PROMITENTE COMPRADORA pagará el precio total de la venta de
-                    la siguiente forma:
+                    <span className="bold">II) VARIACIÓN DEL PRECIO.</span>{" "}
+                    Manifiesto como la Promitente Compradora que acepto de forma
+                    expresa que en caso de nuevas leyes que regulen nuevos
+                    impuestos relacionados con el objeto de este contrato y su
+                    respectiva construcción o se aumenten los existentes, acepto
+                    que en esa misma medida y proporción se aumentará el valor
+                    de los bienes prometidos en venta, siempre que se acredite
+                    fehacientemente el aumento en que dichas disposiciones han
+                    afectado al precio pactado, aceptando consecuentemente dicha
+                    variación como valor a cancelar de los bienes objeto de esta
+                    promesa, cuyo pago se hará conforme y en conjunto al precio
+                    antes establecido y según lo que se establece en el presente
+                    contrato.{" "}
+                    <span className="bold">III) MONEDA DE PAGO:</span> Las partes
+                    libre y expresamente pactamos que el precio de este contrato
+                    se pague en Dólares de los Estados Unidos de Norte América.
+                    No obstante, la PARTE PROMITENTE COMPRADORA, mediante previa
+                    autorización por escrito de la PARTE PROMITENTE VENDEDORA,
+                    podrá efectuar el pago en Quetzales, para cuyo efecto la
+                    PARTE PROMITENTE COMPRADORA autorizo a la PROMITENTE
+                    VENDEDORA a aplicar la tasa de cambio referencial para la
+                    VENTA de dólares de los Estados Unidos de América que
+                    publique el Banco Agromercantil de Guatemala, Sociedad
+                    Anónima, el día en que deba efectuarse el pago.{" "}
+                    <span className="bold">IV) FORMA DE PAGO.</span> LA PARTE
+                    PROMITENTE COMPRADORA pagaré el valor de los bienes
+                    prometidos en venta de la siguiente forma:
                 </p>
                 <p>
-                    a) Enganche:{" "}
+                    <span className="bold">a)</span> Un primer pago por la
+                    cantidad de{" "}
                     <span className="bold highlight-yellow">
                         {getVal<string>(
                             "Condiciones_Economicas.ReservaLetras",
-                            "[ENGANCHE_LETRAS]",
+                            "[RESERVA_LETRAS]",
                         )
                             .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
                             .toUpperCase()}{" "}
-                        DOLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
+                        DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
                         {getVal<number>(
                             "Condiciones_Economicas.ReservaNumeros",
                             0,
                         ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                         )
+                    </span>{" "}
+                    en concepto de reserva, que Yo, la parte Promitente
+                    Vendedora manifiesto que tengo recibido a mi entera
+                    satisfacción.
+                </p>
+                <p>
+                    <span className="bold">b)</span> Un segundo pago por la
+                    cantidad total de{" "}
+                    <span className="highlight-yellow">
+                        {getVal<string>(
+                            "Condiciones_Economicas.SegundoPagoLetras",
+                            "[SEGUNDO_PAGO_LETRAS]",
+                        )
+                            .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
+                            .toUpperCase()}{" "}
+                        DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
+                        {getVal<number>(
+                            "Condiciones_Economicas.SegundoPagoNumeros",
+                            0,
+                        ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                        )
                     </span>
-                    , que la PARTE PROMITENTE COMPRADORA pagará a LA PARTE
-                    PROMITENTE VENDEDORA mediante{" "}
+                    , que la parte Promitente Compradora entregará mediante{" "}
                     <span className="highlight-red">
                         {getVal(
                             "Condiciones_Economicas.CantidadPagosLetras",
-                            "veinte",
+                            "[CANTIDAD_PAGOS_LETRAS]",
                         )}
                     </span>{" "}
                     (
                     <span className="highlight-red">
                         {getVal(
                             "Condiciones_Economicas.CantidadPagosNumeros",
-                            "20",
+                            "[CANTIDAD_PAGOS]",
                         )}
                     </span>
-                    ) pagos, de la siguiente forma:
+                    ) pagos a la Promitente Vendedora, de la siguiente forma:
                 </p>
                 <div style={{ marginLeft: "40px", marginTop: "10px" }}>
                     <ol style={{ listStyleType: "decimal", paddingLeft: "0" }}>
@@ -1120,7 +1179,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                         El día {diaLetras} ({diaNum}) de {mesNombre} de {anioLetras}, la cantidad de{" "}
                                         <span className="bold">
                                             {numberToWords(Math.floor(monto)).toUpperCase()}{" "}
-                                            DOLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
+                                            DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
                                             {monto.toLocaleString("en-US", {
                                                 minimumFractionDigits: 2,
                                                 maximumFractionDigits: 2
@@ -1135,25 +1194,197 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     </ol>
                 </div>
                 <p>
-                    b) El saldo final es de{" "}
+                    y <span className="bold">c)</span> Un último pago por la
+                    cantidad de{" "}
                     <span className="bold highlight-yellow">
-                        {getSaldoFinal().letras.toUpperCase()} DOLARES DE LOS
+                        {getSaldoFinal().letras.toUpperCase()} DÓLARES DE LOS
                         ESTADOS UNIDOS DE AMÉRICA (USD.
                         {getSaldoFinal().numeros})
                     </span>{" "}
-                    será pagado el día de la firma de la escritura pública de
-                    compraventa definitiva.
+                    que Yo, LA PARTE PROMITENTE COMPRADORA deberé pagar a LA
+                    PARTE PROMITENTE VENDEDORA a más tardar al vencimiento del
+                    plazo de la presente promesa; pago que Yo, LA PARTE
+                    PROMITENTE COMPRADORA realizaré con los fondos que me serán
+                    desembolsados en virtud de un crédito hipotecario que
+                    gestionaré ante un Banco del sistema nacional para la
+                    adquisición de los bienes objeto de este contrato. Es una
+                    condición para el cumplimiento de la presente promesa que al
+                    momento de otorgarse la escritura de compraventa respectiva
+                    esté pagado el total del valor de los bienes objeto de este
+                    contrato conforme lo aquí pactado.
                 </p>
                 <p>
-                    <span className="bold">V) PLAZO:</span> El plazo será de{" "}
+                    <span className="bold">V) LUGAR DE PAGO.</span> LA PARTE
+                    PROMITENTE COMPRADORA deberé efectuar los pagos en las
+                    oficinas de LA PARTE PROMITENTE VENDEDORA, ubicadas en
+                    Boulevard Rafael Landívar, 10-05, zona 16, Paseo Cayalá,
+                    Edificio D-1, 2do. Nivel, Guatemala, Guatemala, las cuales
+                    son del conocimiento de la Parte Promitente Compradora, sin
+                    necesidad de cobro o requerimiento alguno, o de cualquier
+                    forma o en cualquier otra dirección que me comunique en su
+                    momento y por escrito la PROMITENTE VENDEDORA, o por medio
+                    de transferencia bancaria, a la cuenta de la PROMITENTE
+                    VENDEDORA. Los pagos los deberé efectuar la parte promitente
+                    compradora en días y horas hábiles. En el caso que el día de
+                    pago fuere un día inhábil, el pago lo efectuaré la parte
+                    promitente compradora el día hábil siguiente.{" "}
+                    <span className="bold">VI) MORA.</span> Si existe atraso en
+                    efectuar cualquiera de los pagos antes indicados en la forma
+                    y plazo aquí acordados, LA PARTE PROMITENTE COMPRADORA
+                    reconozco y me obligo a pagar a la PARTE PROMITENTE
+                    VENDEDORA un interés del TRES por ciento (3%) mensual sobre
+                    el saldo vencido calculado a partir del día siguiente en que
+                    debió efectuarse el pago hasta la fecha en que efectivamente
+                    se realice el pago adeudado. Asimismo, por cada cheque
+                    rechazado la PARTE PROMITENTE COMPRADORA me obligó a
+                    cancelar la cantidad de QUINIENTOS QUETZALES EXACTOS (Q.
+                    500.00) en concepto de gastos administrativos generados por
+                    tal hecho.{" "}
+                    <span className="bold">VII) DE LOS GRAVÁMENES.</span> LA
+                    PARTE PROMITENTE VENDEDORA traspasaré los bienes libres de
+                    gravámenes, limitaciones y/o anotaciones, salvo aquellas que
+                    fueren necesarios para el proyecto a desarrollar, tales como
+                    las servidumbres y régimen de propiedad horizontal y su
+                    respectivo reglamento al cual estará sometido el Edificio al
+                    que pertenecen los bienes objeto de este contrato.{" "}
+                    <span className="bold">VIII) GASTOS.</span> Los honorarios
+                    profesionales, gastos y aranceles de registro en que se
+                    incurra para el presente contrato y la futura compraventa
+                    correrán por cuenta de LA PARTE PROMITENTE COMPRADORA, los
+                    cuales no se encuentran incluidos dentro del valor de la
+                    compraventa prometida; estos deberán ser cancelados en su
+                    totalidad al momento de la formalización de la compraventa
+                    prometida en este documento. A partir de la fecha de
+                    suscripción del contrato de compraventa prometido, serán a
+                    cargo exclusivo de la PARTE PROMITENTE COMPRADORA los gastos
+                    correspondientes a Impuesto Único Sobre Inmuebles (IUSI),
+                    impuestos inmobiliarios, territoriales y cualquier otro
+                    impuesto, o arbitrio en general no especificado aquí o
+                    cualquier otro que se cree en el futuro, aplicables a los
+                    bienes objeto de este contrato, así como mantenimiento y
+                    gastos comunes de los bienes objeto de esta promesa que fije
+                    el propietario o administración del edificio, de igual
+                    manera, LA PARTE PROMITENTE COMPRADORA me obligo desde ya a
+                    pagar los montos correspondientes al mantenimiento mensual
+                    los cuales corresponderán a la Administración propia de
+                    BRAVANTE o bien quien ejerza la administración del mismo.
+                    Dicho monto está sujeto a cambio según lo considere la
+                    Administración de los Condominios.{" "}
+                    <span className="bold">IX) HONORARIOS Y GASTOS.</span> Los
+                    honorarios notariales y gastos de inscripción que causen
+                    este documento y la futura compraventa, correrán por cuenta
+                    de la PARTE PROMITENTE COMPRADORA, los cuales No se
+                    encuentran incluidos dentro del monto de la compraventa
+                    prometida, debiendo ser LA PARTE PROMITENTE VENDEDORA quien
+                    designe el Notario que autorice todos los documentos y
+                    escrituras públicas relacionadas directa o indirectamente con
+                    el presente contrato. El precio aquí pactado No incluye los
+                    gastos y honorarios correspondientes a la autorización del
+                    presente contrato y la compraventa prometida. La PARTE
+                    PROMITENTE COMPRADORA renuncio expresamente a mi derecho de
+                    elección del notario autorizante de la escritura de
+                    compraventa definitiva y/o de cualquier otro documento o
+                    escritura pública relacionada directa o indirectamente con el
+                    presente contrato, y acepto al notario designado por la
+                    PARTE PROMITENTE VENDEDORA.{" "}
+                    <span className="bold">X) PLAZO.</span> El plazo del presente
+                    contrato de Promesa de Compraventa es de{" "}
                     <span className="highlight-yellow">
-                        {getPlazoMeses().letras} ({getPlazoMeses().numeros})
+                        {getPlazoMeses().letras.toUpperCase()} (
+                        {getPlazoMeses().numeros})
                     </span>{" "}
-                    meses, es decir, el día{" "}
+                    meses.{" "}
+                    <span className="bold">XI) ENTREGA.</span> La entrega y
+                    recepción de los bienes objeto de la presente promesa de
+                    compraventa se realizará al momento de la firma de la
+                    escritura traslativa de dominio en la fecha aquí pactada, es
+                    decir, a la fecha del vencimiento del plazo del presente
+                    contrato, lo cuál sería en el mes de{" "}
                     <span className="highlight-yellow">
                         {getMesEntrega()}
                     </span>
-                    .
+                    . No obstante, las partes podremos suscribir el contrato
+                    prometido antes de la fecha aquí indicada si ambas partes
+                    así lo acordaremos y estuviéremos en posibilidad de hacerlo.
+                    La PARTE PROMITENTE COMPRADORA tendré por recibido a mi
+                    entera satisfacción los bienes a partir de ese momento. La
+                    PARTE PROMITENTE COMPRADORA seré la única y exclusiva
+                    responsable por pérdidas materiales, o por los daños y
+                    perjuicios que sufra ésta, sus empleados, familiares, o
+                    personas individuales que habiten el inmueble, a partir que
+                    reciba el apartamento por parte de la PARTE PROMITENTE
+                    VENDEDORA. No obstante lo aquí pactado, las partes de común
+                    acuerdo pactamos que la entrega de los bienes y el plazo del
+                    presente contrato podrá diferirse por un plazo de{" "}
+                    <span style={{ textDecoration: "underline" }}>
+                        seis meses adicionales y posteriores a la fecha de
+                        entrega antes establecida
+                    </span>
+                    , sin responsabilidad para la PARTE PROMITENTE VENDEDORA.
+                    Estos plazos son sin perjuicios de atraso por caso fortuito
+                    o fuerza mayor que afecte el cumplimiento y siempre que la
+                    parte promitente compradora cumpla con todas y cada una de
+                    mis obligaciones y con efectuar los pagos en las fechas
+                    indicadas. El plazo puede ser prorrogable por mutuo acuerdo
+                    de las partes. Asimismo, pactamos las partes que en caso de
+                    imposibilidad al desarrollo del presente proyecto en virtud
+                    de retraso excesivo de las autorizaciones gubernamentales
+                    respectivas, LA PARTE PROMITENTE VENDEDORA, deberé
+                    notificar tal acontecimiento a la PARTE PROMITENTE
+                    COMPRADORA y deberé devolver el cien por ciento (100%) del
+                    monto efectivamente recibido sumado a un interés anual del
+                    tres por ciento (3%) en concepto de daños y perjuicios,
+                    calculado de la siguiente forma: Por cada pago recibido por
+                    LA PARTE PROMITENTE VENDEDORA y efectivamente disponible, a
+                    partir de ese día se calculará el interés, el cual no será
+                    capitalizable; calculándose el intereses sobre cada pago
+                    efectivamente recibido; sujeto al plazo y forma que se
+                    estipula más adelante en este contrato, renunciando desde ya
+                    LA PARTE PROMITENTE COMPRADORA a cualquier otro reclamo
+                    judicial o extrajudicial por tal concepto.{" "}
+                    <span className="bold">
+                        XII) REGIMEN DE PROPIEDAD HORIZONTAL.
+                    </span>{" "}
+                    LA PARTE PROMITENTE COMPRADORA declaro estar enterada y
+                    desde ya acepto que los bienes que por este acto prometo
+                    comprar serán destinados únicamente para vivienda familiar,
+                    asimismo, que dichos bienes estarán sometidos a Régimen de
+                    Propiedad Horizontal, y por lo tanto, acepto desde ya
+                    cumplir con el mismo y con los reglamentos y demás normas
+                    legales del mismo, así como, con los reglamentos y normas
+                    del "CONDOMINIO BRAVANTE", dado que los inmuebles prometidos
+                    en venta se encuentran dentro del perímetro del mismo; y en
+                    especial, con las obligaciones de pagos de cuotas de
+                    mantenimientos y condiciones para la reventa o alquiler de
+                    los inmuebles, los cuales son de mi conocimiento.{" "}
+                    <span className="bold">
+                        XIII) PLANOS Y CAMBIOS EN LA CONSTRUCCIÓN:
+                    </span>{" "}
+                    LA PARTE PROMITENTE COMPRADORA declaro expresamente que
+                    conozco y acepto los planos de distribución interna de
+                    ambientes así como acabados, distribución, diseño y no podré
+                    solicitar que se hagan modificaciones o adiciones a los
+                    planos y especificaciones antes mencionados, salvo que éstas
+                    fueran aprobadas previamente por LA PARTE PROMITENTE
+                    VENDEDORA y que el valor de las modificaciones o adiciones,
+                    sea pagado en su totalidad por mí como LA PARTE PROMITENTE
+                    COMPRADORA, antes de que se lleven a cabo las mismas. Así
+                    mismo LA PROMITENTE VENDEDORA, me reservo el derecho de
+                    realizar nuevos cambios en las especificaciones contenidas
+                    en este contrato si así conviene a la arquitectura,
+                    estructura y funcionamiento del proyecto, o si fuera
+                    necesario porque algún elemento o material no puede
+                    obtenerse en cantidad suficiente dentro del periodo de
+                    construcción, o que dicho cambio sea requerido por alguna
+                    autoridad estatal, municipal o administrativa.{" "}
+                    <span className="bold">XIV) DE LA ACCIÓN.</span> LA PARTE
+                    PROMITENTE COMPRADORA declaro estar de acuerdo que el bien
+                    mueble (acción) que por el presente acto se me promete
+                    vender, que sea de una entidad de carácter mercantil y/o
+                    civil indistintamente, o bien, la misma se relacione tanto a
+                    la administración del proyecto antes relacionado o a las
+                    áreas comunes indistintamente; todo lo anterior a elección y
+                    según disposición de la PARTE PROMITENTE VENDEDORA.
                 </p>
             </div>
 
@@ -1163,17 +1394,46 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         CUARTA: TERMINACIÓN ANTICIPADA.
                     </span>{" "}
                     Sin perjuicio de otros derechos que correspondan a LA PARTE
-                    PROMITENTE VENDEDORA, de conformidad con lo establecido en
-                    este documento y en la ley, LA PARTE PROMITENTE VENDEDORA
-                    podrá resolver en cualquier momento el presente contrato,
-                    sin necesidad de declaración judicial, si LA PARTE
+                    PROMITENTE VENDEDORA conforme este contrato, la PARTE
+                    PROMITENTE VENDEDORA podré resolver en cualquier momento el
+                    presente contrato, sin necesidad de declaración judicial
+                    previa o posterior, y dar por terminado en forma anticipada
+                    el mismo sin responsabilidad de mi parte, si LA PARTE
                     PROMITENTE COMPRADORA no cumple con una sola de sus
-                    obligaciones de pago de las cuotas o de cualquier obligación
-                    derivada del presente contrato, el mismo contrato quedará
-                    resuelto de pleno derecho; dicho incumplimiento constituirá
-                    una condición resolutoria expresa de conformidad con el
-                    artículo mil quinientos ochenta y uno (1,581) del Código
-                    Civil.
+                    obligaciones de pago en la fecha, monto y forma aquí
+                    pactados, dicho incumplimiento constituirá una condición
+                    resolutoria expresa de este contrato. En caso ocurra el
+                    hecho constitutivo de la condición resolutoria expresa, La
+                    PARTE PROMITENTE VENDEDORA tengo el derecho de disponer de
+                    los bienes objetos de este contrato en cualquier forma y
+                    podré negociar, prometer en venta, vender o ceder los mismos
+                    a un tercero, sin que haya necesidad que preceda orden o
+                    resolución judicial o autorización alguna de LA PARTE
+                    PROMITENTE COMPRADORA, procediéndose de conformidad con lo
+                    expuesto en las cláusulas subsiguientes especialmente lo
+                    relacionado al cumplimiento del pago indemnizatorio. Este
+                    contrato también podrá darse por terminado por decisión
+                    unilateral de la PARTE PROMITENTE VENDEDORA, o de la parte
+                    PROMITENTE COMPRADORA, sin necesidad de justificar causa
+                    alguna, pero en todo caso, las partes se obligan al
+                    cumplimiento del pago indemnizatorio regulado en las
+                    cláusulas siguientes. De igual manera, en caso que la{" "}
+                    <span className="bold">
+                        PARTE PROMITENTE COMPRADORA
+                    </span>
+                    , durante el plazo del presente contrato fuere sujeto de
+                    procesos judiciales de cualquier índole o naturaleza que
+                    conlleve la posibilidad de concluir con sentencia alguna de
+                    índole condenatoria que afecte mi libertad y/o capacidad de
+                    pago, por el presente acto confiero facultad especial a{" "}
+                    <span className="bold">
+                        LA PARTE PROMITENTE VENDEDORA
+                    </span>{" "}
+                    para resolver el presente contrato sin responsabilidad
+                    indemnizatoria y/o legal alguna sujetándome al procedimiento
+                    de devolución de los montos dados en concepto de enganche,
+                    según lo estipulado en el presente contrato en cuanto a la
+                    forma y plazo.
                 </p>
             </div>
 
@@ -1185,12 +1445,32 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     </span>{" "}
                     Las partes renunciamos expresamente a la aplicación del
                     artículo un mil cuatrocientos cuarenta y dos (1,442) del
-                    Código Civil vigente. Si LA PARTE PROMITENTE VENDEDORA
-                    decide resolver el presente contrato sin justificar causa
-                    alguna, deberá devolver a LA PARTE PROMITENTE COMPRADORA los
-                    montos recibidos sumado a un interés anual del tres por
-                    ciento (3%) calculado desde la fecha en que recibió cada
-                    pago.
+                    Código Civil vigente, de manera que los pagos recibidos a
+                    cuenta del precio no constituirán el equivalente a los daños
+                    y perjuicios, ni la parte promitente vendedora estaré en la
+                    obligación de restituir el doble de lo que hubiese recibido.
+                    En relación a daños y perjuicios resultantes de la
+                    inejecución a falta de cumplimiento del contrato, las partes
+                    manifestamos que se regulará la relación contractual de
+                    conformidad con lo que se establece en ésta y la siguiente
+                    cláusula. El incumplimiento o el retardo en el cumplimiento
+                    por parte de PROMITENTE VENDEDORA, se regirá por las
+                    estipulaciones siguientes, pero cobrarán efecto, sí y solo
+                    sí la PARTE PROMITENTE COMPRADORA he cumplido a cabalidad y
+                    en tiempo con mis obligaciones de pago. Si la Parte
+                    Vendedora decido resolver el presente contrato sin
+                    justificar causa alguna o sin haber sido motivado por la
+                    condición resolutoria expresa, deberé devolver a la parte
+                    PROMITENTE COMPRADORA los montos recibidos a cuenta del
+                    precio del apartamento sumado a un interés anual del tres
+                    por ciento (3%) en concepto de daños y perjuicios, en un
+                    plazo no mayor, de seis (6) meses a partir de la fecha que
+                    se le notifique a la parte PROMITENTE COMPRADORA, calculado
+                    de la siguiente forma: Por cada pago recibido por LA PARTE
+                    PROMITENTE VENDEDORA y efectivamente disponible, a partir de
+                    ese día se calculará el interés, el cual no será
+                    capitalizable; calculándose el intereses sobre cada pago
+                    efectivamente recibido.
                 </p>
             </div>
 
@@ -1201,71 +1481,57 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         COMPRADORA.
                     </span>{" "}
                     En caso de incumplimiento por parte de LA PARTE PROMITENTE
-                    COMPRADORA de cualquiera de las obligaciones que por este
-                    acto contrae o por desistimiento de la negociación, dará
-                    derecho A LA PARTE PROMITENTE VENDEDORA a:{" "}
-                    <span className="bold">1)</span> dar por concluida la
-                    negociación y <span className="bold">2)</span> cobrar por
-                    concepto de daños y perjuicios una indemnización, la cual se
-                    fija de la siguiente forma:
+                    COMPRADORA, dará derecho A LA PARTE PROMITENTE VEDENDORA a
+                    proceder de la siguiente forma: 1) a dar por concluida la
+                    negociación sin ningún tipo de procedimiento posterior y 2)
+                    cobrar por concepto de indemnización y perjuicios, los
+                    siguientes montos en los siguientes casos:
                 </p>
-                <p>
-                    <span className="bold">a)</span> Por desistimiento antes de
-                    haber ingresado expediente de crédito para su análisis al
-                    banco o FHA por parte de LA PARTE PROMITENTE COMPRADORA, se
-                    penalizará con la cantidad de{" "}
+                <p style={{ marginLeft: "20px" }}>
+                    <span className="bold">A.</span> Por desistir de la compra
+                    prometida en el presente contrato por cualquier
+                    circunstancia, por la no autorización del crédito bancario,
+                    y por el incumplimiento a lo pactado en el presente
+                    contrato; todo esto después de haber firmado la presente
+                    promesa de compraventa de bienes inmuebles y mueble
+                    (acción): El{" "}
                     <span className="bold">
-                        DIEZ MIL DOLARES DE LOS ESTADOS UNIDOS DE NORTE AMERICA
-                        (USD. 10,000.00)
+                        diez por ciento (10%) del valor total de la compraventa
+                        pactada en la presente promesa de compraventa de bienes
+                        inmuebles y mueble (acción)
                     </span>
                     .
                 </p>
-                <p>
-                    <span className="bold">b)</span> Por desistimiento después
-                    de haber ingresado expediente de crédito para su análisis al
-                    banco o FHA por parte de LA PARTE PROMITENTE COMPRADORA, se
-                    penalizará de la siguiente forma: Por desistimiento después
-                    de haber firmado la promesa de compraventa de bienes
-                    inmuebles y muebles acción, se penalizará con un{" "}
-                    <span className="bold">cinco por ciento (5%)</span>, del
-                    valor de lo prometido en compraventa.
-                </p>
-                <p>
-                    <span className="bold">c)</span> El{" "}
-                    <span className="bold">cinco por ciento (5%)</span> del
-                    valor total de la compraventa pactada en la promesa de
-                    compraventa de bienes inmuebles y mueble (acción) más un fee
-                    de{" "}
+                <p style={{ marginLeft: "20px" }}>
+                    <span className="bold">B.</span> En el caso de haber
+                    solicitado cambios y mejoras en el inmueble prometido en
+                    venta, y estos cambios ya se hubieran realizado; por
+                    desistir de la compra prometida en el presente contrato por
+                    cualquier circunstancia, por la no autorización del crédito
+                    bancario, y por el incumplimiento a lo pactado en el
+                    presente contrato; todo esto después de haber firmado la
+                    presente promesa de compraventa de bienes inmuebles y mueble
+                    (acción): El{" "}
                     <span className="bold">
-                        CINCO MIL DOLARES DE LOS ESTADOS UNIDOS DE NORTE AMERICA
-                        (USD.5,000.00)
-                    </span>
-                    , por desistir de la compra después de haber pedido cambios
-                    y mejoras en el inmueble y estos se hubieran ya realizado,
-                    siendo No reintegrable el monto pagado por las mejoras ya
-                    realizadas.
-                </p>
-                <p>
-                    El desistimiento por cualquier otra razón no contemplada en
-                    los presentes incisos será revisado directamente por el
-                    Consejo Administrativo de la entidad vendedora, quien
-                    asignará la penalización en relación a la causa del
-                    desistimiento, acordando desde ya que en ningún caso podrá
-                    ser menor de{" "}
+                        diez por ciento (10%) del valor total de la compraventa
+                        pactada en la presente promesa de compraventa de bienes
+                        inmuebles y mueble (acción)
+                    </span>{" "}
+                    más un fee de{" "}
                     <span className="bold">
-                        CUATRO MIL DOLARES DE LOS ESTADOS UNIDOS DE NORTE
-                        AMERICA (USD.4,000.00)
+                        CINCO MIL DOLARES DE LOS ESTADOS UNIDOS DE NORTE
+                        AMERICA (UDS.5,000.00)
                     </span>
-                    .
+                    , más el monto efectivamente pagado por estos cambios.
                 </p>
                 <p>
                     En todos los casos anteriores, la penalización se descontará
-                    directamente del monto del enganche o reserva que el cliente
-                    hubiera cancelado a la fecha del desistimiento, acordando
-                    las partes que el plazo para el reintegro del saldo a favor
-                    DE LA PARTE PROMITENTE COMPRADORA, deberá realizarse en un
-                    plazo no mayor a seis (6) meses, a partir de la fecha del
-                    desistimiento o aplicación de la penalización.
+                    directamente del monto que el cliente hubiera cancelado a la
+                    fecha del desistimiento, acordando las partes que el plazo
+                    para el reintegro del saldo a favor DE LA PARTE PROMITENTE
+                    COMPRADORA, deberá realizarse en un plazo no mayor a seis
+                    (6) meses, a partir de la fecha del desistimiento o
+                    aplicación de la penalización.
                 </p>
             </div>
 
@@ -1282,10 +1548,15 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     contrato, salvo que{" "}
                     {compradores.length > 1 ? "contemos" : "cuente"} con la
                     aprobación previa y por escrito de LA PARTE PROMITENTE
-                    VENDEDORA. LA PARTE PROMITENTE VENDEDORA, por su parte,
-                    queda en libertad de negociar, ceder, o enajenar los
-                    derechos y obligaciones que adquiere en este contrato,
-                    parcial o totalmente, dando posterior aviso a{" "}
+                    VENDEDORA, y esta la autorizará únicamente cuando: i) Ya LA
+                    PARTE PROMITENTE COMPRADORA hubiera cancelado como mínimo el
+                    setenta por ciento (70%) del enganche pactado, y ii) Que
+                    dentro del proyecto ya hubiera un avance de ventas del
+                    setenta por ciento (70%) de la totalidad del proyecto. LA
+                    PARTE PROMITENTE VENDEDORA, por mi parte, quedo en libertad
+                    de negociar, ceder, o enajenar los derechos y obligaciones
+                    que adquiero en este contrato, parcial o totalmente, dando
+                    posterior aviso a{" "}
                     {compradores.length > 1
                         ? "LOS PROMITENTES COMPRADORES"
                         : "LA PARTE PROMITENTE COMPRADORA"}
@@ -1532,7 +1803,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         Identificación -DPI-, con Código Único de Identificación
                         -CUI- número{" "}
                         <span className="highlight-yellow">
-                            {c.DPI_Letras} ({c.DPI})
+                            {(c.DPI_Letras || "").toLowerCase()} ({c.DPI})
                         </span>
                         , extendido por el Registro Nacional de las Personas de
                         la República de Guatemala;{" "}
