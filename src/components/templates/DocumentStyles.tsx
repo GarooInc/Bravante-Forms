@@ -52,6 +52,7 @@ export const DocumentStyles = () => (
 
         .clause-title {
             font-weight: bold;
+            text-decoration: underline;
         }
 
         p {

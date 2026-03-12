@@ -92,6 +92,39 @@ export const numberToWordsYear = (year: number): string => {
     return numberToWords(year);
 };
 
+export const formatCUI = (cui: string): string => {
+    if (!cui) return cui;
+    const clean = cui.replace(/\D/g, '');
+    if (clean.length !== 13) return cui;
+    return `${clean.slice(0, 4)} ${clean.slice(4, 9)} ${clean.slice(9, 13)}`;
+};
+
+export const cuiToWords = (cui: string): string => {
+    if (!cui) return "";
+    const clean = cui.replace(/\D/g, '');
+    if (clean.length !== 13) return numberToWords(parseInt(clean)).toLowerCase();
+    
+    const part1 = parseInt(clean.slice(0, 4));
+    const part2 = parseInt(clean.slice(4, 9));
+    const part3 = parseInt(clean.slice(9, 13));
+    
+    return `${numberToWords(part1)}, ${numberToWords(part2)}, ${numberToWords(part3)}`.toLowerCase();
+};
+
+export const idToWords = (id: string): string => {
+    if (!id) return "";
+    if (id.includes("-")) {
+        const parts = id.split("-");
+        const convertedParts = parts.map(p => {
+            const num = parseInt(p);
+            return isNaN(num) ? p.toUpperCase() : numberToWords(num).toLowerCase();
+        });
+        return convertedParts.join(" guion ");
+    }
+    const num = parseInt(id);
+    return isNaN(num) ? id.toUpperCase() : numberToWords(num).toLowerCase();
+};
+
 export const toTitleCase = (str: string): string => {
     if (!str) return str;
     const minor = new Set(['de', 'del', 'la', 'el', 'los', 'las', 'y', 'e', 'en', 'con', 'a', 'por']);

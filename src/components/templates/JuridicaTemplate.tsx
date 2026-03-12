@@ -7,7 +7,7 @@ import type {
     Pago,
 } from "./types";
 import { DocumentStyles } from "./DocumentStyles";
-import { numberToWords, numberToWordsYear, toTitleCase } from "./utils";
+import { numberToWords, numberToWordsYear, toTitleCase, formatCUI, cuiToWords, idToWords } from "./utils";
 
 export const JuridicaTemplate: React.FC<TemplateProps> = ({
     data,
@@ -115,28 +115,28 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
 
                 <p>
                     Yo,{" "}
-                    <span className="highlight-yellow">
+                    <span className="bold highlight-yellow">
                         {datosJuridicos.RepresentanteNombre ||
                             "[NOMBRE_REPRESENTANTE]"}
                     </span>
                     , quien declaro ser de{" "}
-                    <span className="highlight-yellow">
+                    <span className="bold highlight-yellow">
                         {(datosJuridicos.RepresentanteEdadLetras || "").toLowerCase() ||
                             "[EDAD_LETRAS_REPRESENTANTE]"}
                     </span>{" "}
                     años de edad,{" "}
-                    <span className="highlight-yellow">
+                    <span className="bold highlight-yellow">
                         {(
                             datosJuridicos.RepresentanteEstadoCivil ||
                             "[ESTADO_CIVIL]"
                         ).toLowerCase()}
                     </span>
                     ,{" "}
-                    <span className="highlight-yellow">
+                    <span className="bold highlight-yellow">
                         {toTitleCase(datosJuridicos.RepresentanteProfesion || "") || "[PROFESION]"}
                     </span>
                     ,{" "}
-                    <span className="highlight-yellow">
+                    <span className="bold highlight-yellow">
                         {(
                             datosJuridicos.RepresentanteNacionalidad ||
                             "guatemalteco"
@@ -145,11 +145,11 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     , de este domicilio, me identifico con el Documento Personal
                     de Identificación -DPI-, con Código Único de Identificación
                     -CUI- número{" "}
-                    <span className="highlight-yellow">
-                        {datosJuridicos.RepresentanteDPI_Letras ||
+                    <span className="bold highlight-yellow">
+                        {cuiToWords(datosJuridicos.RepresentanteDPI || "") ||
                             "[DPI_LETRAS]"}
                     </span>{" "}
-                    ({datosJuridicos.RepresentanteDPI || "[DPI]"}), extendido
+                    (<span className="bold highlight-yellow">{formatCUI(datosJuridicos.RepresentanteDPI || "") || "[DPI]"}</span>), extendido
                     por el Registro Nacional de las Personas de la República de
                     Guatemala, quien comparezco en mi calidad de{" "}
                     <span className="bold highlight-yellow">
@@ -160,58 +160,42 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     <span className="bold highlight-yellow">
                         {datosJuridicos.EmpresaNombre || "[NOMBRE_EMPRESA]"}
                     </span>
-                    , calidad que acredito con mi nombramiento como tal
-                    contenido en el acta notarial autorizada en esta ciudad el
-                    día{" "}
-                    <span className="highlight-yellow">
+                    , calidad que acredita con mi nombramiento como tal
+                    contenido en el acta notarial autorizada en esta ciudad el{" "}
+                    <span className="bold highlight-yellow">
                         {datosJuridicos.ActaFechaDia || (
                             <span className="blank-field" title="Día del acta notarial">&nbsp;</span>
                         )}
                     </span>{" "}
                     de{" "}
-                    <span className="highlight-yellow">
+                    <span className="bold highlight-yellow">
                         {datosJuridicos.ActaFechaMes || (
                             <span className="blank-field" title="Mes del acta notarial">&nbsp;</span>
                         )}
                     </span>{" "}
                     de{" "}
-                    <span className="highlight-yellow">
+                    <span className="bold highlight-yellow">
                         {datosJuridicos.ActaFechaAnio || (
                             <span className="blank-field" title="Año del acta notarial">&nbsp;</span>
                         )}
                     </span>
                     , por el Notario{" "}
-                    <span className="highlight-yellow">
+                    <span className="bold highlight-yellow">
                         {datosJuridicos.NotarioNombre || (
                             <span className="blank-field" title="Nombre del Notario">&nbsp;</span>
                         )}
                     </span>
                     , el cual se encuentra debidamente inscrito en el Registro
-                    Mercantil General de la República de Guatemala bajo el
-                    número{" "}
-                    <span className="highlight-yellow">
-                        {(() => { const v = datosJuridicos.InscritoNumero; if (!v || v.startsWith('[')) return <span className="blank-field" title="Número de inscripción en el Registro Mercantil">&nbsp;</span>; const n = parseInt(v); return !isNaN(n) ? `${numberToWords(n).toLowerCase()} (${n})` : v; })()}
-                    </span>
-                    , folio{" "}
-                    <span className="highlight-yellow">
-                        {(() => { const v = datosJuridicos.InscritoFolio; if (!v || v.startsWith('[')) return <span className="blank-field" title="Folio de inscripción en el Registro Mercantil">&nbsp;</span>; const n = parseInt(v); return !isNaN(n) ? `${numberToWords(n).toLowerCase()} (${n})` : v; })()}
-                    </span>
-                    , del libro{" "}
-                    <span className="highlight-yellow">
-                        {(() => { const v = datosJuridicos.InscritoLibro; if (!v || v.startsWith('[')) return <span className="blank-field" title="Libro de inscripción en el Registro Mercantil">&nbsp;</span>; const n = parseInt(v); return !isNaN(n) ? `${numberToWords(n).toLowerCase()} (${n})` : v; })()}
+                    Mercantil General de la República de Guatemala bajo el{" "}
+                    <span className="bold highlight-yellow">
+                        número de registro {(() => { const v = datosJuridicos.InscritoNumero; if (!v || v.startsWith('[')) return <span className="blank-field" title="Número de inscripción en el Registro Mercantil">&nbsp;</span>; const n = parseInt(v); return !isNaN(n) ? `${numberToWords(n).toLowerCase()} (${n})` : v; })()}
+                        , folio {(() => { const v = datosJuridicos.InscritoFolio; if (!v || v.startsWith('[')) return <span className="blank-field" title="Folio de inscripción en el Registro Mercantil">&nbsp;</span>; const n = parseInt(v); return !isNaN(n) ? `${numberToWords(n).toLowerCase()} (${n})` : v; })()}
+                        , del libro {(() => { const v = datosJuridicos.InscritoLibro; if (!v || v.startsWith('[')) return <span className="blank-field" title="Libro de inscripción en el Registro Mercantil">&nbsp;</span>; const n = parseInt(v); return !isNaN(n) ? `${numberToWords(n).toLowerCase()} (${n})` : v; })()}
                     </span>{" "}
                     de Auxiliares de Comercio, en adelante referido simple e
                     indistintamente como{" "}
-                    <span className="party-name">
-                        "LA PARTE PROMITENTE COMPRADORA"
-                    </span>
-                    ,{" "}
-                    <span className="party-name">
-                        "LOS PROMITENTES COMPRADORES"
-                    </span>{" "}
-                    o{" "}
-                    <span className="party-name">
-                        "EL PROMITENTE COMPRADOR"
+                    <span className="bold">
+                        "LA PARTE PROMITENTE COMPRADORA", "LOS PROMITENTES COMPRADORES" o "EL PROMITENTE COMPRADOR"
                     </span>
                     .
                 </p>
@@ -329,24 +313,28 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     ordinario.
                 </p>
                 <p>
-                    El apartamento{" "}
-                    <span className="highlight-red">
-                        {getVal(
-                            "Descripcion_del_Inmueble.Apartamento",
-                            "[APTO]",
-                        )}
+                    Los Edificios podrán denominarse de la siguiente forma, para la
+                    torre número uno <span className="bold">“IGNEA”</span>, y
+                    para la torre número dos <span className="bold">“ETEREA”</span>, los cuales
+                    serán sometidos al régimen de propiedad horizontalmente dividida y su
+                    respectivo reglamento, así como estarán sujetos a las servidumbres que la
+                    promitente vendedora considere para el proyecto, y del cual formarán parte,
+                    entre otros: El apartamento{" "}
+                    <span className="bold highlight-red">
+                        {idToWords(getVal("Descripcion_del_Inmueble.Apartamento", "")) || "[APTO_LETRAS]"} ({getVal("Descripcion_del_Inmueble.Apartamento", "[APTO]")})
                     </span>{" "}
                     Torre{" "}
-                    <span className="highlight-red">
+                    <span className="bold highlight-red">
                         {getVal("Descripcion_del_Inmueble.Torre", "[TORRE]")}
                     </span>
                     , ubicado en el nivel{" "}
-                    <span className="highlight-red">
+                    <span className="bold highlight-red">
                         {(() => {
-                            const val = getVal("Descripcion_del_Inmueble.Nivel_Letras", "[NIVEL_LETRAS]");
-                            return val !== "[NIVEL_LETRAS]" && val !== "[DATO_FALTANTE]"
-                                ? `${val} (${getVal("Descripcion_del_Inmueble.Nivel")})`
-                                : getVal("Descripcion_del_Inmueble.Nivel");
+                            const val = getVal<string>("Descripcion_del_Inmueble.Nivel_Letras", "[NIVEL_LETRAS]");
+                            const num = getVal<string>("Descripcion_del_Inmueble.Nivel", "");
+                            return val !== "[NIVEL_LETRAS]" && val !== "[DATO_FALTANTE]" && val
+                                ? `${(val as string).toUpperCase()} (${num})`
+                                : num;
                         })()}
                     </span>{" "}
                     del Complejo;{" "}
@@ -357,9 +345,9 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                         );
                         const count = ests.length;
                         const articulos = count === 1 ? "la " : "las ";
-                        const plazas = count === 1 ? " plaza" : " plazas";
+                        const plazas = count === 1 ? "plaza" : "plazas";
                         const identificadas =
-                            count === 1 ? " identificada" : " identificadas";
+                            count === 1 ? "identificada" : "identificadas";
                         const numLetras =
                             count === 1
                                 ? "UNA"
@@ -367,10 +355,10 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                         return (
                             <>
                                 {articulos}
-                                <span className="highlight-red">
-                                    {numLetras} ({count})
-                                </span>
-                                {plazas} de estacionamiento {identificadas} con
+                                <span className="bold highlight-red">
+                                    {numLetras} ({count}) {plazas}
+                                </span>{" "}
+                                de estacionamiento {identificadas} con
                                 los números:
                             </>
                         );
@@ -395,22 +383,13 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                     style={{ margin: "5px 0", textIndent: "0" }}
                                 >
                                     o{" "}
-                                    <span className="highlight-red">
-                                        {p.Numero_Letras || "[NUMERO_LETRAS]"}
-                                    </span>{" "}
-                                    (
-                                    <span className="highlight-red">
-                                        {p.Numero}
+                                    <span className="bold highlight-red">
+                                        {(p.Numero_Letras || "").toUpperCase()} ({p.Numero})
                                     </span>
-                                    ), ubicada en el sótano número:{" "}
-                                    <span className="highlight-red">
-                                        {p.Sotano_Letras || "[SOTANO_LETRAS]"}
-                                    </span>{" "}
-                                    (
-                                    <span className="highlight-red">
-                                        {p.Sotano || "[#]"}
+                                    , ubicada en el sótano número:{" "}
+                                    <span className="bold highlight-red">
+                                        {(p.Sotano_Letras || "").toUpperCase()} ({p.Sotano || "#"})
                                     </span>
-                                    )
                                 </p>
                             ))}
                         </div>
@@ -438,16 +417,16 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                               ).toUpperCase();
                                     const label =
                                         count === 1 ? "bodega" : "bodegas";
-                                    const identificadas =
+                                    const identificada =
                                         count === 1
                                             ? "identificada"
                                             : "identificadas";
                                     return (
                                         <>
-                                            <span className="highlight-red">
+                                            <span className="bold highlight-red">
                                                 {numLetras} ({count})
                                             </span>
-                                            , {label}, {identificadas} con los
+                                            , {label}, {identificada} con los
                                             números:
                                         </>
                                     );
@@ -468,20 +447,13 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                         }}
                                     >
                                         o{" "}
-                                        <span className="highlight-red">
-                                            {b.Numero_Letras ||
-                                                "[NUMERO_LETRAS]"}
+                                        <span className="bold highlight-red">
+                                            {(b.Numero_Letras || "").toUpperCase()} ({b.Numero})
                                         </span>
                                         , ubicada en el sótano número:{" "}
-                                        <span className="highlight-red">
-                                            {b.Sotano_Letras ||
-                                                "[SOTANO_LETRAS]"}
-                                        </span>{" "}
-                                        (
-                                        <span className="highlight-red">
-                                            {b.Sotano || "[#]"}
+                                        <span className="bold highlight-red">
+                                            {(b.Sotano_Letras || "").toUpperCase()} ({b.Sotano || "#"})
                                         </span>
-                                        )
                                     </p>
                                 ))}
                             </div>
@@ -713,302 +685,327 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     apartamento son los siguientes:
                 </p>
                 <div style={{ marginLeft: "20px" }}>
+                                        <p style={{ fontWeight: "bold", marginTop: "10px" }}>
+                        1. <span style={{ textDecoration: "underline" }}>Acabados incluidos:</span>
+                    </p>
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.1 PISOS INTERIORES:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            <span style={{ fontWeight: "bold", textDecoration: "underline" }}>En sala, comedor y habitaciones:</span> Piso de madera de
+                            ingeniería roble color "sand" o similar, duelas de 6"
+                            de ancho y acabado satinado; instaladas con adhesivo
+                            para pisos de madera.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            <span style={{ fontWeight: "bold", textDecoration: "underline" }}>En cocina y baños:</span> Piso de porcelanato español, en
+                            formato 60x120cms, imitación piedra color beige o
+                            similar.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            <span style={{ fontWeight: "bold", textDecoration: "underline" }}>En áreas de servicio:</span> Piso de cerámica esmaltada, en
+                            formato 45x45 cms, imitación concreto color gris o
+                            similar. Zócalo del mismo material de 10 cms., de alto.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.2 PAREDES:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            <span style={{ fontWeight: "bold" }}>Muros perimetrales del apartamento</span> construidos en block
+                            de concreto, con revestimiento cementicio blanco extra
+                            liso.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            <span style={{ fontWeight: "bold" }}>Paredes interiores del apartamento</span> de tablayeso en
+                            habitaciones o tabla RH en baños, con acabado liso.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            <span style={{ fontWeight: "bold" }}>Paredes divisorias entre área social y habitaciones</span> incluyen relleno de aislante termo-acústico de fibra
+                            celulosa.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Acabado final incluye una capa de sello blanco más dos
+                            capas de pintura látex blanco mate.
+                        </li>
+                    </ul>
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.3 CIELOS:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Cielo falso de tablayeso a 2.80 m de altura sobre nivel
+                            de piso en área social y habitaciones, con acabado
+                            liso.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Cielo falso de tabla RH a 2.60 m de altura sobre nivel
+                            de piso en baños y área de servicio, con acabado liso.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Cenefa oculta de tablayeso para cortinero en dintel de
+                            ventanas.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Acabado final incluye una capa de sello blanco más dos
+                            capas de pintura látex blanco mate.
+                        </li>
+                    </ul>
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.4 VENTANERÍA:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Ventanas de aluminio línea europea color negro, con
+                            vidrio laminado gris de 3+4mm., para aislamiento
+                            acústico, con apertura proyectable.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Puertas corredizas de aluminio línea europea color
+                            negro, con vidrio monolítico gris de 6mm., de altura
+                            piso a cielo en salida a balcones/terraza.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.5 CARPINTERÍA:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Zócalos de madera de 5" de alto perfil cuadrado mismo
+                            color de las puertas, en área social, pasillos y
+                            habitaciones.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Puertas de madera de ingeniería con enchape de caobilla
+                            liso, de altura piso a cielo con marco de cajuela.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Cerradura de entrada tipo cerrojo digital electrónico
+                            de códigos y conectividad wifi.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Cerradura en habitaciones tipo manija con llave, acabado
+                            nickel satinado. En baños, closets y área de servicio,
+                            tipo manija sin llave, acabado nickel satinado.
+                        </li>
+                    </ul>
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.6 BAÑOS PRINCIPAL Y SECUNDARIOS:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Paredes de duchas y respaldo de sanitarios forradas
+                            piso a cielo con porcelanato español, en formato
+                            60x120cms, imitación piedra color beige o similar.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Mampara de vidrio templado en duchas, de 1.90m de alto,
+                            sobre bordillo forrado con porcelanato.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Inodoro línea europea color blanco de tanque bajo con
+                            mecanismo de doble descarga 4,5/3L, tapa y asiento con
+                            caída amortiguada.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Lavamanos línea europea color blanco de submontar
+                            rectangular, bajo encimera de sinterizado alpine white,
+                            y mueble flotado de melamina con salpicadera de 10cms.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Grifería cromada monomando en lavamanos y duchas.
+                            Cabezal de duchas tipo plato.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Extractor de olores en cielo con ducto al exterior (si
+                            no hay ventana).
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.7 BAÑO DE SERVICIO:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Paredes de ducha y respaldo de sanitarios forradas piso
+                            a cielo con cerámico esmaltado en formato 45x45cms,
+                            imitación concreto color gris o similar.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Inodoro de tanque color blanco, taza redonda y descarga
+                            de manecilla.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Lavamanos con pedestal color blanco con grifo para agua
+                            fría.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>Grifería cromada mezcladora de ducha.</li>
+                        <li style={{ marginBottom: "5px" }}>Extractor de olores en cielo con ducto al exterior.</li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.8 ACABADOS ELÉCTRICOS:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Interruptores análogos y tomacorrientes duplex con
+                            placas color blanco brillante, tomacorrientes GFCI en
+                            baños y cocina.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Placas de salida previstas para punto de red en salas y
+                            habitaciones.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Lámparas tipo ojo de buey en cielo, acabado blanco y
+                            luz LED cálida.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Perfil lineal en cielo de cocina con luz LED cálida.
+                        </li>
+                    </ul>
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.9 ACABADO EN BALCONES:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>Cielo suspendido imitación madera para exterior.</li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Piso de porcelanato español antideslizante, en formato
+                            60x120 cms, imitación piedra color gris o similar.
+                            Zócalo del mismo material de 10 cms., de alto.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Baranda de vidrio templado con perfil de remate inox,
+                            instalada en servilletero de aluminio.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Compartimiento previsto para instalar unidades externas
+                            de aire acondicionado con cerramiento tipo louver.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Jardinera de concreto con recubrimiento interno
+                            impermeable. Incluye macetero con planta según diseño
+                            paisajístico.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
                     <p style={{ fontWeight: "bold", marginTop: "10px" }}>
-                        1. Acabados incluidos:
-                    </p>
-                    <p style={{ fontWeight: "bold", marginTop: "8px", textDecoration: "underline" }}>
-                        PISOS INTERIORES:
-                    </p>
-                    <p>
-                        En sala, comedor y habitaciones: Piso de madera de
-                        ingeniería roble color "sand" o similar, duelas de 6"
-                        de ancho y acabado satinado; instaladas con adhesivo
-                        para pisos de madera.
-                    </p>
-                    <p>
-                        En cocina y baños: Piso de porcelanato español, en
-                        formato 60x120cms, imitación piedra color beige o
-                        similar.
-                    </p>
-                    <p>
-                        En áreas de servicio: Piso de cerámica esmaltada, en
-                        formato 45x45 cms, imitación concreto color gris o
-                        similar. Zócalo del mismo material de 10 cms., de alto.
-                    </p>
-                    <p style={{ fontStyle: "italic" }}>
-                        Nota: El color podría variar por falta de
-                        disponibilidad en el mercado.
-                    </p>
-                    <p style={{ fontWeight: "bold", marginTop: "8px", textDecoration: "underline" }}>
-                        PAREDES:
-                    </p>
-                    <p>
-                        Muros perimetrales del apartamento construidos en block
-                        de concreto, con revestimiento cementicio blanco extra
-                        liso.
-                    </p>
-                    <p>
-                        Paredes interiores del apartamento de tablayeso en
-                        habitaciones o tabla RH en baños, con acabado liso.
-                    </p>
-                    <p>
-                        Paredes divisorias entre área social y habitaciones
-                        incluyen relleno de aislante termo-acústico de fibra
-                        celulosa.
-                    </p>
-                    <p>
-                        Acabado final incluye una capa de sello blanco más dos
-                        capas de pintura látex blanco mate.
-                    </p>
-                    <p style={{ fontWeight: "bold", marginTop: "8px", textDecoration: "underline" }}>
-                        CIELOS:
-                    </p>
-                    <p>
-                        Cielo falso de tablayeso a 2.80 m de altura sobre nivel
-                        de piso en área social y habitaciones, con acabado
-                        liso.
-                    </p>
-                    <p>
-                        Cielo falso de tabla RH a 2.60 m de altura sobre nivel
-                        de piso en baños y área de servicio, con acabado liso.
-                    </p>
-                    <p>
-                        Cenefa oculta de tablayeso para cortinero en dintel de
-                        ventanas.
-                    </p>
-                    <p>
-                        Acabado final incluye una capa de sello blanco más dos
-                        capas de pintura látex blanco mate.
-                    </p>
-                    <p style={{ fontWeight: "bold", marginTop: "8px", textDecoration: "underline" }}>
-                        VENTANERÍA:
-                    </p>
-                    <p>
-                        Ventanas de aluminio línea europea color negro, con
-                        vidrio laminado gris de 3+4mm., para aislamiento
-                        acústico, con apertura proyectable.
-                    </p>
-                    <p>
-                        Puertas corredizas de aluminio línea europea color
-                        negro, con vidrio monolítico gris de 6mm., de altura
-                        piso a cielo en salida a balcones/terraza.
-                    </p>
-                    <p style={{ fontStyle: "italic" }}>
-                        Nota: El color podría variar por falta de
-                        disponibilidad en el mercado.
-                    </p>
-                    <p style={{ fontWeight: "bold", marginTop: "8px", textDecoration: "underline" }}>
-                        CARPINTERÍA:
-                    </p>
-                    <p>
-                        Zócalos de madera de 5" de alto perfil cuadrado mismo
-                        color de las puertas, en área social, pasillos y
-                        habitaciones.
-                    </p>
-                    <p>
-                        Puertas de madera de ingeniería con enchape de caobilla
-                        liso, de altura piso a cielo con marco de cajuela.
-                    </p>
-                    <p>
-                        Cerradura de entrada tipo cerrojo digital electrónico
-                        de códigos y conectividad wifi.
-                    </p>
-                    <p>
-                        Cerradura en habitaciones tipo manija con llave, acabado
-                        nickel satinado. En baños, closets y área de servicio,
-                        tipo manija sin llave, acabado nickel satinado.
-                    </p>
-                    <p style={{ fontWeight: "bold", marginTop: "8px", textDecoration: "underline" }}>
-                        BAÑOS PRINCIPAL Y SECUNDARIOS:
-                    </p>
-                    <p>
-                        Paredes de duchas y respaldo de sanitarios forradas
-                        piso a cielo con porcelanato español, en formato
-                        60x120cms, imitación piedra color beige o similar.
-                    </p>
-                    <p>
-                        Mampara de vidrio templado en duchas, de 1.90m de alto,
-                        sobre bordillo forrado con porcelanato.
-                    </p>
-                    <p>
-                        Inodoro línea europea color blanco de tanque bajo con
-                        mecanismo de doble descarga 4,5/3L, tapa y asiento con
-                        caída amortiguada.
-                    </p>
-                    <p>
-                        Lavamanos línea europea color blanco de submontar
-                        rectangular, bajo encimera de sinterizado alpine white,
-                        y mueble flotado de melamina con salpicadera de 10cms.
-                    </p>
-                    <p>
-                        Grifería cromada monomando en lavamanos y duchas.
-                        Cabezal de duchas tipo plato.
-                    </p>
-                    <p>
-                        Extractor de olores en cielo con ducto al exterior (si
-                        no hay ventana).
-                    </p>
-                    <p style={{ fontStyle: "italic" }}>
-                        Nota: El color podría variar por falta de
-                        disponibilidad en el mercado.
-                    </p>
-                    <p style={{ fontWeight: "bold", marginTop: "8px", textDecoration: "underline" }}>
-                        BAÑO DE SERVICIO:
-                    </p>
-                    <p>
-                        Paredes de ducha y respaldo de sanitarios forradas piso
-                        a cielo con cerámico esmaltado en formato 45x45cms,
-                        imitación concreto color gris o similar.
-                    </p>
-                    <p>
-                        Inodoro de tanque color blanco, taza redonda y descarga
-                        de manecilla.
-                    </p>
-                    <p>
-                        Lavamanos con pedestal color blanco con grifo para agua
-                        fría.
-                    </p>
-                    <p>Grifería cromada mezcladora de ducha.</p>
-                    <p>Extractor de olores en cielo con ducto al exterior.</p>
-                    <p style={{ fontStyle: "italic" }}>
-                        Nota: El color podría variar por falta de
-                        disponibilidad en el mercado.
-                    </p>
-                    <p style={{ fontWeight: "bold", marginTop: "8px", textDecoration: "underline" }}>
-                        ACABADOS ELÉCTRICOS:
-                    </p>
-                    <p>
-                        Interruptores análogos y tomacorrientes duplex con
-                        placas color blanco brillante, tomacorrientes GFCI en
-                        baños y cocina.
-                    </p>
-                    <p>
-                        Placas de salida previstas para punto de red en salas y
-                        habitaciones.
-                    </p>
-                    <p>
-                        Lámparas tipo ojo de buey en cielo, acabado blanco y
-                        luz LED cálida.
-                    </p>
-                    <p>
-                        Perfil lineal en cielo de cocina con luz LED cálida.
-                    </p>
-                    <p style={{ fontWeight: "bold", marginTop: "8px", textDecoration: "underline" }}>
-                        ACABADO EN BALCONES:
-                    </p>
-                    <p>Cielo suspendido imitación madera para exterior.</p>
-                    <p>
-                        Piso de porcelanato español antideslizante, en formato
-                        60x120 cms, imitación piedra color gris o similar.
-                        Zócalo del mismo material de 10 cms., de alto.
-                    </p>
-                    <p>
-                        Baranda de vidrio templado con perfil de remate inox,
-                        instalada en servilletero de aluminio.
-                    </p>
-                    <p>
-                        Compartimiento previsto para instalar unidades externas
-                        de aire acondicionado con cerramiento tipo louver.
-                    </p>
-                    <p>
-                        Jardinera de concreto con recubrimiento interno
-                        impermeable. Incluye macetero con planta según diseño
-                        paisajístico.
-                    </p>
-                    <p style={{ fontStyle: "italic" }}>
-                        Nota: El color podría variar por falta de
-                        disponibilidad en el mercado.
-                    </p>
-                    <p style={{ fontWeight: "bold", marginTop: "10px" }}>
-                        2. Equipamiento incluido:
-                    </p>
-                    <p style={{ fontWeight: "bold", marginTop: "8px", textDecoration: "underline" }}>
-                        GABINETES DE COCINA:
-                    </p>
-                    <p>
-                        Cocina con interior de melamina seda notte de 18mm o
-                        similar, frentes y puertas de muebles base y aéreos en
-                        tablero alvic color cashmere Md de 18 mm o similar.
-                        Frente y puertas de muebles aéreos en tablero maderado
-                        alvic velasquez 02 de 18 mm o similar. Gavetas con riel
-                        merivobox Blum Cierre suave. Bisagras blumotion cierre
-                        suave. Zócalo de pvc color aluminio. Uñero tipo gola de
-                        aluminio.
-                    </p>
-                    <p>
-                        Top de cocina en sinterizado snowed river o similar,
-                        con salpicadera alta, acabado filo matado con engrosado
-                        de 4cms al frente con corte a 45°.
-                    </p>
-                    <p>
-                        Lavatrastos acero inox una fosa de submontar de 75 cms
-                        de ancho, con grifo monomando tipo cuello de ganso con
-                        aireador doble función.
-                    </p>
-                    <p style={{ fontStyle: "italic" }}>
-                        Nota: El color podría variar por falta de
-                        disponibilidad en el mercado.
-                    </p>
-                    <p style={{ fontWeight: "bold", marginTop: "8px", textDecoration: "underline" }}>
-                        CLOSETS:
-                    </p>
-                    <p>
-                        Walk in closet, módulos de melamina importada de 15 mm
-                        color lino cancun o similar, con entrepaños y
-                        colgadores, gavetas con riel tipo euro cierre suave, no
-                        incluye respaldo.
-                    </p>
-                    <p>
-                        Closet de dormitorios secundarios, mueble interior con
-                        entrepaños en tablero lino cancun de 15 mm o similar.
-                        Frente de gavetas en lino cancun de 15 mm o similar.
-                        Gavetas con riel euro. Puertas abatibles en lino cancun
-                        de 15 mm o similar.
-                    </p>
-                    <p style={{ fontStyle: "italic" }}>
-                        Nota: El color podría variar por falta de
-                        disponibilidad en el mercado.
-                    </p>
-                    <p style={{ fontWeight: "bold", marginTop: "8px", textDecoration: "underline" }}>
-                        LAVANDERÍA:
-                    </p>
-                    <p>
-                        Pileta de un lavadero de fibra de vidrio color blanco
-                        con soporte de metal y chorro cromado.
-                    </p>
-                    <p>
-                        Calentador de agua eléctrico; de paso en apartamentos
-                        con hasta dos duchas; de tanque en apartamentos con
-                        tres duchas o más.
-                    </p>
-                    <p>
-                        Tomas de agua y drenaje en cajilla para lavadora, y
-                        ducto de 4" hacia el exterior para secadora.
-                    </p>
-                    <p style={{ fontStyle: "italic" }}>
-                        Nota: El color podría variar por falta de
-                        disponibilidad en el mercado.
-                    </p>
-                    <p style={{ fontWeight: "bold", marginTop: "8px", textDecoration: "underline" }}>
-                        ELECTRODOMÉSTICOS DE COCINA:
-                    </p>
-                    <p>
-                        Refrigerador Samsung de 25 a 27 pies³ French door color
-                        acero.
-                    </p>
-                    <p>Cooktop eléctrico de 30" Kitchenaid</p>
-                    <p>
-                        Downdraft extractor de olores Kitchenaid oculto dentro
-                        de gabinete con blower.
-                    </p>
-                    <p>Horno eléctrico empotrable de 30" Samsung.</p>
-                    <p>Microondas empotrable con trimkit Samsung.</p>
-                    <p>Dishwasher de 24" Samsung color acero.</p>
-                    <p>Instalación de dichos electrodomésticos.</p>
-                    <p style={{ fontStyle: "italic" }}>
-                        Nota: La marca y el color podrían variar por falta de
-                        disponibilidad en el mercado.
-                    </p>
+                        2. <span style={{ textDecoration: "underline" }}>Equipamiento incluido:</span>
+                    </p>
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        2.1 GABINETES DE COCINA:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Cocina con interior de melamina seda notte de 18mm o
+                            similar, frentes y puertas de muebles base y aéreos en
+                            tablero alvic color cashmere Md de 18 mm o similar.
+                            Frente y puertas de muebles aéreos en tablero maderado
+                            alvic velasquez 02 de 18 mm o similar. Gavetas con riel
+                            merivobox Blum Cierre suave. Bisagras blumotion cierre
+                            suave. Zócalo de pvc color aluminio. Uñero tipo gola de
+                            aluminio.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Top de cocina en sinterizado snowed river o similar,
+                            con salpicadera alta, acabado filo matado con engrosado
+                            de 4cms al frente con corte a 45°.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Lavatrastos acero inox una fosa de submontar de 75 cms
+                            de ancho, con grifo monomando tipo cuello de ganso con
+                            aireador doble función.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        2.2 CLOSETS:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Walk in closet, módulos de melamina importada de 15 mm
+                            color lino cancun o similar, con entrepaños y
+                            colgadores, gavetas con riel tipo euro cierre suave, no
+                            incluye respaldo.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Closet de dormitorios secundarios, mueble interior con
+                            entrepaños en tablero lino cancun de 15 mm o similar.
+                            Frente de gavetas en lino cancun de 15 mm o similar.
+                            Gavetas con riel euro. Puertas abatibles en lino cancun
+                            de 15 mm o similar.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        2.3 LAVANDERÍA:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Pileta de un lavadero de fibra de vidrio color blanco
+                            con soporte de metal y chorro cromado.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Calentador de agua eléctrico; de paso en apartamentos
+                            con hasta dos duchas; de tanque en apartamentos con
+                            tres duchas o más.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Tomas de agua y drenaje en cajilla para lavadora, y
+                            ducto de 4" hacia el exterior para secadora.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        2.4 ELECTRODOMÉSTICOS DE COCINA:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Refrigerador Samsung de 25 a 27 pies³ French door color
+                            acero.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>Cooktop eléctrico de 30" Kitchenaid</li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Downdraft extractor de olores Kitchenaid oculto dentro
+                            de gabinete con blower.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>Horno eléctrico empotrable de 30" Samsung.</li>
+                        <li style={{ marginBottom: "5px" }}>Microondas empotrable con trimkit Samsung.</li>
+                        <li style={{ marginBottom: "5px" }}>Dishwasher de 24" Samsung color acero.</li>
+                        <li style={{ marginBottom: "5px" }}>Instalación de dichos electrodomésticos.</li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: La marca y el color podrían variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
                 </div>
                 <p style={{ marginTop: "15px" }}>
                     Los adquirentes tendrán derecho a utilizar las áreas o
@@ -1052,19 +1049,19 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     <span className="bold">I) PRECIO:</span> El precio total de
                     la compraventa de los bienes prometidos en venta descritos
                     en la cláusula que antecede es de{" "}
-                    <span className="highlight-yellow">
+                    <span className="bold highlight-yellow">
                         {getVal<string>(
                             "Condiciones_Economicas.PrecioLetras",
                             "[PRECIO_LETRAS]",
                         )
                             .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
                             .toUpperCase()}{" "}
-                        DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMERICA (USD.
+                        DOLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
                         {getVal<number>(
                             "Condiciones_Economicas.PrecioNumeros",
                             0,
                         ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                        D.00)
+                        )
                     </span>
                     , el cual incluye el IMPUESTO AL VALOR AGREGADO y el
                     IMPUESTO DEL TIMBRE correspondiente; para lo cual en su
@@ -1103,14 +1100,14 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                 </p>
                 <p>
                     a) Un primer pago por la cantidad de{" "}
-                    <span className="highlight-yellow">
+                    <span className="bold highlight-yellow">
                         {getVal<string>(
                             "Condiciones_Economicas.ReservaLetras",
                             "[RESERVA_LETRAS]",
                         )
                             .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
                             .toUpperCase()}{" "}
-                        DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
+                        DOLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
                         {getVal<number>(
                             "Condiciones_Economicas.ReservaNumeros",
                             0,
@@ -1123,14 +1120,14 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                 </p>
                 <p>
                     b) Un segundo pago por la cantidad total de{" "}
-                    <span className="highlight-yellow">
+                    <span className="bold highlight-yellow">
                         {getVal<string>(
                             "Condiciones_Economicas.SegundoPagoLetras",
                             "[SEGUNDO_PAGO_LETRAS]",
                         )
                             .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
                             .toUpperCase()}{" "}
-                        DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
+                        DOLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
                         {(() => {
                             const v = getVal<number>(
                                 "Condiciones_Economicas.SegundoPagoNumeros",
@@ -1158,73 +1155,65 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     </span>
                     ) pagos a la Promitente Vendedora, de la siguiente forma:
                 </p>
-                <div style={{ marginLeft: "20px" }}>
-                    {(() => {
-                        const pagos = getVal<Pago[]>("Pagos", []);
-                        if (!Array.isArray(pagos) || pagos.length === 0)
-                            return null;
-                        const meses = [
-                            "enero",
-                            "febrero",
-                            "marzo",
-                            "abril",
-                            "mayo",
-                            "junio",
-                            "julio",
-                            "agosto",
-                            "septiembre",
-                            "octubre",
-                            "noviembre",
-                            "diciembre",
-                        ];
-                        return pagos.map((p, idx) => {
-                            if (!p.fecha || !p.value) return null;
-                            const f = new Date(p.fecha);
-                            const diaNum = f.getUTCDate();
-                            const diaLetras = numberToWords(diaNum).toLowerCase();
-                            const mesNombre = meses[f.getUTCMonth()];
-                            const anioLetras = numberToWordsYear(f.getUTCFullYear()).toLowerCase();
-                            const monto = parseFloat(p.value);
-                            return (
-                                <p
-                                    key={idx}
-                                    style={{ margin: "5px 0", textIndent: "0" }}
-                                >
-                                    El día{" "}
-                                    <span className="highlight-red">
-                                        {diaLetras} ({diaNum})
-                                    </span>{" "}
-                                    de{" "}
-                                    <span className="highlight-red">
-                                        {mesNombre}
-                                    </span>{" "}
-                                    de{" "}
-                                    <span className="highlight-red">
-                                        {anioLetras}
-                                    </span>
-                                    , la cantidad de{" "}
-                                    <span className="highlight-red">
-                                        {numberToWords(
-                                            Math.floor(monto),
-                                        ).toUpperCase()}{" "}
-                                        DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA
-                                        (USD.
-                                        {monto.toLocaleString("en-US", {
-                                            minimumFractionDigits: 2,
-                                        })}
-                                        )
-                                    </span>
-                                    .
-                                </p>
-                            );
-                        });
-                    })()}
+                <div style={{ marginLeft: "40px", marginTop: "10px" }}>
+                    <ol style={{ listStyleType: "decimal", paddingLeft: "0" }}>
+                        {(() => {
+                            const pagos = getVal<Pago[]>("Pagos", []);
+                            if (!Array.isArray(pagos) || pagos.length === 0)
+                                return null;
+                            const meses = [
+                                "enero",
+                                "febrero",
+                                "marzo",
+                                "abril",
+                                "mayo",
+                                "junio",
+                                "julio",
+                                "agosto",
+                                "septiembre",
+                                "octubre",
+                                "noviembre",
+                                "diciembre",
+                            ];
+                            return pagos.map((p, idx) => {
+                                if (!p.fecha || !p.value) return null;
+                                const f = new Date(p.fecha);
+                                const diaNum = f.getUTCDate();
+                                const diaLetras = numberToWords(diaNum).toLowerCase();
+                                const mesNombre = meses[f.getUTCMonth()];
+                                const anioLetras = numberToWordsYear(f.getUTCFullYear()).toLowerCase();
+                                const monto = parseFloat(p.value);
+                                return (
+                                    <li
+                                        key={idx}
+                                        style={{ 
+                                            margin: "8px 0", 
+                                            textIndent: "0",
+                                            paddingLeft: "10px"
+                                        }}
+                                    >
+                                        El día {diaLetras} ({diaNum}) de {mesNombre} de {anioLetras}, la cantidad de{" "}
+                                        <span className="bold">
+                                            {numberToWords(Math.floor(monto)).toUpperCase()}{" "}
+                                            DOLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
+                                            {monto.toLocaleString("en-US", {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            })}
+                                            )
+                                        </span>
+                                        .
+                                    </li>
+                                );
+                            });
+                        })()}
+                    </ol>
                 </div>
                 <p>
                     y c) Un último pago por la cantidad de{" "}
-                    <span className="highlight-yellow">
-                        {getSaldoFinal().letras.toUpperCase()} DÓLARES DE LOS
-                        ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
+                    <span className="bold highlight-yellow">
+                        {getSaldoFinal().letras.toUpperCase()} DOLARES DE LOS
+                        ESTADOS UNIDOS DE AMÉRICA (USD.
                         {getSaldoFinal().numeros})
                     </span>{" "}
                     que Yo, LA PARTE PROMITENTE COMPRADORA deberé pagar a LA
@@ -1524,44 +1513,40 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     </span>{" "}
                     En caso de incumplimiento por parte de LA PARTE PROMITENTE
                     COMPRADORA, dará derecho A LA PARTE PROMITENTE VENDEDORA a
-                    proceder de la siguiente forma:{" "}
-                    <span className="bold">1)</span> a dar por concluida la
-                    negociación sin ningún tipo de procedimiento posterior y{" "}
-                    <span className="bold">2)</span> cobrar por concepto de
-                    indemnización y perjuicios, los siguientes montos en los
-                    siguientes casos:
+                    proceder de la siguiente forma: 1) a dar por concluida la
+                    negociación sin ningún tipo de procedimiento posterior y 2)
+                    cobrar por concepto de indemnización y perjuicios, los
+                    siguientes montos en los siguientes casos:
                 </p>
-                <p>
-                    Por desistir de la compra prometida en el presente contrato
-                    por cualquier circunstancia, por la no autorización del
-                    crédito bancario, y por el incumplimiento a lo pactado en el
-                    presente contrato; todo esto después de haber firmado la
-                    presente promesa de compraventa de bienes inmuebles y mueble
-                    (acción):{" "}
-                    <span className="bold">
-                        El diez por ciento (10%) del valor total de la
-                        compraventa pactada en la presente promesa de
-                        compraventa de bienes inmuebles y mueble (acción).
-                    </span>
-                </p>
-                <p>
-                    En el caso de haber solicitado cambios y mejoras en el
-                    inmueble prometido en venta, y estos cambios ya se hubieran
-                    realizado; por desistir de la compra prometida en el
-                    presente contrato por cualquier circunstancia, por la no
-                    autorización del crédito bancario, y por el incumplimiento a
-                    lo pactado en el presente contrato; todo esto después de
-                    haber firmado la presente promesa de compraventa de bienes
-                    inmuebles y mueble (acción):{" "}
-                    <span className="bold">
-                        El diez por ciento (10%) del valor total de la
-                        compraventa pactada en la presente promesa de
-                        compraventa de bienes inmuebles y mueble (acción) más un
-                        fee de CINCO MIL DOLARES DE LOS ESTADOS UNIDOS DE NORTE
-                        AMERICA (USD. 5,000.00), más el monto efectivamente
-                        pagado por estos cambios.
-                    </span>
-                </p>
+                <div style={{ marginLeft: "40px" }}>
+                    <p>
+                        <span className="bold">A.</span> Por desistir de la
+                        compra prometida en el presente contrato por cualquier
+                        circunstancia, por la no autorización del crédito
+                        bancario, y por el incumplimiento a lo pactado en el
+                        presente contrato; todo esto después de haber firmado la
+                        presente promesa de compraventa de bienes inmuebles y
+                        mueble (acción): El diez por ciento (10%) del valor
+                        total de la compraventa pactada en la presente promesa
+                        de compraventa de bienes inmuebles y mueble (acción).
+                    </p>
+                    <p style={{ marginTop: "15px" }}>
+                        <span className="bold">B.</span> En el caso de haber
+                        solicitado cambios y mejoras en el inmueble prometido en
+                        venta, y estos cambios ya se hubieran realizado; por
+                        desistir de la compra prometida en el presente contrato
+                        por cualquier circunstancia, por la no autorización del
+                        crédito bancario, y por el el incumplimiento a lo
+                        pactado en el presente contrato; todo esto después de
+                        haber firmado la presente promesa de compraventa de
+                        bienes inmuebles y mueble (acción): El diez por ciento
+                        (10%) del valor total de la compraventa pactada en la
+                        presente promesa de compraventa de bienes inmuebles y
+                        mueble (acción) más un fee de CINCO MIL DOLARES DE LOS
+                        ESTADOS UNIDOS DE AMÉRICA (USD.5,000.00), más el monto
+                        efectivamente pagado por estos cambios.
+                    </p>
+                </div>
                 <p>
                     En todos los casos anteriores, la penalización se descontará
                     directamente del monto que el cliente hubiera cancelado a la
@@ -1578,14 +1563,14 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     <span className="clause-title">
                         SÉPTIMA: CESIÓN DE DERECHOS.
                     </span>{" "}
-                    LA PARTE PROMITENTE COMPRADORA no podré negociar, ceder,
+                    LA PARTE PROMITENTE COMPRADORA no podrá negociar, ceder,
                     enajenar, o de cualquier otra forma disponer de las
                     obligaciones o derechos que adquiere en este contrato, salvo
                     que cuente con la aprobación previa y por escrito de LA
                     PARTE PROMITENTE VENDEDORA, y esta la autorizará únicamente
                     cuando:{" "}
                     <span className="bold">
-                        i) Ya LA PARTE PROMITENTE COMPRADORA hubiera cancelado
+                        i)Ya LA PARTE PROMITENTE COMPRADORA hubiera cancelado
                         como mínimo el setenta por ciento (70%) del enganche
                         pactado,
                     </span>{" "}
