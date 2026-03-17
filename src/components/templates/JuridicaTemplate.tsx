@@ -25,6 +25,16 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
 
     const datosJuridicos = getVal<DatosJuridicos>("Datos_Juridicos", {});
 
+    const dpiToLetras = (dpi: string): string => {
+        if (!dpi) return "";
+        const normalizado = formatCUI(dpi);
+        return normalizado
+            .trim()
+            .split(/\s+/)
+            .map((bloque) => numberToWords(parseInt(bloque, 10)))
+            .join(" espacio ");
+    };
+
     return (
         <div className="documento-promesa shadow-xl">
             <DocumentStyles />
@@ -146,7 +156,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     de Identificación -DPI-, con Código Único de Identificación
                     -CUI- número{" "}
                     <span className="bold highlight-yellow">
-                        {cuiToWords(datosJuridicos.RepresentanteDPI || "") ||
+                        {dpiToLetras(datosJuridicos.RepresentanteDPI || "") ||
                             "[DPI_LETRAS]"}
                     </span>{" "}
                     (<span className="bold highlight-yellow">{formatCUI(datosJuridicos.RepresentanteDPI || "") || "[DPI]"}</span>), extendido
@@ -1814,9 +1824,9 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     Identificación -DPI-, con Código Único de Identificación
                     -CUI- número{" "}
                     <span className="highlight-yellow">
-                        {datosJuridicos.RepresentanteDPI_Letras ||
+                        {dpiToLetras(datosJuridicos.RepresentanteDPI || "") ||
                             "[DPI_LETRAS]"}{" "}
-                        ({datosJuridicos.RepresentanteDPI || "[DPI]"})
+                        ({formatCUI(datosJuridicos.RepresentanteDPI || "") || "[DPI]"})
                     </span>
                     , extendido por el Registro Nacional de las Personas de la
                     República de Guatemala; y comparece en su calidad de{" "}
