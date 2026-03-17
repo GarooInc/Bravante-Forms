@@ -97,6 +97,7 @@ export interface WebhookData {
     proyecto?: Proyecto;
     Descripcion_del_Inmueble?: {
         Apartamento?: string;
+        Modelo?: string;
         Torre?: string;
         Nivel?: string;
         Nivel_Letras?: string;
