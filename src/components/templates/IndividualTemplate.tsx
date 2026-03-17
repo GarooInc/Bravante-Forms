@@ -16,6 +16,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
     getParqueosDescripcion,
     getFechaLegalizacion,
     getFechaFirma,
+    getSaldoFinal,
     getDireccionComprador,
     getPlazoMeses,
     getMesEntrega,
@@ -405,11 +406,12 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     </span>
                     , ubicado en el nivel{" "}
                     <span className="highlight-red">
-                        {getVal(
-                            "Descripcion_del_Inmueble.Nivel_Letras",
-                            "[NIVEL_LETRAS]",
-                        )}{" "}
-                        ({getVal("Descripcion_del_Inmueble.Nivel")})
+                        {(() => {
+                            const val = getVal("Descripcion_del_Inmueble.Nivel_Letras", "[NIVEL_LETRAS]");
+                            return val !== "[NIVEL_LETRAS]" && val !== "[DATO_FALTANTE]"
+                                ? `${val} (${getVal("Descripcion_del_Inmueble.Nivel")})`
+                                : getVal("Descripcion_del_Inmueble.Nivel");
+                        })()}
                     </span>{" "}
                     del Complejo;{" "}
                     {(() => {
@@ -588,19 +590,21 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     </span>
                     , ubicado en el nivel{" "}
                     <span className="highlight-yellow">
-                        {getVal(
-                            "Descripcion_del_Inmueble.Nivel_Letras",
-                            "[NIVEL_LETRAS]",
-                        )}{" "}
-                        ({getVal("Descripcion_del_Inmueble.Nivel")})
+                        {(() => {
+                            const val = getVal("Descripcion_del_Inmueble.Nivel_Letras", "[NIVEL_LETRAS]");
+                            return val !== "[NIVEL_LETRAS]" && val !== "[DATO_FALTANTE]"
+                                ? `${val} (${getVal("Descripcion_del_Inmueble.Nivel")})`
+                                : getVal("Descripcion_del_Inmueble.Nivel");
+                        })()}
                     </span>{" "}
                     del Complejo; apartamento que consta de{" "}
                     <span className="highlight-yellow">
-                        {getVal(
-                            "Descripcion_del_Inmueble.Habitaciones_Letras",
-                            "[HAB_LETRAS]",
-                        )}{" "}
-                        ({getVal("Descripcion_del_Inmueble.Habitaciones")})
+                        {(() => {
+                            const val = getVal("Descripcion_del_Inmueble.Habitaciones_Letras", "[HAB_LETRAS]");
+                            return val !== "[HAB_LETRAS]" && val !== "[DATO_FALTANTE]"
+                                ? `${val} (${getVal("Descripcion_del_Inmueble.Habitaciones")})`
+                                : getVal("Descripcion_del_Inmueble.Habitaciones");
+                        })()}
                     </span>{" "}
                     habitaciones,{" "}
                     <span className="highlight-yellow">
@@ -675,108 +679,339 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     apartamento son los siguientes:
                 </p>
                 <div style={{ marginLeft: "20px" }}>
-                    <p><span className="bold" style={{ textDecoration: "underline" }}>Acabados incluidos:</span></p>
-                    <p><span className="bold">1. PISOS INTERIORES:</span></p>
-                    <div style={{ marginLeft: "20px" }}>
-                        <p>- <span style={{ textDecoration: "underline" }}>En sala, comedor y habitaciones:</span> Piso de madera de ingeniería roble color "sand" o similar, duelas de 6" de ancho y acabado satinado; instaladas con adhesivo para pisos de madera.</p>
-                        <p>- <span style={{ textDecoration: "underline" }}>En cocina y baños:</span> Piso de porcelanato español, en formato 60x120cms, imitación piedra color beige o similar.</p>
-                        <p>- <span style={{ textDecoration: "underline" }}>En áreas de servicio:</span> Piso de cerámica esmaltada, en formato 45x45 cms, imitación concreto color gris o similar. Zócalo del mismo material de 10 cms., de alto.</p>
-                        <p>- Nota: El color podría variar por falta de disponibilidad en el mercado.</p>
-                    </div>
-                    <p><span className="bold">2. PAREDES:</span></p>
-                    <div style={{ marginLeft: "20px" }}>
-                        <p>- <span className="bold">Muros perimetrales del apartamento</span> construidos en block de concreto, con revestimiento cementicio blanco extra liso.</p>
-                        <p>- <span className="bold">Paredes interiores del apartamento</span> de tablayeso en habitaciones o tabla RH en baños, con acabado liso.</p>
-                        <p>- <span className="bold">Paredes divisorias entre área social y habitaciones</span> incluyen relleno de aislante termo-acústico de fibra celulosa.</p>
-                        <p>- Acabado final incluye una capa de sello blanco más dos capas de pintura látex blanco mate.</p>
-                    </div>
-                    <p><span className="bold">3. CIELOS:</span></p>
-                    <div style={{ marginLeft: "20px" }}>
-                        <p>- Cielo falso de tablayeso a 2.80 m de altura sobre nivel de piso en área social y habitaciones, con acabado liso.</p>
-                        <p>- Cielo falso de tabla RH a 2.60 m de altura sobre nivel de piso en baños y área de servicio, con acabado liso.</p>
-                        <p>- Cenefa oculta de tablayeso para cortinero en dintel de ventanas.</p>
-                        <p>- Acabado final incluye una capa de sello blanco más dos capas de pintura látex blanco mate.</p>
-                    </div>
-                    <p><span className="bold">4. VENTANERÍA:</span></p>
-                    <div style={{ marginLeft: "20px" }}>
-                        <p>- Ventanas de aluminio línea europea color negro, con vidrio laminado gris de 3+4mm., para aislamiento acústico, con apertura proyectable.</p>
-                        <p>- Puertas corredizas de aluminio línea europea color negro, con vidrio monolítico gris de 6mm., de altura piso a cielo en salida a balcones/terraza.</p>
-                        <p>- Nota: El color podría variar por falta de disponibilidad en el mercado.</p>
-                    </div>
-                    <p><span className="bold">5. CARPINTERÍA:</span></p>
-                    <div style={{ marginLeft: "20px" }}>
-                        <p>- Zócalos de madera de 5" de alto perfil cuadrado mismo color de las puertas, en área social, pasillos y habitaciones.</p>
-                        <p>- Puertas de madera de ingeniería con enchape de caobilla liso, de altura piso a cielo con marco de cajuela.</p>
-                        <p>- Cerradura de entrada tipo cerrojo digital electrónico de códigos y conectividad wifi.</p>
-                        <p>- Cerradura en habitaciones tipo manija con llave, acabado nickel satinado. En baños, closets y área de servicio, tipo manija sin llave, acabado nickel satinado.</p>
-                    </div>
-                    <p><span className="bold">6. BAÑOS PRINCIPAL Y SECUNDARIOS:</span></p>
-                    <div style={{ marginLeft: "20px" }}>
-                        <p>- Paredes de duchas y respaldo de sanitarios forradas piso a cielo con porcelanato español, en formato 60x120cms, imitación piedra color beige o similar.</p>
-                        <p>- Mampara de vidrio templado en duchas, de 1.90m de alto, sobre bordillo forrado con porcelanato.</p>
-                        <p>- Inodoro línea europea color blanco de tanque bajo con mecanismo de doble descarga 4,5/3L, tapa y asiento con caída amortiguada.</p>
-                        <p>- Lavamanos línea europea color blanco de submontar rectangular, bajo encimera de sinterizado alpine white, y mueble flotado de melamina con salpicadera de 10cms.</p>
-                        <p>- Grifería cromada monomando en lavamanos y duchas. Cabezal de duchas tipo plato.</p>
-                        <p>- Extractor de olores en cielo con ducto al exterior (si no hay ventana).</p>
-                        <p>- Nota: El color podría variar por falta de disponibilidad en el mercado.</p>
-                    </div>
-                    <p><span className="bold">7. BAÑO DE SERVICIO:</span></p>
-                    <div style={{ marginLeft: "20px" }}>
-                        <p>- Paredes de ducha y respaldo de sanitarios forradas piso a cielo con cerámico esmaltado en formato 45x45cms, imitación concreto color gris o similar.</p>
-                        <p>- Inodoro de tanque color blanco, taza redonda y descarga de manecilla.</p>
-                        <p>- Lavamanos con pedestal color blanco con grifo para agua fría.</p>
-                        <p>- Grifería cromada mezcladora de ducha.</p>
-                        <p>- Extractor de olores en cielo con ducto al exterior.</p>
-                        <p>- Nota: El color podría variar por falta de disponibilidad en el mercado.</p>
-                    </div>
-                    <p><span className="bold">8. ACABADOS ELÉCTRICOS:</span></p>
-                    <div style={{ marginLeft: "20px" }}>
-                        <p>- Interruptores análogos y tomacorrientes duplex con placas color blanco brillante, tomacorrientes GFCI en baños y cocina.</p>
-                        <p>- Placas de salida previstas para punto de red en salas y habitaciones.</p>
-                        <p>- Lámparas tipo ojo de buey en cielo, acabado blanco y luz LED cálida.</p>
-                        <p>- Perfil lineal en cielo de cocina con luz LED cálida.</p>
-                    </div>
-                    <p><span className="bold">9. ACABADO EN BALCONES:</span></p>
-                    <div style={{ marginLeft: "20px" }}>
-                        <p>- Cielo suspendido imitación madera para exterior.</p>
-                        <p>- Piso de porcelanato español antideslizante, en formato 60x120 cms, imitación piedra color gris o similar. Zócalo del mismo material de 10 cms., de alto.</p>
-                        <p>- Baranda de vidrio templado con perfil de remate inox, instalada en servilletero de aluminio.</p>
-                        <p>- Compartimiento previsto para instalar unidades externas de aire acondicionado con cerramiento tipo louver.</p>
-                        <p>- Jardinera de concreto con recubrimiento interno impermeable. Incluye macetero con planta según diseño paisajístico.</p>
-                        <p>- Nota: El color podría variar por falta de disponibilidad en el mercado.</p>
-                    </div>
-                    <p style={{ marginTop: "10px" }}><span className="bold" style={{ textDecoration: "underline" }}>Equipamiento incluido:</span></p>
-                    <p><span className="bold">1. GABINETES DE COCINA:</span></p>
-                    <div style={{ marginLeft: "20px" }}>
-                        <p>- Cocina con interior de melamina seda notte de 18mm o similar, frentes y puertas de muebles base y aéreos en tablero alvic color cashmere Md de 18 mm o similar. Frente y puertas de muebles aéreos en tablero maderado alvic velasquez 02 de 18 mm o similar. Gavetas con riel merivobox Blum Cierre suave. Bisagras blumotion cierre suave. Zócalo de pvc color aluminio. Uñero tipo gola de aluminio.</p>
-                        <p>- Top de cocina en sinterizado snowed river o similar, con salpicadera alta, acabado filo matado con engrosado de 4cms al frente con corte a 45°.</p>
-                        <p>- Lavatrastos acero inox una fosa de submontar de 75 cms de ancho, con grifo monomando tipo cuello de ganso con aireador doble función.</p>
-                        <p>- Nota: El color podría variar por falta de disponibilidad en el mercado.</p>
-                    </div>
-                    <p><span className="bold">2. CLOSETS:</span></p>
-                    <div style={{ marginLeft: "20px" }}>
-                        <p>- Walk in closet, módulos de melamina importada de 15 mm color lino cancun o similar, con entrepaños y colgadores, gavetas con riel tipo euro cierre suave, no incluye respaldo.</p>
-                        <p>- Closet de dormitorios secundarios, mueble interior con entrepaños en tablero lino cancun de 15 mm o similar. Frente de gavetas en lino cancun de 15 mm o similar. Gavetas con riel euro. Puertas abatibles en lino cancun de 15 mm o similar.</p>
-                        <p>- Nota: El color podría variar por falta de disponibilidad en el mercado.</p>
-                    </div>
-                    <p><span className="bold">3. LAVANDERÍA:</span></p>
-                    <div style={{ marginLeft: "20px" }}>
-                        <p>- Pileta de un lavadero de fibra de vidrio color blanco con soporte de metal y chorro cromado.</p>
-                        <p>- Calentador de agua eléctrico; de paso en apartamentos con hasta dos duchas; de tanque en apartamentos con tres duchas o más.</p>
-                        <p>- Tomas de agua y drenaje en cajilla para lavadora, y ducto de 4" hacia el exterior para secadora.</p>
-                        <p>- Nota: El color podría variar por falta de disponibilidad en el mercado.</p>
-                    </div>
-                    <p><span className="bold">4. ELECTRODOMÉSTICOS DE COCINA:</span></p>
-                    <div style={{ marginLeft: "20px" }}>
-                        <p>- Refrigerador Samsung de 25 a 27 pies3 French door color acero.</p>
-                        <p>- Cooktop eléctrico de 30" Kitchenaid.</p>
-                        <p>- Downdraft extractor de olores Kitchenaid oculto dentro de gabinete con blower.</p>
-                        <p>- Horno eléctrico empotrable de 30" Samsung.</p>
-                        <p>- Microondas empotrable con trimkit Samsung.</p>
-                        <p>- Dishwasher de 24" Samsung color acero.</p>
-                        <p>- Instalación de dichos electrodomésticos.</p>
-                        <p>- Nota: La marca y el color podrían variar por falta de disponibilidad en el mercado.</p>
-                    </div>
+                    <p style={{ fontWeight: "bold", marginTop: "10px" }}>
+                        1. <span style={{ textDecoration: "underline" }}>Acabados incluidos:</span>
+                    </p>
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.1 PISOS INTERIORES:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            <span style={{ fontWeight: "bold", textDecoration: "underline" }}>En sala, comedor y habitaciones:</span> Piso de madera de
+                            ingeniería roble color "sand" o similar, duelas de 6"
+                            de ancho y acabado satinado; instaladas con adhesivo
+                            para pisos de madera.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            <span style={{ fontWeight: "bold", textDecoration: "underline" }}>En cocina y baños:</span> Piso de porcelanato español, en
+                            formato 60x120cms, imitación piedra color beige o
+                            similar.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            <span style={{ fontWeight: "bold", textDecoration: "underline" }}>En áreas de servicio:</span> Piso de cerámica esmaltada, en
+                            formato 45x45 cms, imitación concreto color beige o
+                            similar. Zócalo del mismo material de 10 cms., de alto.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
+
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.2 PAREDES:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            <span style={{ fontWeight: "bold" }}>Muros perimetrales del apartamento</span> construidos en block
+                            de concreto, con revestimiento cementicio blanco extra
+                            liso.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            <span style={{ fontWeight: "bold" }}>Paredes interiores del apartamento</span> de tablayeso en
+                            habitaciones o tabla RH en baños, con acabado liso.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            <span style={{ fontWeight: "bold" }}>Paredes divisorias entre área social y habitaciones</span> incluyen relleno de aislante termo-acústico de fibra
+                            celulosa.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Acabado final incluye una capa de sello blanco más dos
+                            capas de pintura látex blanco mate.
+                        </li>
+                    </ul>
+
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.3 CIELOS:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Cielo falso de tablayeso a 2.80 m de altura sobre nivel
+                            de piso en área social y habitaciones, con acabado
+                            liso.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Cielo falso de tabla RH a 2.60 m de altura sobre nivel
+                            de piso en baños y área de servicio, con acabado liso.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Cenefa oculta de tablayeso para cortinero en dintel de
+                            ventanas.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Acabado final incluye una capa de sello blanco más dos
+                            capas de pintura látex blanco mate.
+                        </li>
+                    </ul>
+
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.4 VENTANERÍA:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Ventanas de aluminio línea europea color negro, con
+                            vidrio laminado gris de 3+4mm., para aislamiento
+                            acústico, con apertura proyectable.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Puertas corredizas de aluminio línea europea color
+                            negro, con vidrio monolítico gris de 6mm., de altura
+                            piso a cielo en salida a balcones/terraza.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
+
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.5 CARPINTERÍA:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Zócalos de madera de 5" de alto perfil cuadrado mismo
+                            color de las puertas, en área social, pasillos y
+                            habitaciones.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Puertas de madera de ingeniería con enchape de caobilla
+                            liso, de altura piso a cielo con marco de cajuela.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Cerradura de entrada tipo cerrojo digital electrónico
+                            de códigos y conectividad wifi.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Cerradura en habitaciones tipo manija con llave, acabado
+                            nickel satinado. En baños, closets y área de servicio,
+                            tipo manija sin llave, acabado nickel satinado.
+                        </li>
+                    </ul>
+
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.6 BAÑOS PRINCIPAL Y SECUNDARIOS:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Paredes de duchas y respaldo de sanitarios forradas
+                            piso a cielo con porcelanato español, en formato
+                            60x120cms, imitación piedra color beige o similar.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Mampara de vidrio templado en duchas, de 1.90m de alto,
+                            sobre bordillo forrado con porcelanato.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Inodoro línea europea color blanco de tanque bajo con
+                            mecanismo de doble descarga 4,5/3L, tapa y asiento con
+                            caída amortiguada.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Lavamanos línea europea color blanco de submontar
+                            rectangular, bajo encimera de sinterizado alpine white,
+                            y mueble flotado de melamina con salpicadera de 10cms.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Grifería cromada monomando en lavamanos y duchas.
+                            Cabezal de duchas tipo plato.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Extractor de olores en cielo con ducto al exterior (si
+                            no hay ventana).
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
+
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.7 BAÑO DE SERVICIO:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Paredes de ducha y respaldo de sanitarios forradas piso
+                            a cielo con cerámico esmaltado en formato 45x45cms,
+                            imitación concreto color beige o similar.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Inodoro de tanque color blanco, taza redonda y descarga
+                            de manecilla.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Lavamanos con pedestal color blanco con grifo para agua
+                            fría.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>Grifería cromada mezcladora de ducha.</li>
+                        <li style={{ marginBottom: "5px" }}>Extractor de olores en cielo con ducto al exterior.</li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
+
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.8 ACABADOS ELÉCTRICOS:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Interruptores análogos y tomacorrientes duplex con
+                            placas color blanco brillante, tomacorrientes GFCI en
+                            baños y cocina.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Placas de salida previstas para punto de red en salas y
+                            habitaciones.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Lámparas tipo ojo de buey en cielo, acabado blanco y
+                            luz LED cálida.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Perfil lineal en cielo de cocina con luz LED cálida.
+                        </li>
+                    </ul>
+
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        1.9 ACABADO EN BALCONES:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>Cielo suspendido imitación madera para exterior.</li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Piso de porcelanato español antideslizante, en formato
+                            60x120 cms, imitación piedra color beige o similar.
+                            Zócalo del mismo material de 10 cms., de alto.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Baranda de vidrio templado con perfil de remate inox,
+                            instalada en servilletero de aluminio.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Compartimiento previsto para instalar unidades externas
+                            de aire acondicionado con cerramiento tipo louver.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Jardinera de concreto con recubrimiento interno
+                            impermeable. Incluye macetero con planta según diseño
+                            paisajístico.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
+
+                    <p style={{ fontWeight: "bold", marginTop: "10px" }}>
+                        2. <span style={{ textDecoration: "underline" }}>Equipamiento incluido:</span>
+                    </p>
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        2.1 GABINETES DE COCINA:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Cocina con interior de melamina seda notte de 18mm o
+                            similar, frentes y puertas de muebles base y aéreos en
+                            tablero alvic color cashmere Md de 18 mm o similar.
+                            Frente y puertas de muebles aéreos en tablero maderado
+                            alvic velasquez 02 de 18 mm o similar. Gavetas con riel
+                            merivobox Blum Cierre suave. Bisagras blumotion cierre
+                            suave. Zócalo de pvc color aluminio. Uñero tipo gola de
+                            aluminio.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Top de cocina en sinterizado snowed river o similar,
+                            con salpicadera alta, acabado filo matado con engrosado
+                            de 4cms al frente con corte a 45°.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Lavatrastos acero inox una fosa de submontar de 75 cms
+                            de ancho, con grifo monomando tipo cuello de ganso con
+                            aireador doble función.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
+
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        2.2 CLOSETS:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Walk in closet, módulos de melamina importada de 15 mm
+                            color lino cancun o similar, con entrepaños y
+                            colgadores, gavetas con riel tipo euro cierre suave, no
+                            incluye respaldo.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Closet de dormitorios secundarios, mueble interior con
+                            entrepaños en tablero lino cancun de 15 mm o similar.
+                            Frente de gavetas en lino cancun de 15 mm o similar.
+                            Gavetas con riel euro. Puertas abatibles en lino cancun
+                            de 15 mm o similar.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
+
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        2.3 LAVANDERÍA:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Pileta de un lavadero de fibra de vidrio color blanco
+                            con soporte de metal y chorro cromado.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Calentador de agua eléctrico; de paso en apartamentos
+                            con hasta dos duchas; de tanque en apartamentos con
+                            tres duchas o más.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Tomas de agua y drenaje en cajilla para lavadora, y
+                            ducto de 4" hacia el exterior para secadora.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: El color podría variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
+
+                    <p style={{ fontWeight: "bold", marginTop: "8px" }}>
+                        2.4 ELECTRODOMÉSTICOS DE COCINA:
+                    </p>
+                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
+                        <li style={{ marginBottom: "5px" }}>
+                            Refrigerador Samsung de 25 a 27 pies³ French door color
+                            acero.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>Cooktop eléctrico de 30" Kitchenaid.</li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Downdraft extractor de olores Kitchenaid oculto dentro
+                            de gabinete con blower.
+                        </li>
+                        <li style={{ marginBottom: "5px" }}>Horno eléctrico empotrable de 30" Samsung.</li>
+                        <li style={{ marginBottom: "5px" }}>Microondas empotrable con trimkit Samsung.</li>
+                        <li style={{ marginBottom: "5px" }}>Dishwasher de 24" Samsung color acero.</li>
+                        <li style={{ marginBottom: "5px" }}>Instalación de dichos electrodomésticos.</li>
+                        <li style={{ marginBottom: "5px" }}>
+                            Nota: La marca y el color podrían variar por falta de
+                            disponibilidad en el mercado.
+                        </li>
+                    </ul>
                 </div>
                 <p style={{ marginTop: "15px" }}>
                     Los adquirentes tendrán derecho a utilizar las áreas o
@@ -821,14 +1056,14 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     <span className="bold">I) PRECIO:</span> El precio total de
                     la compraventa de los bienes prometidos en venta descritos
                     en la cláusula que antecede es de{" "}
-                    <span className="highlight-yellow">
+                    <span className="bold highlight-yellow">
                         {getVal<string>(
                             "Condiciones_Economicas.PrecioLetras",
                             "[PRECIO_LETRAS]",
                         )
                             .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
                             .toUpperCase()}{" "}
-                        DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMERICA (USD.
+                        DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
                         {getVal<number>(
                             "Condiciones_Economicas.PrecioNumeros",
                             0,
@@ -873,14 +1108,14 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                 <p>
                     <span className="bold">a)</span> Un primer pago por la
                     cantidad de{" "}
-                    <span className="highlight-yellow">
+                    <span className="bold highlight-yellow">
                         {getVal<string>(
                             "Condiciones_Economicas.ReservaLetras",
                             "[RESERVA_LETRAS]",
                         )
                             .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
                             .toUpperCase()}{" "}
-                        DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
+                        DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
                         {getVal<number>(
                             "Condiciones_Economicas.ReservaNumeros",
                             0,
@@ -924,83 +1159,67 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     </span>
                     ) pagos a la Promitente Vendedora, de la siguiente forma:
                 </p>
-                <div style={{ marginLeft: "20px" }}>
-                    {(() => {
-                        const pagos = getVal<Pago[]>("Pagos", []);
-                        if (!Array.isArray(pagos) || pagos.length === 0)
-                            return null;
-                        const meses = [
-                            "enero",
-                            "febrero",
-                            "marzo",
-                            "abril",
-                            "mayo",
-                            "junio",
-                            "julio",
-                            "agosto",
-                            "septiembre",
-                            "octubre",
-                            "noviembre",
-                            "diciembre",
-                        ];
-                        return pagos.map((p, idx) => {
-                            if (!p.fecha || !p.value) return null;
-                            const f = new Date(p.fecha);
-                            const diaNum = f.getUTCDate();
-                            const diaLetras = numberToWords(diaNum).toLowerCase();
-                            const anioLetras = numberToWordsYear(f.getUTCFullYear()).toLowerCase();
-                            const cuotaNum = idx + 1;
-                            return (
-                                <p
-                                    key={idx}
-                                    style={{ margin: "5px 0", textIndent: "0" }}
-                                >
-                                    {cuotaNum}.{" "}El día{" "}
-                                    <span className="highlight-red">
-                                        {diaLetras} ({diaNum})
-                                    </span>{" "}
-                                    de{" "}
-                                    <span className="highlight-red">
-                                        {meses[f.getUTCMonth()]}
-                                    </span>{" "}
-                                    de{" "}
-                                    <span className="highlight-red">
-                                        {anioLetras}
-                                    </span>
-                                    , la cantidad de{" "}
-                                    <span className="highlight-red">
-                                        {numberToWords(
-                                            Math.floor(parseFloat(p.value)),
-                                        ).toUpperCase()}{" "}
-                                        DÓLARES DE LOS ESTADOS UNIDOS DE
-                                        AMÉRICA (USD.
-                                        {parseFloat(p.value).toLocaleString(
-                                            "en-US",
-                                            { minimumFractionDigits: 2 },
-                                        )}
-                                        ).
-                                    </span>
-                                </p>
-                            );
-                        });
-                    })()}
+                <div style={{ marginLeft: "40px", marginTop: "10px" }}>
+                    <ol style={{ listStyleType: "decimal", paddingLeft: "0" }}>
+                        {(() => {
+                            const pagos = getVal<Pago[]>("Pagos", []);
+                            if (!Array.isArray(pagos) || pagos.length === 0)
+                                return null;
+                            const meses = [
+                                "enero",
+                                "febrero",
+                                "marzo",
+                                "abril",
+                                "mayo",
+                                "junio",
+                                "julio",
+                                "agosto",
+                                "septiembre",
+                                "octubre",
+                                "noviembre",
+                                "diciembre",
+                            ];
+                            return pagos.map((p, idx) => {
+                                if (!p.fecha || !p.value) return null;
+                                const f = new Date(p.fecha);
+                                const diaNum = f.getUTCDate();
+                                const diaLetras = numberToWords(diaNum).toLowerCase();
+                                const mesNombre = meses[f.getUTCMonth()];
+                                const anioLetras = numberToWordsYear(f.getUTCFullYear()).toLowerCase();
+                                const monto = parseFloat(p.value);
+                                return (
+                                    <li
+                                        key={idx}
+                                        style={{ 
+                                            margin: "8px 0", 
+                                            textIndent: "0",
+                                            paddingLeft: "10px"
+                                        }}
+                                    >
+                                        El día {diaLetras} ({diaNum}) de {mesNombre} de {anioLetras}, la cantidad de{" "}
+                                        <span className="bold">
+                                            {numberToWords(Math.floor(monto)).toUpperCase()}{" "}
+                                            DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
+                                            {monto.toLocaleString("en-US", {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            })}
+                                            )
+                                        </span>
+                                        .
+                                    </li>
+                                );
+                            });
+                        })()}
+                    </ol>
                 </div>
                 <p>
                     y <span className="bold">c)</span> Un último pago por la
                     cantidad de{" "}
-                    <span className="highlight-yellow">
-                        {getVal<string>(
-                            "Condiciones_Economicas.TercerPagoLetras",
-                            "[SALDO_LETRAS]",
-                        )
-                            .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
-                            .toUpperCase()}{" "}
-                        DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
-                        {getVal<number>(
-                            "Condiciones_Economicas.TercerPagoNumeros",
-                            getVal<number>("Condiciones_Economicas.SaldoFinanciar", 0),
-                        ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                        )
+                    <span className="bold highlight-yellow">
+                        {getSaldoFinal().letras.toUpperCase()} DÓLARES DE LOS
+                        ESTADOS UNIDOS DE AMÉRICA (USD.
+                        {getSaldoFinal().numeros})
                     </span>{" "}
                     que Yo, LA PARTE PROMITENTE COMPRADORA deberé pagar a LA
                     PARTE PROMITENTE VENDEDORA a más tardar al vencimiento del
