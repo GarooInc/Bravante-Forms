@@ -24,6 +24,15 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
 
     const compradores = getVal<Comprador[]>("Compradores", []);
 
+    const dpiToLetras = (dpi: string): string => {
+        if (!dpi) return "";
+        return dpi
+            .trim()
+            .split(/\s+/)
+            .map((bloque) => numberToWords(parseInt(bloque, 10)))
+            .join(" espacio ");
+    };
+
     return (
         <div className="documento-promesa shadow-xl">
             <DocumentStyles />
@@ -57,15 +66,26 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         marginBottom: "5px",
                     }}
                 >
-                    APARTAMENTO{" "}
                     <span className="highlight-red">
                         {getVal(
                             "Descripcion_del_Inmueble.Apartamento",
-                            "[APARTAMENTO]",
+                            "[ID]",
                         )}
                     </span>{" "}
+                    /{" "}
                     <span className="highlight-red">
-                        {getVal("Descripcion_del_Inmueble.Torre", "[TORRE]")}
+                        {getVal(
+                            "Descripcion_del_Inmueble.Modelo",
+                            "[MODELO]",
+                        )}
+                    </span>{" "}
+                    / NIVEL{" "}
+                    <span className="highlight-red">
+                        {getVal(
+                            "Descripcion_del_Inmueble.Nivel_Letras",
+                            "[NIVEL]",
+                        )}{" "}
+                        ({getVal("Descripcion_del_Inmueble.Nivel", "[#]")})
                     </span>
                 </div>
                 <div
@@ -163,7 +183,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                                 Único de Identificación -CUI-
                                                 número{" "}
                                                 <span className="highlight-yellow">
-                                                    {(c.DPI_Letras || "").toLowerCase()}
+                                                    {dpiToLetras(c.DPI || "")}
                                                 </span>{" "}
                                                 ({c.DPI}), extendido por el
                                                 Registro Nacional de las
@@ -232,7 +252,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                     con Código Único de Identificación -CUI-
                                     número{" "}
                                     <span className="highlight-yellow">
-                                        {(getComprador(0, "DPI_Letras") || "").toLowerCase()}
+                                        {dpiToLetras(getComprador(0, "DPI") || "")}
                                     </span>{" "}
                                     ({getComprador(0, "DPI")}), extendido por el
                                     Registro Nacional de las Personas de la
@@ -1498,17 +1518,8 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                 borderBottom: "1px solid black",
                             }}
                         ></div>
-                        <p
-                            style={{
-                                textAlign: "center",
-                                fontSize: "9pt",
-                                marginTop: "5px",
-                            }}
-                        >
-                            POR LA PARTE VENDEDORA
-                        </p>
                     </div>
-                    {compradores.map((c, idx) => (
+                    {compradores.map((_, idx) => (
                         <div
                             key={idx}
                             style={{ width: "45%", marginBottom: "50px" }}
@@ -1519,17 +1530,6 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                     borderBottom: "1px solid black",
                                 }}
                             ></div>
-                            <p
-                                style={{
-                                    textAlign: "center",
-                                    fontSize: "9pt",
-                                    marginTop: "5px",
-                                }}
-                            >
-                                POR LA PARTE COMPRADORA
-                                <br />
-                                {c.Nombre}
-                            </p>
                         </div>
                     ))}
                 </div>
@@ -1584,7 +1584,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         Identificación -DPI-, con Código Único de Identificación
                         -CUI- número{" "}
                         <span className="highlight-yellow">
-                            {(c.DPI_Letras || "").toLowerCase()} ({c.DPI})
+                            {dpiToLetras(c.DPI || "")} ({c.DPI})
                         </span>
                         , extendido por el Registro Nacional de las Personas de
                         la República de Guatemala;{" "}
