@@ -7,7 +7,7 @@ import type {
     Pago,
 } from "./types";
 import { DocumentStyles } from "./DocumentStyles";
-import { numberToWords, numberToWordsYear, toTitleCase } from "./utils";
+import { numberToWords, numberToWordsYear, toTitleCase, formatCUI } from "./utils";
 
 export const IndividualTemplate: React.FC<TemplateProps> = ({
     data,
@@ -27,7 +27,8 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
 
     const dpiToLetras = (dpi: string): string => {
         if (!dpi) return "";
-        return dpi
+        const normalizado = formatCUI(dpi);
+        return normalizado
             .trim()
             .split(/\s+/)
             .map((bloque) => numberToWords(parseInt(bloque, 10)))
@@ -186,7 +187,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                                 <span className="highlight-yellow">
                                                     {dpiToLetras(c.DPI || "")}
                                                 </span>{" "}
-                                                ({c.DPI}), extendido por el
+                                                ({formatCUI(c.DPI || "")}), extendido por el
                                                 Registro Nacional de las
                                                 Personas de la República de
                                                 Guatemala
@@ -255,7 +256,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                     <span className="highlight-yellow">
                                         {dpiToLetras(getComprador(0, "DPI") || "")}
                                     </span>{" "}
-                                    ({getComprador(0, "DPI")}), extendido por el
+                                    ({formatCUI(getComprador(0, "DPI") || "")}), extendido por el
                                     Registro Nacional de las Personas de la
                                     República de Guatemala; quien en adelante
                                     seré referido simple e indistintamente como{" "}
@@ -1803,7 +1804,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         Identificación -DPI-, con Código Único de Identificación
                         -CUI- número{" "}
                         <span className="highlight-yellow">
-                            {dpiToLetras(c.DPI || "")} ({c.DPI})
+                            {dpiToLetras(c.DPI || "")} ({formatCUI(c.DPI || "")})
                         </span>
                         , extendido por el Registro Nacional de las Personas de
                         la República de Guatemala;{" "}

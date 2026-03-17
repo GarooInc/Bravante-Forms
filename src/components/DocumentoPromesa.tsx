@@ -241,18 +241,11 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                                         (isJuridica
                                             ? firstComp.Nacionalidad
                                             : ""),
-                                    RepresentanteDPI_Letras:
-                                        datosJur.RepresentanteDPI_Letras ||
-                                        datosJur.RepresentanteDPILetras ||
-                                        dt.RepresentanteDPI_Letras ||
-                                        (isJuridica
-                                            ? firstComp.DPI_Letras
-                                            : ""),
+                                    RepresentanteDPI_Letras: "",
                                     RepresentanteDPI:
-                                        datosJur.RepresentanteDPI ||
-                                        dt.NIT_representante_legal ||
+                                        (isJuridica ? firstComp.DPI : "") ||
                                         dt.RepresentanteDPI ||
-                                        (isJuridica ? firstComp.DPI : ""),
+                                        datosJur.RepresentanteDPI,
                                     ActaNotarialFecha:
                                         datosJur.ActaNotarialFecha ||
                                         datosJur.FechaActa ||
@@ -299,11 +292,24 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                                 },
                                 Descripcion_del_Inmueble: {
                                     Apartamento:
-                                        inmueble.Apartamento ||
-                                        dt.Apartamento ||
+                                        (inmueble.Apartamento?.includes(" / ")
+                                            ? inmueble.Apartamento.split(" / ")[0].trim()
+                                            : inmueble.Apartamento) ||
+                                        (dt.Apartamento?.includes(" / ")
+                                            ? dt.Apartamento.split(" / ")[0].trim()
+                                            : dt.Apartamento) ||
                                         dt.id_inmueble
                                             ?.split(" ")[0]
                                             ?.replace("Apt", ""),
+                                    Modelo:
+                                        (inmueble.Apartamento?.includes(" / ")
+                                            ? inmueble.Apartamento.split(" / ").slice(1).join(" / ")
+                                            : undefined) ||
+                                        inmueble.Modelo ||
+                                        dt.nombre_modelo ||
+                                        dt.NombreModelo ||
+                                        dt.modelo ||
+                                        dt.Modelo,
                                     Torre:
                                         inmueble.Torre || dt.Torre || "ETEREA",
                                     Nivel: (() => {
