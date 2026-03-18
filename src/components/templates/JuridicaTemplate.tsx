@@ -1746,15 +1746,6 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                 borderBottom: "1px solid black",
                             }}
                         ></div>
-                        <p
-                            style={{
-                                textAlign: "center",
-                                fontSize: "9pt",
-                                marginTop: "5px",
-                            }}
-                        >
-                            POR LA PARTE VENDEDORA
-                        </p>
                     </div>
                     <div style={{ width: "45%", marginBottom: "50px" }}>
                         <div
@@ -1763,19 +1754,6 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                 borderBottom: "1px solid black",
                             }}
                         ></div>
-                        <p
-                            style={{
-                                textAlign: "center",
-                                fontSize: "9pt",
-                                marginTop: "5px",
-                            }}
-                        >
-                            POR LA ENTIDAD{" "}
-                            <span className="highlight-yellow">
-                                {datosJuridicos.EmpresaNombre ||
-                                    "[NOMBRE_EMPRESA]"}
-                            </span>
-                        </p>
                     </div>
                 </div>
             </div>
