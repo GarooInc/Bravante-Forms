@@ -7,7 +7,7 @@ import type {
     Pago,
 } from "./types";
 import { DocumentStyles } from "./DocumentStyles";
-import { numberToWords, numberToWordsYear, toTitleCase, formatCUI, cuiToWords, idToWords } from "./utils";
+import { numberToWords, numberToWordsYear, toTitleCase, formatCUI, idToWords } from "./utils";
 
 export const JuridicaTemplate: React.FC<TemplateProps> = ({
     data,
