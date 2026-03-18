@@ -7,7 +7,7 @@ import type {
     Pago,
 } from "./types";
 import { DocumentStyles } from "./DocumentStyles";
-import { numberToWords, numberToWordsYear, toTitleCase, formatCUI, cuiToWords, idToWords } from "./utils";
+import { numberToWords, numberToWordsYear, toTitleCase, formatCUI, idToWords } from "./utils";
 
 export const JuridicaTemplate: React.FC<TemplateProps> = ({
     data,
@@ -1746,15 +1746,6 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                 borderBottom: "1px solid black",
                             }}
                         ></div>
-                        <p
-                            style={{
-                                textAlign: "center",
-                                fontSize: "9pt",
-                                marginTop: "5px",
-                            }}
-                        >
-                            POR LA PARTE VENDEDORA
-                        </p>
                     </div>
                     <div style={{ width: "45%", marginBottom: "50px" }}>
                         <div
@@ -1763,19 +1754,6 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                 borderBottom: "1px solid black",
                             }}
                         ></div>
-                        <p
-                            style={{
-                                textAlign: "center",
-                                fontSize: "9pt",
-                                marginTop: "5px",
-                            }}
-                        >
-                            POR LA ENTIDAD{" "}
-                            <span className="highlight-yellow">
-                                {datosJuridicos.EmpresaNombre ||
-                                    "[NOMBRE_EMPRESA]"}
-                            </span>
-                        </p>
                     </div>
                 </div>
             </div>
