@@ -35,6 +35,59 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
             .join(" espacio ");
     };
 
+    const isFemale = (c: Comprador | any) => {
+        const estado = (c.EstadoCivil || "").toLowerCase();
+        if (["casada", "soltera", "divorciada", "viuda", "unida"].includes(estado)) return true;
+        if (["casado", "soltero", "divorciado", "viudo", "unido"].includes(estado)) return false;
+        
+        const firstName = (c.Nombre || "").trim().split(' ')[0].toLowerCase();
+        if (firstName.endsWith("a") && !["luca"].includes(firstName)) return true;
+        const femaleNames = ["carmen", "ruth", "miriam", "lilian", "evelyn", "mabel", "maribel", "marisol", "beatriz", "astrid", "ingrid", "karen", "shirley", "helen", "gladys", "doris", "ivonne", "judith", "raquel", "abigail", "sarai", "margarita", "isabel", "pilar", "dolores", "rosario"];
+        return femaleNames.includes(firstName);
+    };
+
+    const getNacionalidad = (c: Comprador | any) => {
+        const nac = (c.Nacionalidad || "").toLowerCase();
+        const fem = isFemale(c);
+        if (nac === "guatemala" || nac === "guatemalteco" || nac === "guatemalteca") return fem ? "guatemalteca" : "guatemalteco";
+        if (nac === "el salvador") return fem ? "salvadoreña" : "salvadoreño";
+        if (nac === "honduras") return fem ? "hondureña" : "hondureño";
+        if (nac === "mexico" || nac === "méxico") return fem ? "mexicana" : "mexicano";
+        return nac;
+    };
+
+    const getProfesion = (c: Comprador | any) => {
+        let prof = (c.Profesion || "").toLowerCase().trim();
+        if (isFemale(c)) {
+            if (prof.endsWith("o")) {
+                if (prof === "medico" || prof === "médico") return "médica";
+                prof = prof.slice(0, -1) + "a";
+            } else if (prof.endsWith("or")) {
+                prof = prof + "a";
+            }
+        }
+        return toTitleCase(prof);
+    };
+
+    const getPartyLabel = (comps: any[]) => {
+        if (comps.length > 1) {
+            const allFemale = comps.every(c => isFemale(c));
+            return allFemale ? "LAS PROMITENTES COMPRADORAS" : "LOS PROMITENTES COMPRADORES";
+        } else if (comps.length === 1) {
+            return isFemale(comps[0]) ? "LA PROMITENTE COMPRADORA" : "EL PROMITENTE COMPRADOR";
+        }
+        return "EL PROMITENTE COMPRADOR";
+    };
+
+    const getSecondaryPartyLabel = (comps: any[]) => {
+        if (comps.length > 1) {
+            return "LA PARTE PROMITENTE COMPRADORA";
+        } else if (comps.length === 1) {
+            return "LA PARTE PROMITENTE COMPRADORA";
+        }
+        return "LA PARTE PROMITENTE COMPRADORA";
+    };
+
     return (
         <div className="documento-promesa shadow-xl">
             <DocumentStyles />
@@ -161,20 +214,15 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                                 </span>{" "}
                                                 años de edad,{" "}
                                                 <span className="highlight-yellow">
-                                                    {(
-                                                        c.EstadoCivil || ""
-                                                    ).toLowerCase()}
+                                                    {(c.EstadoCivil || "").toLowerCase()}
                                                 </span>
                                                 ,{" "}
                                                 <span className="highlight-yellow">
-                                                    {toTitleCase(c.Profesion || "")}
+                                                    {getProfesion(c)}
                                                 </span>
                                                 ,{" "}
                                                 <span className="highlight-yellow">
-                                                    {(
-                                                        c.Nacionalidad ||
-                                                        "guatemalteco"
-                                                    ).toLowerCase()}
+                                                    {getNacionalidad(c)}
                                                 </span>
                                                 , de este domicilio,{" "}
                                                 {compradores.length > 1
@@ -207,13 +255,11 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                         : "seré referido"}{" "}
                                     simple e indistintamente como{" "}
                                     <span className="party-name">
-                                        {compradores.length > 1
-                                            ? "LOS PROMITENTES COMPRADORES"
-                                            : "EL PROMITENTE COMPRADOR"}
+                                        {getPartyLabel(compradores)}
                                     </span>
                                     {compradores.length > 1 ? " o " : " o "}
                                     <span className="party-name">
-                                        "LA PARTE PROMITENTE COMPRADORA"
+                                        "{getSecondaryPartyLabel(compradores)}"
                                     </span>
                                     .
                                 </>
@@ -223,49 +269,43 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                 <>
                                     Yo,{" "}
                                     <span className="highlight-yellow">
-                                        {getComprador(0, "Nombre")}
+                                        {compradores[0]?.Nombre || getComprador(0, "Nombre")}
                                     </span>
                                     , quien declaro ser de{" "}
                                     <span className="highlight-yellow">
-                                        {(getComprador(0, "Edad_Letras") || "").toLowerCase()}
+                                        {(compradores[0]?.Edad_Letras || getComprador(0, "Edad_Letras") || "").toLowerCase()}
                                     </span>{" "}
                                     años de edad,{" "}
                                     <span className="highlight-yellow">
                                         {(
-                                            getComprador(0, "EstadoCivil") || ""
+                                            compradores[0]?.EstadoCivil || getComprador(0, "EstadoCivil") || ""
                                         ).toLowerCase()}
                                     </span>
                                     ,{" "}
                                     <span className="highlight-yellow">
-                                        {toTitleCase(getComprador(0, "Profesion") || "")}
+                                        {getProfesion(compradores[0] || {})}
                                     </span>
                                     ,{" "}
                                     <span className="highlight-yellow">
-                                        {(
-                                            getComprador(
-                                                0,
-                                                "Nacionalidad",
-                                                "guatemalteco",
-                                            ) || ""
-                                        ).toLowerCase()}
+                                        {getNacionalidad(compradores[0] || {})}
                                     </span>
                                     , de este domicilio, me identifico con el
                                     Documento Personal de Identificación -DPI-,
                                     con Código Único de Identificación -CUI-
                                     número{" "}
                                     <span className="highlight-yellow">
-                                        {dpiToLetras(getComprador(0, "DPI") || "")}
+                                        {dpiToLetras(compradores[0]?.DPI || getComprador(0, "DPI") || "")}
                                     </span>{" "}
-                                    ({formatCUI(getComprador(0, "DPI") || "")}), extendido por el
+                                    ({formatCUI(compradores[0]?.DPI || getComprador(0, "DPI") || "")}), extendido por el
                                     Registro Nacional de las Personas de la
                                     República de Guatemala; quien en adelante
                                     seré referido simple e indistintamente como{" "}
                                     <span className="party-name">
-                                        "LA PARTE PROMITENTE COMPRADORA"
+                                        "{getSecondaryPartyLabel(compradores)}"
                                     </span>{" "}
                                     o{" "}
                                     <span className="party-name">
-                                        "EL PROMITENTE COMPRADOR"
+                                        "{getPartyLabel(compradores)}"
                                     </span>
                                     .
                                 </>
@@ -1068,8 +1108,8 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         {getVal<number>(
                             "Condiciones_Economicas.PrecioNumeros",
                             0,
-                        ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                        D.00), el cual incluye el IMPUESTO AL VALOR AGREGADO y
+                        ).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ), el cual incluye el IMPUESTO AL VALOR AGREGADO y
                         el IMPUESTO DEL TIMBRE correspondiente;
                     </span>{" "}
                     para lo cual en su momento se podrían redactar dos
