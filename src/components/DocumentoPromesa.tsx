@@ -413,23 +413,31 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                                         inmueble.Estacionamientos ||
                                         dt.Estacionamientos ||
                                         []
-                                    ).map((e: any) => ({
-                                        Numero: e.Numero,
-                                        Numero_Letras: e.Numero_Letras,
-                                        Sotano: e.Sotano || "1",
-                                        Sotano_Letras: e.Sotano_Letras || "UNO",
-                                        Tipo: e.Tipo,
-                                    })),
+                                    ).map((e: any) => {
+                                        const cleanNum = (e.Numero || "").toString().replace(/^(?:PS|BS|P\.S\.|B\.S\.)[-\s]*/i, "");
+                                        const cleanLetras = (e.Numero_Letras || "").toString().replace(/^(?:pe ese|be ese|ps|bs)[-\s]*/i, "");
+                                        return {
+                                            Numero: cleanNum,
+                                            Numero_Letras: cleanLetras || e.Numero_Letras,
+                                            Sotano: e.Sotano || "1",
+                                            Sotano_Letras: e.Sotano_Letras || "UNO",
+                                            Tipo: e.Tipo,
+                                        };
+                                    }),
                                     Bodegas: (
                                         inmueble.Bodegas ||
                                         dt.Bodegas ||
                                         []
-                                    ).map((b: any) => ({
-                                        Numero: b.Numero,
-                                        Numero_Letras: b.Numero_Letras,
-                                        Sotano: b.Sotano || "1",
-                                        Sotano_Letras: b.Sotano_Letras || "UNO",
-                                    })),
+                                    ).map((b: any) => {
+                                        const cleanNum = (b.Numero || "").toString().replace(/^(?:PS|BS|P\.S\.|B\.S\.)[-\s]*/i, "");
+                                        const cleanLetras = (b.Numero_Letras || "").toString().replace(/^(?:pe ese|be ese|ps|bs)[-\s]*/i, "");
+                                        return {
+                                            Numero: cleanNum,
+                                            Numero_Letras: cleanLetras || b.Numero_Letras,
+                                            Sotano: b.Sotano || "1",
+                                            Sotano_Letras: b.Sotano_Letras || "UNO",
+                                        };
+                                    }),
                                 },
                                 Condiciones_Economicas: {
                                     PrecioLetras: stripCurrency(
@@ -787,44 +795,73 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
 
         setExportingWord(true);
         try {
-            const HTMLtoDOCX = (await import("html-to-docx")).default;
-
-            // Recolectar estilos del documento
+            // Find all unique styles matching the document components
             const styles = Array.from(document.querySelectorAll("style"))
                 .map((s) => s.textContent || "")
+                .filter((text) => text.includes("documento-promesa") || text.includes("highlight-"))
                 .join("\n");
 
-            const htmlString = `<!DOCTYPE html>
-<html>
+            const htmlContent = `
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
 <head>
     <meta charset="utf-8">
-    <style>${styles}</style>
+    <title>Promesa de Compraventa</title>
+    <style>
+        @page {
+            size: 21.59cm 27.94cm; /* Carta/Letter */
+            margin: 2.54cm 2.54cm 2.54cm 2.54cm;
+            mso-page-orientation: portrait;
+        }
+        @page Section1 {
+            size: 21.59cm 27.94cm;
+            margin: 2.54cm 2.54cm 2.54cm 2.54cm;
+            mso-header-margin: 1.25cm;
+            mso-footer-margin: 1.25cm;
+            mso-paper-source: 0;
+        }
+        div.Section1 { page: Section1; }
+        body {
+            font-family: Arial, "Times New Roman", serif;
+            font-size: 11pt;
+            background: white;
+            color: black;
+        }
+        .documento-promesa {
+            box-shadow: none !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+        }
+        /* Inject the document specific CSS without Tailwind */
+        ${styles}
+    </style>
+    <!--[if gte mso 9]>
+    <xml>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>100</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
 </head>
-<body>${element.outerHTML}</body>
+<body>
+    <div class="Section1">
+        ${element.outerHTML}
+    </div>
+</body>
 </html>`;
 
-            const fileBuffer = await HTMLtoDOCX(htmlString, undefined, {
-                table: { row: { cantSplit: true } },
-                footer: false,
-                pageNumber: false,
-                font: "Times New Roman",
-                fontSize: 24,
-                margins: {
-                    top: 1440,
-                    right: 1440,
-                    bottom: 1440,
-                    left: 1440,
-                },
-            });
-
-            const blob = new Blob([fileBuffer as BlobPart], {
-                type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            // Adding byte order mark for UTF-8
+            const blob = new Blob(['\ufeff', htmlContent], {
+                type: 'application/msword'
             });
 
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `promesa-${id || "documento"}.docx`;
+            a.download = `promesa-${id || "documento"}.doc`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);

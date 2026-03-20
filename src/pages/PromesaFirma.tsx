@@ -9,6 +9,7 @@ const PromesaFirma: React.FC = () => {
     const [urlId, setUrlId] = useState<string | null>(null);
     const [nameclient, setName] = useState<string>("");
     const [copied, setCopied] = useState(false);
+    const [exportingWord, setExportingWord] = useState(false);
 
     const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false);
     const [modalViewMode, setModalViewMode] = useState<'html' | 'markdown'>('html');
@@ -56,6 +57,90 @@ const PromesaFirma: React.FC = () => {
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
             });
+        }
+    };
+
+    const handleExportWord = async () => {
+        const root = modalDocRootRef.current;
+        const element = root?.querySelector(".documento-promesa") as HTMLElement | null;
+        if (!element) return;
+
+        setExportingWord(true);
+        try {
+            // Find specific styles matching the document and exclude Tailwind noise
+            const styles = Array.from(document.querySelectorAll("style"))
+                .map((s) => s.textContent || "")
+                .filter((text) => text.includes("documento-promesa") || text.includes("highlight-"))
+                .join("\n");
+
+            const htmlContent = `
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+    <meta charset="utf-8">
+    <title>Promesa de Compraventa</title>
+    <style>
+        @page {
+            size: 21.59cm 27.94cm; /* Carta/Letter */
+            margin: 2.54cm 2.54cm 2.54cm 2.54cm;
+            mso-page-orientation: portrait;
+        }
+        @page Section1 {
+            size: 21.59cm 27.94cm;
+            margin: 2.54cm 2.54cm 2.54cm 2.54cm;
+            mso-header-margin: 1.25cm;
+            mso-footer-margin: 1.25cm;
+            mso-paper-source: 0;
+        }
+        div.Section1 { page: Section1; }
+        body {
+            font-family: Arial, "Times New Roman", serif;
+            font-size: 11pt;
+            background: white;
+            color: black;
+        }
+        .documento-promesa {
+            box-shadow: none !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+        }
+        ${styles}
+    </style>
+    <!--[if gte mso 9]>
+    <xml>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>100</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+</head>
+<body>
+    <div class="Section1">
+        ${element.outerHTML}
+    </div>
+</body>
+</html>`;
+
+            const blob = new Blob(['\ufeff', htmlContent], {
+                type: 'application/msword'
+            });
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `promesa-${id || "documento"}.doc`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Error exportando a Word:", err);
+            alert("Error al exportar. Por favor intenta de nuevo.");
+        } finally {
+            setExportingWord(false);
         }
     };
 
@@ -481,6 +566,26 @@ const PromesaFirma: React.FC = () => {
                                          className="btn btn-xs bg-[#6366f1]/10 text-[#6366f1] border-[#6366f1]/30 hover:bg-[#6366f1] hover:text-white font-bold px-4"
                                      >
                                          Imprimir / PDF
+                                     </button>
+
+                                     {/* Export Word */}
+                                     <button
+                                         onClick={handleExportWord}
+                                         disabled={exportingWord}
+                                         className={`btn btn-xs font-bold px-4 border-none ${
+                                             exportingWord
+                                                 ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                                                 : 'bg-[#16a34a]/10 text-[#16a34a] hover:bg-[#16a34a] hover:text-white'
+                                         }`}
+                                     >
+                                         {exportingWord ? (
+                                             <>
+                                                 <span className="loading loading-spinner loading-xs mr-1"></span>
+                                                 Exportando...
+                                             </>
+                                         ) : (
+                                             'Exportar Word'
+                                         )}
                                      </button>
 
                                      <div className="w-px h-6 bg-gray-800 mx-1"></div>
