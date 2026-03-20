@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useParams } from "react-router-dom";
 import { IndividualTemplate } from "./templates/IndividualTemplate";
@@ -26,6 +26,8 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
     const { id } = useParams();
     const [data, setData] = useState<WebhookData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [exportingWord, setExportingWord] = useState(false);
+    const documentRef = useRef<HTMLDivElement>(null);
 
     // Fallback internal state
     const [internalShowWebhookData, setInternalShowWebhookData] =
@@ -779,6 +781,62 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
 
     const tipoPersona = data?.TipoPersona || "individual";
 
+    const handleExportWord = async () => {
+        const element = documentRef.current;
+        if (!element) return;
+
+        setExportingWord(true);
+        try {
+            const HTMLtoDOCX = (await import("html-to-docx")).default;
+
+            // Recolectar estilos del documento
+            const styles = Array.from(document.querySelectorAll("style"))
+                .map((s) => s.textContent || "")
+                .join("\n");
+
+            const htmlString = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>${styles}</style>
+</head>
+<body>${element.outerHTML}</body>
+</html>`;
+
+            const fileBuffer = await HTMLtoDOCX(htmlString, undefined, {
+                table: { row: { cantSplit: true } },
+                footer: false,
+                pageNumber: false,
+                font: "Times New Roman",
+                fontSize: 24,
+                margins: {
+                    top: 1440,
+                    right: 1440,
+                    bottom: 1440,
+                    left: 1440,
+                },
+            });
+
+            const blob = new Blob([fileBuffer as BlobPart], {
+                type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            });
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `promesa-${id || "documento"}.docx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error("Error exportando a Word:", err);
+            alert("Error al exportar. Por favor intenta de nuevo.");
+        } finally {
+            setExportingWord(false);
+        }
+    };
+
     return (
         <div
             style={{
@@ -840,6 +898,43 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                         >
                             Imprimir / PDF
                         </button>
+                        <button
+                            onClick={handleExportWord}
+                            disabled={exportingWord}
+                            style={{
+                                padding: "8px 16px",
+                                borderRadius: "6px",
+                                fontWeight: 600,
+                                cursor: exportingWord ? "not-allowed" : "pointer",
+                                border: "none",
+                                backgroundColor: exportingWord ? "#9ca3af" : "#16a34a",
+                                color: "#ffffff",
+                                boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                transition: "background-color 0.2s",
+                            }}
+                        >
+                            {exportingWord ? (
+                                <>
+                                    <span
+                                        style={{
+                                            width: "14px",
+                                            height: "14px",
+                                            border: "2px solid rgba(255,255,255,0.4)",
+                                            borderTop: "2px solid #fff",
+                                            borderRadius: "50%",
+                                            display: "inline-block",
+                                            animation: "spin 0.8s linear infinite",
+                                        }}
+                                    />
+                                    Exportando...
+                                </>
+                            ) : (
+                                "Exportar Word"
+                            )}
+                        </button>
                     </div>
                 </div>
             )}
@@ -867,6 +962,7 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
             )}
 
             <div
+                ref={documentRef}
                 className="content-area"
                 style={{
                     display: "flex",
@@ -881,6 +977,10 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                         .no-print { display: none !important; }
                         body { background: white !important; }
                         .content-area { padding: 0 !important; background: white !important; }
+                    }
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
                     }
                 `}</style>
                 {tipoPersona === "juridica" ? (
