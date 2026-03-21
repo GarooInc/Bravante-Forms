@@ -42,16 +42,6 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
             <div id="inicio" className="document-header">
                 <div
                     style={{
-                        fontSize: "28pt",
-                        fontFamily: "'Times New Roman', Times, serif",
-                        fontWeight: "bold",
-                        marginBottom: "5px",
-                    }}
-                >
-                    BRAVANTE
-                </div>
-                <div
-                    style={{
                         fontSize: "12pt",
                         fontWeight: "bold",
                         textTransform: "uppercase",
@@ -394,7 +384,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                 >
                                     o{" "}
                                     <span className="bold highlight-red">
-                                        {(p.Numero_Letras || "").toUpperCase()} ({p.Numero})
+                                        {idToWords(p.Numero || "").toUpperCase()} ({p.Numero})
                                     </span>
                                     , ubicada en el sótano número:{" "}
                                     <span className="bold highlight-red">
@@ -458,7 +448,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                     >
                                         o{" "}
                                         <span className="bold highlight-red">
-                                            {(b.Numero_Letras || "").toUpperCase()} ({b.Numero})
+                                            {idToWords(b.Numero || "").toUpperCase()} ({b.Numero})
                                         </span>
                                         , ubicada en el sótano número:{" "}
                                         <span className="bold highlight-red">
@@ -541,13 +531,13 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                             "Descripcion_del_Inmueble.AreaConstruccionLetras",
                         )}
                     </span>{" "}
-                    (
+                    metros cuadrados (
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.AreaConstruccionNumeros",
                         )}
                     </span>{" "}
-                    metros cuadrados) de construcción;{" "}
+                    m2) de construcción;{" "}
                     <span className="bold">b)</span>{" "}
                     <span className="highlight-red">
                         {getParqueosDescripcion()}
@@ -616,11 +606,11 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                             "[BALCON_LETRAS]",
                                         )}
                                     </span>{" "}
-                                    (
+                                    metros cuadrados (
                                     <span className="highlight-red">
                                         {balconArea}
                                     </span>{" "}
-                                    metros cuadrados); y{" "}
+                                    m2); y{" "}
                                     <span className="bold">
                                         {hasBodegas ? "e" : "d"})
                                     </span>{" "}
@@ -631,11 +621,11 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                             "[TERRAZA_LETRAS]",
                                         )}
                                     </span>{" "}
-                                    (
+                                    metros cuadrados (
                                     <span className="highlight-red">
                                         {terrazaArea}
                                     </span>{" "}
-                                    metros cuadrados)
+                                    m2)
                                 </>
                             );
                         }
@@ -649,13 +639,13 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                         "Descripcion_del_Inmueble.TerrazaBalconAreaLetras",
                                     )}
                                 </span>{" "}
-                                (
+                                metros cuadrados (
                                 <span className="highlight-red">
                                     {getVal(
                                         "Descripcion_del_Inmueble.TerrazaBalconAreaNumeros",
                                     )}
                                 </span>{" "}
-                                metros cuadrados)
+                                m2)
                             </>
                         );
                     })()}
