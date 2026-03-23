@@ -95,6 +95,16 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
             <div id="inicio" className="document-header">
                 <div
                     style={{
+                        fontSize: "28pt",
+                        fontFamily: "'Times New Roman', Times, serif",
+                        fontWeight: "bold",
+                        marginBottom: "5px",
+                    }}
+                >
+                    BRAVANTE
+                </div>
+                <div
+                    style={{
                         fontSize: "12pt",
                         fontWeight: "bold",
                         textTransform: "uppercase",
@@ -111,15 +121,26 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         marginBottom: "5px",
                     }}
                 >
-                    APARTAMENTO{" "}
                     <span className="highlight-red">
                         {getVal(
                             "Descripcion_del_Inmueble.Apartamento",
-                            "[APARTAMENTO]",
+                            "[ID]",
                         )}
                     </span>{" "}
+                    /{" "}
                     <span className="highlight-red">
-                        {getVal("Descripcion_del_Inmueble.Torre", "[TORRE]")}
+                        {getVal(
+                            "Descripcion_del_Inmueble.Modelo",
+                            "[MODELO]",
+                        )}
+                    </span>{" "}
+                    / NIVEL{" "}
+                    <span className="highlight-red">
+                        {getVal(
+                            "Descripcion_del_Inmueble.Nivel_Letras",
+                            "[NIVEL]",
+                        )}{" "}
+                        ({getVal("Descripcion_del_Inmueble.Nivel", "[#]")})
                     </span>
                 </div>
                 <div
@@ -203,7 +224,10 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                                 <span className="highlight-yellow">
                                                     {getNacionalidad(c)}
                                                 </span>
-                                                , de este domicilio, me identifico
+                                                , de este domicilio,{" "}
+                                                {compradores.length > 1
+                                                    ? "nos identificamos"
+                                                    : "me identifico"}{" "}
                                                 con el Documento Personal de
                                                 Identificación -DPI-, con Código
                                                 Único de Identificación -CUI-
@@ -221,17 +245,21 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                             </React.Fragment>
                                         );
                                     })}
-                                    ; en adelante referido simple e indistintamente como{" "}
+                                    ;{" "}
+                                    {compradores.length > 1
+                                        ? "quienes"
+                                        : "quien"}{" "}
+                                    en adelante{" "}
+                                    {compradores.length > 1
+                                        ? "seremos referidos"
+                                        : "seré referido"}{" "}
+                                    simple e indistintamente como{" "}
+                                    <span className="party-name">
+                                        {getPartyLabel(compradores)}
+                                    </span>
+                                    {compradores.length > 1 ? " o " : " o "}
                                     <span className="party-name">
                                         "{getSecondaryPartyLabel(compradores)}"
-                                    </span>
-                                    ,{" "}
-                                    <span className="party-name">
-                                        "{getPartyLabel(compradores)}"
-                                    </span>{" "}
-                                    o{" "}
-                                    <span className="party-name">
-                                        "EL PROMITENTE COMPRADOR"
                                     </span>
                                     .
                                 </>
@@ -274,14 +302,10 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                     seré referido simple e indistintamente como{" "}
                                     <span className="party-name">
                                         "{getSecondaryPartyLabel(compradores)}"
-                                    </span>
-                                    ,{" "}
-                                    <span className="party-name">
-                                        "{getPartyLabel(compradores)}"
                                     </span>{" "}
                                     o{" "}
                                     <span className="party-name">
-                                        "EL PROMITENTE COMPRADOR"
+                                        "{getPartyLabel(compradores)}"
                                     </span>
                                     .
                                 </>
@@ -477,7 +501,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                 >
                                     o{" "}
                                     <span className="highlight-red">
-                                        {idToWords(p.Numero || "").toUpperCase()}
+                                        {idToWords(p.Numero || "") || "[NUMERO_LETRAS]"}
                                     </span>{" "}
                                     (
                                     <span className="highlight-red">
@@ -550,7 +574,8 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                     >
                                         o{" "}
                                         <span className="highlight-red">
-                                            {idToWords(b.Numero || "").toUpperCase()}
+                                            {idToWords(b.Numero || "") ||
+                                                "[NUMERO_LETRAS]"}
                                         </span>
                                         , ubicada en el sótano número:{" "}
                                         <span className="highlight-red">
@@ -583,19 +608,17 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     </span>{" "}
                     LA PARTE PROMITENTE VENDEDORA, manifiesto que por el
                     presente instrumento prometo vender a{" "}
-                    <span className="highlight-yellow">
-                        {(() => {
-                            if (compradores.length > 1) {
-                                const nombres = compradores.map((c) => c.Nombre);
-                                return (
-                                    nombres.slice(0, -1).join(", ") +
-                                    " y " +
-                                    nombres.slice(-1)
-                                );
-                            }
-                            return getComprador(0, "Nombre");
-                        })()}
-                    </span>{" "}
+                    {(() => {
+                        if (compradores.length > 1) {
+                            const nombres = compradores.map((c) => c.Nombre);
+                            return (
+                                nombres.slice(0, -1).join(", ") +
+                                " y " +
+                                nombres.slice(-1)
+                            );
+                        }
+                        return getComprador(0, "Nombre");
+                    })()}{" "}
                     los bienes indicados en la cláusula que antecede, que se
                     describen así: <span className="bold">a)</span> El
                     apartamento identificado como Apartamento{" "}
@@ -625,6 +648,18 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         })()}
                     </span>{" "}
                     habitaciones,{" "}
+                    {(() => {
+                        const br = getVal<string>("Descripcion_del_Inmueble.NumeroBR", "");
+                        if (!br || br === "[DATO_FALTANTE]") return null;
+                        return (
+                            <>
+                                <span className="highlight-yellow">
+                                    {br}
+                                </span>{" "}
+                                baños,{" "}
+                            </>
+                        );
+                    })()}
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.DescripcionApartamento",
@@ -638,9 +673,10 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.AreaConstruccionLetras",
-                        )}
+                        )}{" "}
+                        METROS CUADRADOS
                     </span>{" "}
-                    metros cuadrados (
+                    (
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.AreaConstruccionNumeros",
@@ -652,39 +688,59 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         {getParqueosDescripcion()}
                     </span>
                     ;{" "}
-                    {(() => {
-                        const bodegasArr = getVal<Bodega[]>("Descripcion_del_Inmueble.Bodegas", []);
-                        const bodegasDescRaw = getVal<string>("Descripcion_del_Inmueble.BodegasDescripcion", "");
-                        const hasBodegas = (bodegasArr && bodegasArr.length > 0) || (bodegasDescRaw && bodegasDescRaw !== "[DATO_FALTANTE]" && bodegasDescRaw.trim() !== "");
-                        const bodegasDesc = (bodegasDescRaw && bodegasDescRaw !== "[DATO_FALTANTE]") ? bodegasDescRaw : "las bodegas identificadas anteriormente";
-
-                        const balconArea = getVal<number | string>("Descripcion_del_Inmueble.BalconAreaNumeros", 0);
-                        const hasBalcon = balconArea && balconArea !== "[DATO_FALTANTE]" && Number(balconArea) > 0;
-
-                        const terrazaArea = getVal<number | string>("Descripcion_del_Inmueble.TerrazaAreaNumeros", 0);
-                        const hasTerraza = terrazaArea && terrazaArea !== "[DATO_FALTANTE]" && Number(terrazaArea) > 0;
-
-                        let charCode = 99; // 'c'
-                        const getL = () => String.fromCharCode(charCode++) + ")";
-
-                        const parts: React.ReactNode[] = [];
-                        if (hasBodegas) parts.push(<React.Fragment key="bog"><span className="bold">{getL()}</span> <span className="highlight-red">{bodegasDesc}</span></React.Fragment>);
-                        if (hasBalcon) parts.push(<React.Fragment key="bal"><span className="bold">{getL()}</span> Un balcón, con un área aproximada de <span className="highlight-red">{getVal("Descripcion_del_Inmueble.BalconAreaLetras")}</span> metros cuadrados (<span className="highlight-red">{balconArea}</span> m2)</React.Fragment>);
-                        if (hasTerraza) parts.push(<React.Fragment key="ter"><span className="bold">{getL()}</span> Una terraza de aproximadamente <span className="highlight-red">{getVal("Descripcion_del_Inmueble.TerrazaAreaLetras")}</span> metros cuadrados (<span className="highlight-red">{terrazaArea}</span> m2)</React.Fragment>);
-
-                        return (
-                            <>
-                                {parts.length > 0 && parts.map((p, i) => (
-                                    <React.Fragment key={i}>
-                                        {p};{" "}
-                                    </React.Fragment>
-                                ))}
-                                y <span className="bold">{getL()}</span> El bien
-                                mueble (acción) de la entidad relacionada y pertinente
-                                al proyecto.
-                            </>
-                        );
-                    })()}
+                    {getVal<string>("Descripcion_del_Inmueble.BodegasDescripcion") && (
+                        <>
+                            <span className="bold">c)</span>{" "}
+                            <span className="highlight-red">
+                                {getVal<string>("Descripcion_del_Inmueble.BodegasDescripcion")}
+                            </span>
+                            ,{" "}
+                        </>
+                    )}
+                    {getVal<number>("Descripcion_del_Inmueble.BalconAreaNumeros") ? (
+                        <>
+                            <span className="bold">d)</span> Un balcón, con un
+                            área aproximada de{" "}
+                             <span className="highlight-red">
+                                 {idToWords(
+                                     getVal<number>(
+                                         "Descripcion_del_Inmueble.BalconAreaNumeros",
+                                     ).toString(),
+                                 )}{" "}
+                                 METROS CUADRADOS
+                             </span>{" "}
+                            (
+                            <span className="highlight-red">
+                                {getVal<number>(
+                                    "Descripcion_del_Inmueble.BalconAreaNumeros",
+                                )}
+                            </span>{" "}
+                            m2);{" "}
+                        </>
+                    ) : null}
+                    {getVal<number>("Descripcion_del_Inmueble.TerrazaAreaNumeros") ? (
+                        <>
+                            <span className="bold">d)</span> Una terraza de
+                            aproximadamente{" "}
+                             <span className="highlight-red">
+                                 {idToWords(
+                                     getVal<number>(
+                                         "Descripcion_del_Inmueble.TerrazaAreaNumeros",
+                                     ).toString(),
+                                 )}{" "}
+                                 METROS CUADRADOS
+                             </span>{" "}
+                            (
+                            <span className="highlight-red">
+                                {getVal<number>(
+                                    "Descripcion_del_Inmueble.TerrazaAreaNumeros",
+                                )}
+                            </span>{" "}
+                            m2), y{" "}
+                        </>
+                    ) : null}
+                    <span className="bold">e)</span> El bien mueble (acción) de
+                    la entidad relacionada y pertinente al proyecto.
                 </p>
                 <p>
                     Los acabados y equipamiento estándar con los que contará el
@@ -1118,58 +1174,41 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     prometidos en venta de la siguiente forma:
                 </p>
                 <p>
-                    <span className="bold">a)</span> Un primer pago por la
-                    cantidad de{" "}
-                    <span className="bold highlight-yellow">
-                        {getVal<string>(
-                            "Condiciones_Economicas.ReservaLetras",
-                            "[RESERVA_LETRAS]",
-                        )
-                            .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
-                            .toUpperCase()}{" "}
-                        DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
-                        {getVal<number>(
-                            "Condiciones_Economicas.ReservaNumeros",
-                            0,
-                        ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                        )
-                    </span>{" "}
-                    en concepto de reserva, que Yo, la parte Promitente
-                    Vendedora manifiesto que tengo recibido a mi entera
-                    satisfacción.
-                </p>
-                <p>
-                    <span className="bold">b)</span> Un segundo pago por la
-                    cantidad total de{" "}
-                    <span className="highlight-yellow">
-                        {getVal<string>(
-                            "Condiciones_Economicas.SegundoPagoLetras",
-                            "[SEGUNDO_PAGO_LETRAS]",
-                        )
-                            .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
-                            .toUpperCase()}{" "}
-                        DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
-                        {getVal<number>(
-                            "Condiciones_Economicas.SegundoPagoNumeros",
-                            0,
-                        ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                        )
-                    </span>
-                    , que la parte Promitente Compradora entregará mediante{" "}
-                    <span className="highlight-red">
-                        {getVal(
-                            "Condiciones_Economicas.CantidadPagosLetras",
-                            "[CANTIDAD_PAGOS_LETRAS]",
-                        )}
-                    </span>{" "}
-                    (
-                    <span className="highlight-red">
-                        {getVal(
-                            "Condiciones_Economicas.CantidadPagosNumeros",
-                            "[CANTIDAD_PAGOS]",
-                        )}
-                    </span>
-                    ) pagos a la Promitente Vendedora, de la siguiente forma:
+                    {(() => {
+                        const pagos = getVal<Pago[]>("Pagos", []);
+                        const engancheTotal = getVal<number>("Condiciones_Economicas.ReservaNumeros", 0);
+                        const primerPagoMonto = pagos.length > 0 ? parseFloat(pagos[0].value || "0") : 0;
+                        const segundoPagoMonto = engancheTotal - primerPagoMonto;
+                        const cantPagosRestantes = pagos.length > 1 ? pagos.length - 1 : 0;
+
+                        return (
+                            <>
+                                <span className="bold">a)</span> Un primer pago por la cantidad de{" "}
+                                <span className="bold highlight-yellow">
+                                    {numberToWords(Math.floor(primerPagoMonto)).toUpperCase()}{" "}
+                                    DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
+                                    {primerPagoMonto.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                    )
+                                </span>{" "}
+                                en concepto de reserva, que Yo, la parte Promitente
+                                Vendedora manifiesto que tengo recibido a mi entera
+                                satisfacción.
+                                <br /><br />
+                                <span className="bold">b)</span> Un segundo pago por la cantidad total de{" "}
+                                <span className="bold highlight-yellow">
+                                    {numberToWords(Math.floor(segundoPagoMonto)).toUpperCase()}{" "}
+                                    DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
+                                    {segundoPagoMonto.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                    )
+                                </span>
+                                , que la parte Promitente Compradora entregará mediante{" "}
+                                <span className="highlight-red">
+                                    {numberToWords(cantPagosRestantes).toLowerCase()} ({cantPagosRestantes})
+                                </span>{" "}
+                                pagos a la Promitente Vendedora, de la siguiente forma:
+                            </>
+                        );
+                    })()}
                 </p>
                 <div style={{ marginLeft: "40px", marginTop: "10px" }}>
                     <ol style={{ listStyleType: "decimal", paddingLeft: "0" }}>
@@ -1191,7 +1230,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                 "noviembre",
                                 "diciembre",
                             ];
-                            return pagos.map((p, idx) => {
+                            return pagos.slice(1).map((p, idx) => {
                                 if (!p.fecha || !p.value) return null;
                                 const f = new Date(p.fecha);
                                 const diaNum = f.getUTCDate();

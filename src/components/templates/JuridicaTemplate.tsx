@@ -42,6 +42,16 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
             <div id="inicio" className="document-header">
                 <div
                     style={{
+                        fontSize: "28pt",
+                        fontFamily: "'Times New Roman', Times, serif",
+                        fontWeight: "bold",
+                        marginBottom: "5px",
+                    }}
+                >
+                    BRAVANTE
+                </div>
+                <div
+                    style={{
                         fontSize: "12pt",
                         fontWeight: "bold",
                         textTransform: "uppercase",
@@ -65,6 +75,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                             "[APARTAMENTO]",
                         )}
                     </span>{" "}
+                    -{" "}
                     <span className="highlight-red">
                         {getVal("Descripcion_del_Inmueble.Torre", "[TORRE]")}
                     </span>
@@ -384,7 +395,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                 >
                                     o{" "}
                                     <span className="bold highlight-red">
-                                        {idToWords(p.Numero || "").toUpperCase()} ({p.Numero})
+                                        {idToWords(p.Numero || "")} ({p.Numero})
                                     </span>
                                     , ubicada en el sótano número:{" "}
                                     <span className="bold highlight-red">
@@ -448,7 +459,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                     >
                                         o{" "}
                                         <span className="bold highlight-red">
-                                            {idToWords(b.Numero || "").toUpperCase()} ({b.Numero})
+                                            {idToWords(b.Numero || "")} ({b.Numero})
                                         </span>
                                         , ubicada en el sótano número:{" "}
                                         <span className="bold highlight-red">
@@ -508,14 +519,18 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                         })()}
                     </span>{" "}
                     habitaciones,{" "}
-                    {getVal<string>("Descripcion_del_Inmueble.NumeroBR") && (
-                        <>
-                            <span className="highlight-yellow">
-                                {getVal<string>("Descripcion_del_Inmueble.NumeroBR")}
-                            </span>{" "}
-                            baños,{" "}
-                        </>
-                    )}
+                    {(() => {
+                        const br = getVal<string>("Descripcion_del_Inmueble.NumeroBR", "");
+                        if (!br || br === "[DATO_FALTANTE]") return null;
+                        return (
+                            <>
+                                <span className="highlight-yellow">
+                                    {br}
+                                </span>{" "}
+                                baños,{" "}
+                            </>
+                        );
+                    })()}
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.DescripcionApartamento",
@@ -529,9 +544,10 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.AreaConstruccionLetras",
-                        )}
+                        )}{" "}
+                        METROS CUADRADOS
                     </span>{" "}
-                    metros cuadrados (
+                    (
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.AreaConstruccionNumeros",
@@ -554,7 +570,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                             count === 1
                                 ? "UNA"
                                 : numberToWords(count).toUpperCase();
-                        const label = count === 1 ? "Bodega" : "Bodegas";
+                        const label = count === 1 ? "bodega" : "bodegas";
                         const identificada =
                             count === 1 ? "identificada" : "identificadas";
                         const numeros = bodegas.map((b) => b.Numero).join(", ");
@@ -568,7 +584,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                 <span className="highlight-red">
                                     {numLetras} ({count})
                                 </span>{" "}
-                                {label} {identificada} con el número{count > 1 ? "s" : ""}{" "}
+                                {label} {identificada} con {count > 1 ? "los números" : "el número"}{" "}
                                 <span className="highlight-red">{numeros}</span>
                                 , ubicada{count > 1 ? "s" : ""} en el sótano{" "}
                                 <span className="highlight-red">
@@ -601,12 +617,10 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                     <span className="bold">{itemLetter})</span>{" "}
                                     Un balcón, con un área aproximada de{" "}
                                     <span className="highlight-red">
-                                        {getVal(
-                                            "Descripcion_del_Inmueble.BalconAreaLetras",
-                                            "[BALCON_LETRAS]",
-                                        )}
+                                        {idToWords(balconArea.toString())}{" "}
+                                        METROS CUADRADOS
                                     </span>{" "}
-                                    metros cuadrados (
+                                    (
                                     <span className="highlight-red">
                                         {balconArea}
                                     </span>{" "}
@@ -616,12 +630,10 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                     </span>{" "}
                                     Una terraza de aproximadamente{" "}
                                     <span className="highlight-red">
-                                        {getVal(
-                                            "Descripcion_del_Inmueble.TerrazaAreaLetras",
-                                            "[TERRAZA_LETRAS]",
-                                        )}
+                                        {idToWords(terrazaArea.toString())}{" "}
+                                        METROS CUADRADOS
                                     </span>{" "}
-                                    metros cuadrados (
+                                    (
                                     <span className="highlight-red">
                                         {terrazaArea}
                                     </span>{" "}
@@ -639,7 +651,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                         "Descripcion_del_Inmueble.TerrazaBalconAreaLetras",
                                     )}
                                 </span>{" "}
-                                metros cuadrados (
+                                (
                                 <span className="highlight-red">
                                     {getVal(
                                         "Descripcion_del_Inmueble.TerrazaBalconAreaNumeros",
@@ -1099,61 +1111,41 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     prometidos en venta de la siguiente forma:
                 </p>
                 <p>
-                    a) Un primer pago por la cantidad de{" "}
-                    <span className="bold highlight-yellow">
-                        {getVal<string>(
-                            "Condiciones_Economicas.ReservaLetras",
-                            "[RESERVA_LETRAS]",
-                        )
-                            .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
-                            .toUpperCase()}{" "}
-                        DOLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
-                        {getVal<number>(
-                            "Condiciones_Economicas.ReservaNumeros",
-                            0,
-                        ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                        )
-                    </span>{" "}
-                    en concepto de reserva, que Yo, la parte Promitente
-                    Vendedora manifiesto que tengo recibido a mi entera
-                    satisfacción.
-                </p>
-                <p>
-                    b) Un segundo pago por la cantidad total de{" "}
-                    <span className="bold highlight-yellow">
-                        {getVal<string>(
-                            "Condiciones_Economicas.SegundoPagoLetras",
-                            "[SEGUNDO_PAGO_LETRAS]",
-                        )
-                            .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
-                            .toUpperCase()}{" "}
-                        DOLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
-                        {(() => {
-                            const v = getVal<number>(
-                                "Condiciones_Economicas.SegundoPagoNumeros",
-                                0,
-                            );
-                            return (v || 0).toLocaleString("en-US", {
-                                minimumFractionDigits: 2,
-                            });
-                        })()}
-                        )
-                    </span>
-                    , que la parte Promitente Compradora entregará mediante{" "}
-                    <span className="highlight-red">
-                        {getVal(
-                            "Condiciones_Economicas.CantidadPagosLetras",
-                            "[CANTIDAD_PAGOS]",
-                        )}
-                    </span>{" "}
-                    (
-                    <span className="highlight-red">
-                        {getVal(
-                            "Condiciones_Economicas.CantidadPagosNumeros",
-                            "",
-                        )}
-                    </span>
-                    ) pagos a la Promitente Vendedora, de la siguiente forma:
+                    {(() => {
+                        const pagos = getVal<Pago[]>("Pagos", []);
+                        const engancheTotal = getVal<number>("Condiciones_Economicas.ReservaNumeros", 0);
+                        const primerPagoMonto = pagos.length > 0 ? parseFloat(pagos[0].value || "0") : 0;
+                        const segundoPagoMonto = engancheTotal - primerPagoMonto;
+                        const cantPagosRestantes = pagos.length > 1 ? pagos.length - 1 : 0;
+
+                        return (
+                            <>
+                                a) Un primer pago por la cantidad de{" "}
+                                <span className="bold highlight-yellow">
+                                    {numberToWords(Math.floor(primerPagoMonto)).toUpperCase()}{" "}
+                                    DOLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
+                                    {primerPagoMonto.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                    )
+                                </span>{" "}
+                                en concepto de reserva, que Yo, la parte Promitente
+                                Vendedora manifiesto que tengo recibido a mi entera
+                                satisfacción.
+                                <br /><br />
+                                b) Un segundo pago por la cantidad total de{" "}
+                                <span className="bold highlight-yellow">
+                                    {numberToWords(Math.floor(segundoPagoMonto)).toUpperCase()}{" "}
+                                    DOLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
+                                    {segundoPagoMonto.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                    )
+                                </span>
+                                , que la parte Promitente Compradora entregará mediante{" "}
+                                <span className="highlight-red">
+                                    {numberToWords(cantPagosRestantes).toLowerCase()} ({cantPagosRestantes})
+                                </span>{" "}
+                                pagos a la Promitente Vendedora, de la siguiente forma:
+                            </>
+                        );
+                    })()}
                 </p>
                 <div style={{ marginLeft: "40px", marginTop: "10px" }}>
                     <ol style={{ listStyleType: "decimal", paddingLeft: "0" }}>
@@ -1175,7 +1167,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                 "noviembre",
                                 "diciembre",
                             ];
-                            return pagos.map((p, idx) => {
+                            return pagos.slice(1).map((p, idx) => {
                                 if (!p.fecha || !p.value) return null;
                                 const f = new Date(p.fecha);
                                 const diaNum = f.getUTCDate();

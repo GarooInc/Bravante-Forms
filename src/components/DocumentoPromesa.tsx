@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useParams } from "react-router-dom";
 import { IndividualTemplate } from "./templates/IndividualTemplate";
 import { JuridicaTemplate } from "./templates/JuridicaTemplate";
-import { numberToWords, numberToWordsYear } from "./templates/utils";
+import { numberToWords, numberToWordsYear, idToWords } from "./templates/utils";
 import type {
     Comprador,
     WebhookData,
@@ -394,26 +394,28 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                                         inmueble.ParqueosAreaM2 ||
                                         inmueble.ParqueosAreaNumeros ||
                                         dt.ParqueosAreaM2,
-                                    TerrazaAreaLetras:
-                                        (inmueble.TerrazaAreaM2 ||
-                                            dt.TerrazaAreaM2 ||
-                                            0) > 0
-                                            ? inmueble.TerrazaAreaLetras ||
-                                              dt.TerrazaAreaLetras
-                                            : undefined,
                                     TerrazaAreaNumeros:
                                         inmueble.TerrazaAreaM2 ||
                                         dt.TerrazaAreaM2,
-                                    BalconAreaLetras:
-                                        (inmueble.BalconAreaM2 ||
-                                            dt.balcon_mts_cuadrados ||
-                                            0) > 0
-                                            ? inmueble.BalconAreaLetras ||
-                                              dt.BalconAreaLetras
-                                            : undefined,
+                                    TerrazaAreaLetras: (() => {
+                                        const num = inmueble.TerrazaAreaM2 || dt.TerrazaAreaM2;
+                                        const letras = inmueble.TerrazaAreaLetras || dt.TerrazaAreaLetras;
+                                        if (num > 0 && (!letras || letras.toUpperCase() === "CERO")) {
+                                            return idToWords(num.toString());
+                                        }
+                                        return letras;
+                                    })(),
                                     BalconAreaNumeros:
                                         inmueble.BalconAreaM2 ||
                                         dt.balcon_mts_cuadrados,
+                                    BalconAreaLetras: (() => {
+                                        const num = inmueble.BalconAreaM2 || dt.balcon_mts_cuadrados;
+                                        const letras = inmueble.BalconAreaLetras || dt.BalconAreaLetras;
+                                        if (num > 0 && (!letras || letras.toUpperCase() === "CERO")) {
+                                            return idToWords(num.toString());
+                                        }
+                                        return letras;
+                                    })(),
                                     TerrazaBalconAreaLetras:
                                         (inmueble.TerrazaAreaM2 ||
                                             dt.TerrazaAreaM2 ||
@@ -668,8 +670,9 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
 
         const numeros = ests.map((e) => e.Numero).join(", ");
         const sotano = ests[0]?.Sotano || "1";
+        const sotanoLetras = ests[0]?.Sotano_Letras || numberToWords(parseInt(sotano)).toUpperCase();
 
-        return `${countStr} ${plazaStr} de estacionamiento ${identificadaStr} con los números: ${numeros}, ${ubicadaStr} en el sótano número: ${sotano}.`;
+        return `${countStr} ${plazaStr} de estacionamiento ${identificadaStr} con los números: ${numeros}, ${ubicadaStr} en el sótano número: ${sotanoLetras} (${sotano})`;
     };
 
     const getFechaLegalizacion = () => {

@@ -3,7 +3,7 @@ export const numberToWords = (num: number): string => {
     if (num < 0) return "MENOS " + numberToWords(Math.abs(num));
 
     const units = [
-        "", "UN", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE"
+        "", "UNO", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE"
     ];
     const teens = [
         "DIEZ", "ONCE", "DOCE", "TRECE", "CATORCE", "QUINCE", "DIECISÉIS", "DIECISIETE", "DIECIOCHO", "DIECINUEVE"
@@ -113,16 +113,29 @@ export const cuiToWords = (cui: string): string => {
 
 export const idToWords = (id: string): string => {
     if (!id) return "";
-    if (id.includes("-")) {
-        const parts = id.split("-");
-        const convertedParts = parts.map(p => {
-            const num = parseInt(p);
-            return isNaN(num) ? p.toUpperCase() : numberToWords(num).toLowerCase();
-        });
-        return convertedParts.join(" guion ");
-    }
-    const num = parseInt(id);
-    return isNaN(num) ? id.toUpperCase() : numberToWords(num).toLowerCase();
+    
+    // Divide por guiones, espacios o puntos, manteniendo los separadores en el resultado del split
+    const parts = id.split(/([-\s.])/);
+    
+    const convertedParts = parts.map(p => {
+        if (p === "-") return "GUIÓN";
+        if (p === " ") return "ESPACIO";
+        if (p === ".") return "PUNTO";
+        if (p === "") return "";
+        
+        const num = parseInt(p);
+        if (isNaN(num)) return p.toUpperCase();
+        
+        // Manejar ceros a la izquierda si es necesario (ej. "05" -> "CERO CINCO")
+        if (p.length > 1 && p.startsWith("0")) {
+             const digits = p.split("").map(d => numberToWords(parseInt(d)));
+             return digits.join(" ");
+        }
+        
+        return numberToWords(num);
+    });
+    
+    return convertedParts.filter(p => p !== "").join(" ").replace(/\s+/g, " ").trim().toUpperCase();
 };
 
 export const toTitleCase = (str: string): string => {
