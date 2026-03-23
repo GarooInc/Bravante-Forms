@@ -394,7 +394,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                 >
                                     o{" "}
                                     <span className="bold highlight-red">
-                                        {idToWords(p.Numero)} ({p.Numero})
+                                        {idToWords(p.Numero || "")} ({p.Numero})
                                     </span>
                                     , ubicada en el sótano número:{" "}
                                     <span className="bold highlight-red">
@@ -458,7 +458,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                     >
                                         o{" "}
                                         <span className="bold highlight-red">
-                                            {idToWords(b.Numero)} ({b.Numero})
+                                            {idToWords(b.Numero || "")} ({b.Numero})
                                         </span>
                                         , ubicada en el sótano número:{" "}
                                         <span className="bold highlight-red">

@@ -501,7 +501,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                 >
                                     o{" "}
                                     <span className="highlight-red">
-                                        {idToWords(p.Numero) || "[NUMERO_LETRAS]"}
+                                        {idToWords(p.Numero || "") || "[NUMERO_LETRAS]"}
                                     </span>{" "}
                                     (
                                     <span className="highlight-red">
@@ -574,7 +574,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                     >
                                         o{" "}
                                         <span className="highlight-red">
-                                            {idToWords(b.Numero) ||
+                                            {idToWords(b.Numero || "") ||
                                                 "[NUMERO_LETRAS]"}
                                         </span>
                                         , ubicada en el sótano número:{" "}
