@@ -1114,7 +1114,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     {(() => {
                         const pagos = getVal<Pago[]>("Pagos", []);
                         const engancheTotal = getVal<number>("Condiciones_Economicas.ReservaNumeros", 0);
-                        const primerPagoMonto = pagos.length > 0 ? parseFloat(pagos[0].value) : 0;
+                        const primerPagoMonto = pagos.length > 0 ? parseFloat(pagos[0].value || "0") : 0;
                         const segundoPagoMonto = engancheTotal - primerPagoMonto;
                         const cantPagosRestantes = pagos.length > 1 ? pagos.length - 1 : 0;
 
