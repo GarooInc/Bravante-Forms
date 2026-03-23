@@ -116,6 +116,27 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                                           .trim()
                                     : "";
 
+                            // Sumar 7 días a la fecha del documento
+                            if (dt.FechaDocumento) {
+                                const dParts = dt.FechaDocumento.split("-");
+                                const dObj = new Date(
+                                    Date.UTC(
+                                        parseInt(dParts[0]),
+                                        parseInt(dParts[1]) - 1,
+                                        parseInt(dParts[2]),
+                                    ),
+                                );
+                                dObj.setUTCDate(dObj.getUTCDate() + 7);
+                                const newY = dObj.getUTCFullYear();
+                                const newM = (dObj.getUTCMonth() + 1)
+                                    .toString()
+                                    .padStart(2, "0");
+                                const newD = dObj.getUTCDate()
+                                    .toString()
+                                    .padStart(2, "0");
+                                dt.FechaDocumento = `${newY}-${newM}-${newD}`;
+                            }
+
                             const mesStr = dt.FechaDocumento
                                 ? (dt.FechaDocumento as string).split("-")[1]
                                 : "01";

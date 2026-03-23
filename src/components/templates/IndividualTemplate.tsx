@@ -7,7 +7,7 @@ import type {
     Pago,
 } from "./types";
 import { DocumentStyles } from "./DocumentStyles";
-import { numberToWords, numberToWordsYear, toTitleCase, formatCUI } from "./utils";
+import { numberToWords, numberToWordsYear, toTitleCase, formatCUI, idToWords } from "./utils";
 
 export const IndividualTemplate: React.FC<TemplateProps> = ({
     data,
@@ -35,21 +35,64 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
             .join(" espacio ");
     };
 
+    const isFemale = (c: Comprador | any) => {
+        const estado = (c.EstadoCivil || "").toLowerCase();
+        if (["casada", "soltera", "divorciada", "viuda", "unida"].includes(estado)) return true;
+        if (["casado", "soltero", "divorciado", "viudo", "unido"].includes(estado)) return false;
+        
+        const firstName = (c.Nombre || "").trim().split(' ')[0].toLowerCase();
+        if (firstName.endsWith("a") && !["luca"].includes(firstName)) return true;
+        const femaleNames = ["carmen", "ruth", "miriam", "lilian", "evelyn", "mabel", "maribel", "marisol", "beatriz", "astrid", "ingrid", "karen", "shirley", "helen", "gladys", "doris", "ivonne", "judith", "raquel", "abigail", "sarai", "margarita", "isabel", "pilar", "dolores", "rosario"];
+        return femaleNames.includes(firstName);
+    };
+
+    const getNacionalidad = (c: Comprador | any) => {
+        const nac = (c.Nacionalidad || "").toLowerCase();
+        const fem = isFemale(c);
+        if (nac === "guatemala" || nac === "guatemalteco" || nac === "guatemalteca") return fem ? "guatemalteca" : "guatemalteco";
+        if (nac === "el salvador") return fem ? "salvadoreña" : "salvadoreño";
+        if (nac === "honduras") return fem ? "hondureña" : "hondureño";
+        if (nac === "mexico" || nac === "méxico") return fem ? "mexicana" : "mexicano";
+        return nac;
+    };
+
+    const getProfesion = (c: Comprador | any) => {
+        let prof = (c.Profesion || "").toLowerCase().trim();
+        if (isFemale(c)) {
+            if (prof.endsWith("o")) {
+                if (prof === "medico" || prof === "médico") return "médica";
+                prof = prof.slice(0, -1) + "a";
+            } else if (prof.endsWith("or")) {
+                prof = prof + "a";
+            }
+        }
+        return toTitleCase(prof);
+    };
+
+    const getPartyLabel = (comps: any[]) => {
+        if (comps.length > 1) {
+            const allFemale = comps.every(c => isFemale(c));
+            return allFemale ? "LAS PROMITENTES COMPRADORAS" : "LOS PROMITENTES COMPRADORES";
+        } else if (comps.length === 1) {
+            return isFemale(comps[0]) ? "LA PROMITENTE COMPRADORA" : "EL PROMITENTE COMPRADOR";
+        }
+        return "EL PROMITENTE COMPRADOR";
+    };
+
+    const getSecondaryPartyLabel = (comps: any[]) => {
+        if (comps.length > 1) {
+            return "LA PARTE PROMITENTE COMPRADORA";
+        } else if (comps.length === 1) {
+            return "LA PARTE PROMITENTE COMPRADORA";
+        }
+        return "LA PARTE PROMITENTE COMPRADORA";
+    };
+
     return (
         <div className="documento-promesa shadow-xl">
             <DocumentStyles />
 
             <div id="inicio" className="document-header">
-                <div
-                    style={{
-                        fontSize: "28pt",
-                        fontFamily: "'Times New Roman', Times, serif",
-                        fontWeight: "bold",
-                        marginBottom: "5px",
-                    }}
-                >
-                    BRAVANTE
-                </div>
                 <div
                     style={{
                         fontSize: "12pt",
@@ -68,26 +111,15 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         marginBottom: "5px",
                     }}
                 >
+                    APARTAMENTO{" "}
                     <span className="highlight-red">
                         {getVal(
                             "Descripcion_del_Inmueble.Apartamento",
-                            "[ID]",
+                            "[APARTAMENTO]",
                         )}
                     </span>{" "}
-                    /{" "}
                     <span className="highlight-red">
-                        {getVal(
-                            "Descripcion_del_Inmueble.Modelo",
-                            "[MODELO]",
-                        )}
-                    </span>{" "}
-                    / NIVEL{" "}
-                    <span className="highlight-red">
-                        {getVal(
-                            "Descripcion_del_Inmueble.Nivel_Letras",
-                            "[NIVEL]",
-                        )}{" "}
-                        ({getVal("Descripcion_del_Inmueble.Nivel", "[#]")})
+                        {getVal("Descripcion_del_Inmueble.Torre", "[TORRE]")}
                     </span>
                 </div>
                 <div
@@ -161,25 +193,17 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                                 </span>{" "}
                                                 años de edad,{" "}
                                                 <span className="highlight-yellow">
-                                                    {(
-                                                        c.EstadoCivil || ""
-                                                    ).toLowerCase()}
+                                                    {(c.EstadoCivil || "").toLowerCase()}
                                                 </span>
                                                 ,{" "}
                                                 <span className="highlight-yellow">
-                                                    {toTitleCase(c.Profesion || "")}
+                                                    {getProfesion(c)}
                                                 </span>
                                                 ,{" "}
                                                 <span className="highlight-yellow">
-                                                    {(
-                                                        c.Nacionalidad ||
-                                                        "guatemalteco"
-                                                    ).toLowerCase()}
+                                                    {getNacionalidad(c)}
                                                 </span>
-                                                , de este domicilio,{" "}
-                                                {compradores.length > 1
-                                                    ? "nos identificamos"
-                                                    : "me identifico"}{" "}
+                                                , de este domicilio, me identifico
                                                 con el Documento Personal de
                                                 Identificación -DPI-, con Código
                                                 Único de Identificación -CUI-
@@ -197,23 +221,17 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                             </React.Fragment>
                                         );
                                     })}
-                                    ;{" "}
-                                    {compradores.length > 1
-                                        ? "quienes"
-                                        : "quien"}{" "}
-                                    en adelante{" "}
-                                    {compradores.length > 1
-                                        ? "seremos referidos"
-                                        : "seré referido"}{" "}
-                                    simple e indistintamente como{" "}
+                                    ; en adelante referido simple e indistintamente como{" "}
                                     <span className="party-name">
-                                        {compradores.length > 1
-                                            ? "LOS PROMITENTES COMPRADORES"
-                                            : "EL PROMITENTE COMPRADOR"}
+                                        "{getSecondaryPartyLabel(compradores)}"
                                     </span>
-                                    {compradores.length > 1 ? " o " : " o "}
+                                    ,{" "}
                                     <span className="party-name">
-                                        "LA PARTE PROMITENTE COMPRADORA"
+                                        "{getPartyLabel(compradores)}"
+                                    </span>{" "}
+                                    o{" "}
+                                    <span className="party-name">
+                                        "EL PROMITENTE COMPRADOR"
                                     </span>
                                     .
                                 </>
@@ -223,45 +241,43 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                 <>
                                     Yo,{" "}
                                     <span className="highlight-yellow">
-                                        {getComprador(0, "Nombre")}
+                                        {compradores[0]?.Nombre || getComprador(0, "Nombre")}
                                     </span>
                                     , quien declaro ser de{" "}
                                     <span className="highlight-yellow">
-                                        {(getComprador(0, "Edad_Letras") || "").toLowerCase()}
+                                        {(compradores[0]?.Edad_Letras || getComprador(0, "Edad_Letras") || "").toLowerCase()}
                                     </span>{" "}
                                     años de edad,{" "}
                                     <span className="highlight-yellow">
                                         {(
-                                            getComprador(0, "EstadoCivil") || ""
+                                            compradores[0]?.EstadoCivil || getComprador(0, "EstadoCivil") || ""
                                         ).toLowerCase()}
                                     </span>
                                     ,{" "}
                                     <span className="highlight-yellow">
-                                        {toTitleCase(getComprador(0, "Profesion") || "")}
+                                        {getProfesion(compradores[0] || {})}
                                     </span>
                                     ,{" "}
                                     <span className="highlight-yellow">
-                                        {(
-                                            getComprador(
-                                                0,
-                                                "Nacionalidad",
-                                                "guatemalteco",
-                                            ) || ""
-                                        ).toLowerCase()}
+                                        {getNacionalidad(compradores[0] || {})}
                                     </span>
                                     , de este domicilio, me identifico con el
                                     Documento Personal de Identificación -DPI-,
                                     con Código Único de Identificación -CUI-
                                     número{" "}
                                     <span className="highlight-yellow">
-                                        {dpiToLetras(getComprador(0, "DPI") || "")}
+                                        {dpiToLetras(compradores[0]?.DPI || getComprador(0, "DPI") || "")}
                                     </span>{" "}
-                                    ({formatCUI(getComprador(0, "DPI") || "")}), extendido por el
+                                    ({formatCUI(compradores[0]?.DPI || getComprador(0, "DPI") || "")}), extendido por el
                                     Registro Nacional de las Personas de la
                                     República de Guatemala; quien en adelante
                                     seré referido simple e indistintamente como{" "}
                                     <span className="party-name">
-                                        "LA PARTE PROMITENTE COMPRADORA"
+                                        "{getSecondaryPartyLabel(compradores)}"
+                                    </span>
+                                    ,{" "}
+                                    <span className="party-name">
+                                        "{getPartyLabel(compradores)}"
                                     </span>{" "}
                                     o{" "}
                                     <span className="party-name">
@@ -461,7 +477,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                 >
                                     o{" "}
                                     <span className="highlight-red">
-                                        {p.Numero_Letras || "[NUMERO_LETRAS]"}
+                                        {idToWords(p.Numero || "").toUpperCase()}
                                     </span>{" "}
                                     (
                                     <span className="highlight-red">
@@ -534,8 +550,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                     >
                                         o{" "}
                                         <span className="highlight-red">
-                                            {b.Numero_Letras ||
-                                                "[NUMERO_LETRAS]"}
+                                            {idToWords(b.Numero || "").toUpperCase()}
                                         </span>
                                         , ubicada en el sótano número:{" "}
                                         <span className="highlight-red">
@@ -568,17 +583,19 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     </span>{" "}
                     LA PARTE PROMITENTE VENDEDORA, manifiesto que por el
                     presente instrumento prometo vender a{" "}
-                    {(() => {
-                        if (compradores.length > 1) {
-                            const nombres = compradores.map((c) => c.Nombre);
-                            return (
-                                nombres.slice(0, -1).join(", ") +
-                                " y " +
-                                nombres.slice(-1)
-                            );
-                        }
-                        return getComprador(0, "Nombre");
-                    })()}{" "}
+                    <span className="highlight-yellow">
+                        {(() => {
+                            if (compradores.length > 1) {
+                                const nombres = compradores.map((c) => c.Nombre);
+                                return (
+                                    nombres.slice(0, -1).join(", ") +
+                                    " y " +
+                                    nombres.slice(-1)
+                                );
+                            }
+                            return getComprador(0, "Nombre");
+                        })()}
+                    </span>{" "}
                     los bienes indicados en la cláusula que antecede, que se
                     describen así: <span className="bold">a)</span> El
                     apartamento identificado como Apartamento{" "}
@@ -623,57 +640,51 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                             "Descripcion_del_Inmueble.AreaConstruccionLetras",
                         )}
                     </span>{" "}
-                    (
+                    metros cuadrados (
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.AreaConstruccionNumeros",
                         )}
                     </span>{" "}
-                    metros cuadrados) de construcción;{" "}
+                    m2) de construcción;{" "}
                     <span className="bold">b)</span>{" "}
                     <span className="highlight-red">
                         {getParqueosDescripcion()}
                     </span>
                     ;{" "}
-                    {getVal<string>("Descripcion_del_Inmueble.BodegasDescripcion") && (
-                        <>
-                            <span className="bold">c)</span>{" "}
-                            <span className="highlight-red">
-                                {getVal<string>("Descripcion_del_Inmueble.BodegasDescripcion")}
-                            </span>
-                            ,{" "}
-                        </>
-                    )}
-                    {getVal<number>("Descripcion_del_Inmueble.BalconAreaNumeros") ? (
-                        <>
-                            <span className="bold">d)</span> Un balcón, con un
-                            área aproximada de{" "}
-                            <span className="highlight-red">
-                                {getVal<string>("Descripcion_del_Inmueble.BalconAreaLetras")}
-                            </span>{" "}
-                            (
-                            <span className="highlight-red">
-                                {getVal<number>("Descripcion_del_Inmueble.BalconAreaNumeros")}
-                            </span>
-                            {" "}metros cuadrados);{" "}
-                        </>
-                    ) : null}
-                    {getVal<number>("Descripcion_del_Inmueble.TerrazaAreaNumeros") ? (
-                        <>
-                            <span className="bold">d)</span> Una terraza de
-                            aproximadamente{" "}
-                            <span className="highlight-red">
-                                {getVal<string>("Descripcion_del_Inmueble.TerrazaAreaLetras")}
-                            </span>{" "}
-                            (
-                            <span className="highlight-red">
-                                {getVal<number>("Descripcion_del_Inmueble.TerrazaAreaNumeros")}
-                            </span>
-                            M2), y{" "}
-                        </>
-                    ) : null}
-                    <span className="bold">e)</span> El bien mueble (acción) de
-                    la entidad relacionada y pertinente al proyecto.
+                    {(() => {
+                        const bodegasArr = getVal<Bodega[]>("Descripcion_del_Inmueble.Bodegas", []);
+                        const bodegasDescRaw = getVal<string>("Descripcion_del_Inmueble.BodegasDescripcion", "");
+                        const hasBodegas = (bodegasArr && bodegasArr.length > 0) || (bodegasDescRaw && bodegasDescRaw !== "[DATO_FALTANTE]" && bodegasDescRaw.trim() !== "");
+                        const bodegasDesc = (bodegasDescRaw && bodegasDescRaw !== "[DATO_FALTANTE]") ? bodegasDescRaw : "las bodegas identificadas anteriormente";
+
+                        const balconArea = getVal<number | string>("Descripcion_del_Inmueble.BalconAreaNumeros", 0);
+                        const hasBalcon = balconArea && balconArea !== "[DATO_FALTANTE]" && Number(balconArea) > 0;
+
+                        const terrazaArea = getVal<number | string>("Descripcion_del_Inmueble.TerrazaAreaNumeros", 0);
+                        const hasTerraza = terrazaArea && terrazaArea !== "[DATO_FALTANTE]" && Number(terrazaArea) > 0;
+
+                        let charCode = 99; // 'c'
+                        const getL = () => String.fromCharCode(charCode++) + ")";
+
+                        const parts: React.ReactNode[] = [];
+                        if (hasBodegas) parts.push(<React.Fragment key="bog"><span className="bold">{getL()}</span> <span className="highlight-red">{bodegasDesc}</span></React.Fragment>);
+                        if (hasBalcon) parts.push(<React.Fragment key="bal"><span className="bold">{getL()}</span> Un balcón, con un área aproximada de <span className="highlight-red">{getVal("Descripcion_del_Inmueble.BalconAreaLetras")}</span> metros cuadrados (<span className="highlight-red">{balconArea}</span> m2)</React.Fragment>);
+                        if (hasTerraza) parts.push(<React.Fragment key="ter"><span className="bold">{getL()}</span> Una terraza de aproximadamente <span className="highlight-red">{getVal("Descripcion_del_Inmueble.TerrazaAreaLetras")}</span> metros cuadrados (<span className="highlight-red">{terrazaArea}</span> m2)</React.Fragment>);
+
+                        return (
+                            <>
+                                {parts.length > 0 && parts.map((p, i) => (
+                                    <React.Fragment key={i}>
+                                        {p};{" "}
+                                    </React.Fragment>
+                                ))}
+                                y <span className="bold">{getL()}</span> El bien
+                                mueble (acción) de la entidad relacionada y pertinente
+                                al proyecto.
+                            </>
+                        );
+                    })()}
                 </p>
                 <p>
                     Los acabados y equipamiento estándar con los que contará el
@@ -1068,8 +1079,8 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         {getVal<number>(
                             "Condiciones_Economicas.PrecioNumeros",
                             0,
-                        ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                        D.00), el cual incluye el IMPUESTO AL VALOR AGREGADO y
+                        ).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ), el cual incluye el IMPUESTO AL VALOR AGREGADO y
                         el IMPUESTO DEL TIMBRE correspondiente;
                     </span>{" "}
                     para lo cual en su momento se podrían redactar dos
