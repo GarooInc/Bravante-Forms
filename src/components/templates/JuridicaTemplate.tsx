@@ -32,7 +32,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
             .trim()
             .split(/\s+/)
             .map((bloque) => numberToWords(parseInt(bloque, 10)))
-            .join(" espacio ");
+            .join(", ");
     };
 
     return (
@@ -99,9 +99,9 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     edad, casado, Contador Público y Auditor, guatemalteco, de
                     este domicilio, me identifico con el Documento Personal de
                     Identificación -DPI- con Código Único de Identificación
-                    -CUI- dos mil quinientos cuarenta, setenta y nueve mil
-                    doscientos veintinueve, mil cuatrocientos uno (2540 79229
-                    1401), extendido por el Registro Nacional de las Personas de
+                    -CUI- <span className="bold highlight-yellow">DOS MIL QUINIENTOS CUARENTA, SETENTA Y NUEVE MIL
+                    DOSCIENTOS VEINTINUEVE, MIL CUATROCIENTOS UNO (2540 79229
+                    1401)</span>, extendido por el Registro Nacional de las Personas de
                     la República de Guatemala, comparezco en mi calidad de{" "}
                     <span className="bold">
                         ADMINISTRADOR ÚNICO Y REPRESENTANTE LEGAL de la entidad
@@ -158,9 +158,9 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     -CUI- número{" "}
                     <span className="bold highlight-yellow">
                         {dpiToLetras(datosJuridicos.RepresentanteDPI || "") ||
-                            "[DPI_LETRAS]"}
-                    </span>{" "}
-                    (<span className="bold highlight-yellow">{formatCUI(datosJuridicos.RepresentanteDPI || "") || "[DPI]"}</span>), extendido
+                            "[DPI_LETRAS]"}{" "}
+                        ({formatCUI(datosJuridicos.RepresentanteDPI || "") || "[DPI]"})
+                    </span>, extendido
                     por el Registro Nacional de las Personas de la República de
                     Guatemala, quien comparezco en mi calidad de{" "}
                     <span className="bold highlight-yellow">
@@ -1122,7 +1122,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                             <>
                                 a) Un primer pago por la cantidad de{" "}
                                 <span className="bold highlight-yellow">
-                                    {numberToWords(Math.floor(primerPagoMonto)).toUpperCase()}{" "}
+                                   {numberToWords(Math.floor(primerPagoMonto)).toUpperCase()}{" "}
                                     DOLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
                                     {primerPagoMonto.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                                     )
@@ -1185,7 +1185,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                         }}
                                     >
                                         El día {diaLetras} ({diaNum}) de {mesNombre} de {anioLetras}, la cantidad de{" "}
-                                        <span className="bold">
+                                        <span className="bold highlight-yellow">
                                             {numberToWords(Math.floor(monto)).toUpperCase()}{" "}
                                             DOLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
                                             {monto.toLocaleString("en-US", {
@@ -1764,9 +1764,9 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     </span>
                     , quien se identifica con el Documento Personal de
                     Identificación -DPI- con Código Único de Identificación
-                    -CUI- dos mil quinientos cuarenta, setenta y nueve mil
-                    doscientos veintinueve, mil cuatrocientos uno (2540 79229
-                    1401), extendido por el Registro Nacional de las Personas de
+                    -CUI- <span className="bold highlight-yellow">DOS MIL QUINIENTOS CUARENTA, SETENTA Y NUEVE MIL
+                    DOSCIENTOS VEINTINUEVE, MIL CUATROCIENTOS UNO (2540 79229
+                    1401)</span>, extendido por el Registro Nacional de las Personas de
                     la República de Guatemala, quien comparece en su calidad de{" "}
                     <span className="bold">
                         ADMINISTRADOR ÚNICO Y REPRESENTANTE LEGAL

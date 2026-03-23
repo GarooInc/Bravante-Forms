@@ -162,9 +162,9 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     edad, casado, Contador Público y Auditor, guatemalteco, de
                     este domicilio, me identifico con el Documento Personal de
                     Identificación -DPI- con Código Único de Identificación
-                    -CUI- dos mil quinientos cuarenta, setenta y nueve mil
-                    doscientos veintinueve, mil cuatrocientos uno (2540 79229
-                    1401), extendido por el Registro Nacional de las Personas de
+                    -CUI- <span className="bold highlight-yellow">DOS MIL QUINIENTOS CUARENTA, SETENTA Y NUEVE MIL
+                    DOSCIENTOS VEINTINUEVE, MIL CUATROCIENTOS UNO (2540 79229
+                    1401)</span>, extendido por el Registro Nacional de las Personas de
                     la República de Guatemala, comparezco en mi calidad de{" "}
                     <span className="bold">
                         ADMINISTRADOR ÚNICO Y REPRESENTANTE LEGAL de la entidad
@@ -232,10 +232,9 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                                 Identificación -DPI-, con Código
                                                 Único de Identificación -CUI-
                                                 número{" "}
-                                                <span className="highlight-yellow">
-                                                    {dpiToLetras(c.DPI || "")}
-                                                </span>{" "}
-                                                ({formatCUI(c.DPI || "")}), extendido por el
+                                                <span className="bold highlight-yellow">
+                                                    {dpiToLetras(c.DPI || "")} ({formatCUI(c.DPI || "")})
+                                                </span>, extendido por el
                                                 Registro Nacional de las
                                                 Personas de la República de
                                                 Guatemala
@@ -1248,7 +1247,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                         }}
                                     >
                                         El día {diaLetras} ({diaNum}) de {mesNombre} de {anioLetras}, la cantidad de{" "}
-                                        <span className="bold">
+                                        <span className="bold highlight-yellow">
                                             {numberToWords(Math.floor(monto)).toUpperCase()}{" "}
                                             DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
                                             {monto.toLocaleString("en-US", {
@@ -1833,9 +1832,9 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     </span>
                     , quien se identifica con el Documento Personal de
                     Identificación -DPI- con Código Único de Identificación
-                    -CUI- dos mil quinientos cuarenta, setenta y nueve mil
-                    doscientos veintinueve, mil cuatrocientos uno (2540 79229
-                    1401), extendido por el Registro Nacional de las Personas de
+                    -CUI- <span className="bold highlight-yellow">DOS MIL QUINIENTOS CUARENTA, SETENTA Y NUEVE MIL
+                    DOSCIENTOS VEINTINUEVE, MIL CUATROCIENTOS UNO (2540 79229
+                    1401)</span>, extendido por el Registro Nacional de las Personas de
                     la República de Guatemala, compareciendo en su calidad de{" "}
                     <span className="bold">
                         ADMINISTRADOR ÚNICO Y REPRESENTANTE LEGAL
