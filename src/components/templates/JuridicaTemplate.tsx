@@ -394,7 +394,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                 >
                                     o{" "}
                                     <span className="bold highlight-red">
-                                        {(p.Numero_Letras || "").toUpperCase()} ({p.Numero})
+                                        {idToWords(p.Numero)} ({p.Numero})
                                     </span>
                                     , ubicada en el sótano número:{" "}
                                     <span className="bold highlight-red">
@@ -458,7 +458,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                     >
                                         o{" "}
                                         <span className="bold highlight-red">
-                                            {(b.Numero_Letras || "").toUpperCase()} ({b.Numero})
+                                            {idToWords(b.Numero)} ({b.Numero})
                                         </span>
                                         , ubicada en el sótano número:{" "}
                                         <span className="bold highlight-red">
@@ -518,14 +518,18 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                         })()}
                     </span>{" "}
                     habitaciones,{" "}
-                    {getVal<string>("Descripcion_del_Inmueble.NumeroBR") && (
-                        <>
-                            <span className="highlight-yellow">
-                                {getVal<string>("Descripcion_del_Inmueble.NumeroBR")}
-                            </span>{" "}
-                            baños,{" "}
-                        </>
-                    )}
+                    {(() => {
+                        const br = getVal<string>("Descripcion_del_Inmueble.NumeroBR", "");
+                        if (!br || br === "[DATO_FALTANTE]") return null;
+                        return (
+                            <>
+                                <span className="highlight-yellow">
+                                    {br}
+                                </span>{" "}
+                                baños,{" "}
+                            </>
+                        );
+                    })()}
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.DescripcionApartamento",
@@ -539,7 +543,8 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.AreaConstruccionLetras",
-                        )}
+                        )}{" "}
+                        METROS CUADRADOS
                     </span>{" "}
                     (
                     <span className="highlight-yellow">
@@ -547,10 +552,9 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                             "Descripcion_del_Inmueble.AreaConstruccionNumeros",
                         )}
                     </span>{" "}
-                    metros cuadrados) de construcción;{" "}
-                    <span className="bold">b)</span>{" "}
+                    m2) de construcción;{" "}
                     <span className="highlight-red">
-                        {getParqueosDescripcion()}
+                        <span className="bold">b)</span> {getParqueosDescripcion()}
                     </span>
                     {(() => {
                         const bodegas = getVal<Bodega[]>(
@@ -564,7 +568,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                             count === 1
                                 ? "UNA"
                                 : numberToWords(count).toUpperCase();
-                        const label = count === 1 ? "Bodega" : "Bodegas";
+                        const label = count === 1 ? "bodega" : "bodegas";
                         const identificada =
                             count === 1 ? "identificada" : "identificadas";
                         const numeros = bodegas.map((b) => b.Numero).join(", ");
@@ -578,7 +582,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                 <span className="highlight-red">
                                     {numLetras} ({count})
                                 </span>{" "}
-                                {label} {identificada} con el número{count > 1 ? "s" : ""}{" "}
+                                {label} {identificada} con {count > 1 ? "los números" : "el número"}{" "}
                                 <span className="highlight-red">{numeros}</span>
                                 , ubicada{count > 1 ? "s" : ""} en el sótano{" "}
                                 <span className="highlight-red">
@@ -608,34 +612,18 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                             return (
                                 <>
                                     ;{" "}
-                                    <span className="bold">{itemLetter})</span>{" "}
+                                    <span className="bold highlight-red">{itemLetter})</span>{" "}
                                     Un balcón, con un área aproximada de{" "}
                                     <span className="highlight-red">
-                                        {getVal(
-                                            "Descripcion_del_Inmueble.BalconAreaLetras",
-                                            "[BALCON_LETRAS]",
-                                        )}
-                                    </span>{" "}
-                                    (
-                                    <span className="highlight-red">
-                                        {balconArea}
-                                    </span>{" "}
-                                    metros cuadrados); y{" "}
-                                    <span className="bold">
+                                        {idToWords(balconArea.toString())} METROS CUADRADOS ({balconArea} m2)
+                                    </span>; y{" "}
+                                    <span className="bold highlight-red">
                                         {hasBodegas ? "e" : "d"})
                                     </span>{" "}
                                     Una terraza de aproximadamente{" "}
                                     <span className="highlight-red">
-                                        {getVal(
-                                            "Descripcion_del_Inmueble.TerrazaAreaLetras",
-                                            "[TERRAZA_LETRAS]",
-                                        )}
-                                    </span>{" "}
-                                    (
-                                    <span className="highlight-red">
-                                        {terrazaArea}
-                                    </span>{" "}
-                                    metros cuadrados)
+                                        {idToWords(terrazaArea.toString())} METROS CUADRADOS ({terrazaArea} m2)
+                                    </span>
                                 </>
                             );
                         }
@@ -655,7 +643,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                                         "Descripcion_del_Inmueble.TerrazaBalconAreaNumeros",
                                     )}
                                 </span>{" "}
-                                metros cuadrados)
+                                m2)
                             </>
                         );
                     })()}
@@ -684,7 +672,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                         else if (terrazaArea > 0 && balconArea > 0) letter = "e";
                         else letter = "d";
                         return (
-                            <span className="bold">{letter})</span>
+                            <span className="bold highlight-red">{letter})</span>
                         );
                     })()}{" "}
                     El bien mueble (acción) de la entidad relacionada y

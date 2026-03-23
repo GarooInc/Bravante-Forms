@@ -7,7 +7,7 @@ import type {
     Pago,
 } from "./types";
 import { DocumentStyles } from "./DocumentStyles";
-import { numberToWords, numberToWordsYear, toTitleCase, formatCUI } from "./utils";
+import { numberToWords, numberToWordsYear, toTitleCase, formatCUI, idToWords } from "./utils";
 
 export const IndividualTemplate: React.FC<TemplateProps> = ({
     data,
@@ -501,7 +501,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                 >
                                     o{" "}
                                     <span className="highlight-red">
-                                        {p.Numero_Letras || "[NUMERO_LETRAS]"}
+                                        {idToWords(p.Numero) || "[NUMERO_LETRAS]"}
                                     </span>{" "}
                                     (
                                     <span className="highlight-red">
@@ -574,7 +574,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                     >
                                         o{" "}
                                         <span className="highlight-red">
-                                            {b.Numero_Letras ||
+                                            {idToWords(b.Numero) ||
                                                 "[NUMERO_LETRAS]"}
                                         </span>
                                         , ubicada en el sótano número:{" "}
@@ -648,6 +648,18 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                         })()}
                     </span>{" "}
                     habitaciones,{" "}
+                    {(() => {
+                        const br = getVal<string>("Descripcion_del_Inmueble.NumeroBR", "");
+                        if (!br || br === "[DATO_FALTANTE]") return null;
+                        return (
+                            <>
+                                <span className="highlight-yellow">
+                                    {br}
+                                </span>{" "}
+                                baños,{" "}
+                            </>
+                        );
+                    })()}
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.DescripcionApartamento",
@@ -661,7 +673,8 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     <span className="highlight-yellow">
                         {getVal(
                             "Descripcion_del_Inmueble.AreaConstruccionLetras",
-                        )}
+                        )}{" "}
+                        METROS CUADRADOS
                     </span>{" "}
                     (
                     <span className="highlight-yellow">
@@ -669,50 +682,63 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                             "Descripcion_del_Inmueble.AreaConstruccionNumeros",
                         )}
                     </span>{" "}
-                    metros cuadrados) de construcción;{" "}
-                    <span className="bold">b)</span>{" "}
+                    m2) de construcción;{" "}
                     <span className="highlight-red">
-                        {getParqueosDescripcion()}
+                        <span className="bold">b)</span> {getParqueosDescripcion()}
                     </span>
                     ;{" "}
                     {getVal<string>("Descripcion_del_Inmueble.BodegasDescripcion") && (
                         <>
-                            <span className="bold">c)</span>{" "}
+                            <span className="bold highlight-red">c)</span>{" "}
                             <span className="highlight-red">
                                 {getVal<string>("Descripcion_del_Inmueble.BodegasDescripcion")}
                             </span>
                             ,{" "}
                         </>
                     )}
-                    {getVal<number>("Descripcion_del_Inmueble.BalconAreaNumeros") ? (
-                        <>
-                            <span className="bold">d)</span> Un balcón, con un
-                            área aproximada de{" "}
-                            <span className="highlight-red">
-                                {getVal<string>("Descripcion_del_Inmueble.BalconAreaLetras")}
-                            </span>{" "}
-                            (
-                            <span className="highlight-red">
-                                {getVal<number>("Descripcion_del_Inmueble.BalconAreaNumeros")}
-                            </span>
-                            {" "}metros cuadrados);{" "}
-                        </>
-                    ) : null}
-                    {getVal<number>("Descripcion_del_Inmueble.TerrazaAreaNumeros") ? (
-                        <>
-                            <span className="bold">d)</span> Una terraza de
-                            aproximadamente{" "}
-                            <span className="highlight-red">
-                                {getVal<string>("Descripcion_del_Inmueble.TerrazaAreaLetras")}
-                            </span>{" "}
-                            (
-                            <span className="highlight-red">
-                                {getVal<number>("Descripcion_del_Inmueble.TerrazaAreaNumeros")}
-                            </span>
-                            M2), y{" "}
-                        </>
-                    ) : null}
-                    <span className="bold">e)</span> El bien mueble (acción) de
+                    {(() => {
+                        const balconArea = getVal<number>("Descripcion_del_Inmueble.BalconAreaNumeros", 0) || 0;
+                        const terrazaArea = getVal<number>("Descripcion_del_Inmueble.TerrazaAreaNumeros", 0) || 0;
+                        if (balconArea <= 0 && terrazaArea <= 0) return null;
+                        
+                        const content = [];
+                        if (balconArea > 0) {
+                            content.push(
+                                <span className="highlight-green">
+                                    <span className="bold">d)</span> Un balcón, con un área aproximada de {idToWords(balconArea.toString())} METROS CUADRADOS ({balconArea} m2)
+                                </span>
+                            );
+                        }
+                        if (terrazaArea > 0) {
+                            const letter = balconArea > 0 ? "e" : "d";
+                            content.push(
+                                <span className="highlight-green">
+                                    <span className="bold">{letter})</span> Una terraza de aproximadamente {idToWords(terrazaArea.toString())} METROS CUADRADOS ({terrazaArea} m2)
+                                </span>
+                            );
+                        }
+                        return (
+                            <>
+                                {content.map((c, i) => (
+                                    <React.Fragment key={i}>
+                                        {i > 0 ? "; y " : ""}
+                                        {c}
+                                    </React.Fragment>
+                                ))}
+                            </>
+                        );
+                    })()}
+                    ;{" "}
+                    {(() => {
+                        const balconArea = getVal<number>("Descripcion_del_Inmueble.BalconAreaNumeros", 0) || 0;
+                        const terrazaArea = getVal<number>("Descripcion_del_Inmueble.TerrazaAreaNumeros", 0) || 0;
+                        let letter = "d";
+                        if (balconArea > 0 && terrazaArea > 0) letter = "f";
+                        else if (balconArea > 0 || terrazaArea > 0) letter = "e";
+                        return (
+                            <span className="bold highlight-red">{letter})</span>
+                        );
+                    })()} El bien mueble (acción) de
                     la entidad relacionada y pertinente al proyecto.
                 </p>
                 <p>
