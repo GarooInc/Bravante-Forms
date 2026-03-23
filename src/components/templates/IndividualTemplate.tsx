@@ -1174,58 +1174,41 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                     prometidos en venta de la siguiente forma:
                 </p>
                 <p>
-                    <span className="bold">a)</span> Un primer pago por la
-                    cantidad de{" "}
-                    <span className="bold highlight-yellow">
-                        {getVal<string>(
-                            "Condiciones_Economicas.ReservaLetras",
-                            "[RESERVA_LETRAS]",
-                        )
-                            .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
-                            .toUpperCase()}{" "}
-                        DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
-                        {getVal<number>(
-                            "Condiciones_Economicas.ReservaNumeros",
-                            0,
-                        ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                        )
-                    </span>{" "}
-                    en concepto de reserva, que Yo, la parte Promitente
-                    Vendedora manifiesto que tengo recibido a mi entera
-                    satisfacción.
-                </p>
-                <p>
-                    <span className="bold">b)</span> Un segundo pago por la
-                    cantidad total de{" "}
-                    <span className="highlight-yellow">
-                        {getVal<string>(
-                            "Condiciones_Economicas.SegundoPagoLetras",
-                            "[SEGUNDO_PAGO_LETRAS]",
-                        )
-                            .replace(/\s*(quetzales|dólares|dólar)\s*$/i, "")
-                            .toUpperCase()}{" "}
-                        DÓLARES DE LOS ESTADOS UNIDOS DE NORTE AMÉRICA (USD.
-                        {getVal<number>(
-                            "Condiciones_Economicas.SegundoPagoNumeros",
-                            0,
-                        ).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                        )
-                    </span>
-                    , que la parte Promitente Compradora entregará mediante{" "}
-                    <span className="highlight-red">
-                        {getVal(
-                            "Condiciones_Economicas.CantidadPagosLetras",
-                            "[CANTIDAD_PAGOS_LETRAS]",
-                        )}
-                    </span>{" "}
-                    (
-                    <span className="highlight-red">
-                        {getVal(
-                            "Condiciones_Economicas.CantidadPagosNumeros",
-                            "[CANTIDAD_PAGOS]",
-                        )}
-                    </span>
-                    ) pagos a la Promitente Vendedora, de la siguiente forma:
+                    {(() => {
+                        const pagos = getVal<Pago[]>("Pagos", []);
+                        const engancheTotal = getVal<number>("Condiciones_Economicas.ReservaNumeros", 0);
+                        const primerPagoMonto = pagos.length > 0 ? parseFloat(pagos[0].value) : 0;
+                        const segundoPagoMonto = engancheTotal - primerPagoMonto;
+                        const cantPagosRestantes = pagos.length > 1 ? pagos.length - 1 : 0;
+
+                        return (
+                            <>
+                                <span className="bold">a)</span> Un primer pago por la cantidad de{" "}
+                                <span className="bold highlight-yellow">
+                                    {numberToWords(Math.floor(primerPagoMonto)).toUpperCase()}{" "}
+                                    DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
+                                    {primerPagoMonto.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                    )
+                                </span>{" "}
+                                en concepto de reserva, que Yo, la parte Promitente
+                                Vendedora manifiesto que tengo recibido a mi entera
+                                satisfacción.
+                                <br /><br />
+                                <span className="bold">b)</span> Un segundo pago por la cantidad total de{" "}
+                                <span className="bold highlight-yellow">
+                                    {numberToWords(Math.floor(segundoPagoMonto)).toUpperCase()}{" "}
+                                    DÓLARES DE LOS ESTADOS UNIDOS DE AMÉRICA (USD.
+                                    {segundoPagoMonto.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                                    )
+                                </span>
+                                , que la parte Promitente Compradora entregará mediante{" "}
+                                <span className="highlight-red">
+                                    {numberToWords(cantPagosRestantes).toLowerCase()} ({cantPagosRestantes})
+                                </span>{" "}
+                                pagos a la Promitente Vendedora, de la siguiente forma:
+                            </>
+                        );
+                    })()}
                 </p>
                 <div style={{ marginLeft: "40px", marginTop: "10px" }}>
                     <ol style={{ listStyleType: "decimal", paddingLeft: "0" }}>
@@ -1247,7 +1230,7 @@ export const IndividualTemplate: React.FC<TemplateProps> = ({
                                 "noviembre",
                                 "diciembre",
                             ];
-                            return pagos.map((p, idx) => {
+                            return pagos.slice(1).map((p, idx) => {
                                 if (!p.fecha || !p.value) return null;
                                 const f = new Date(p.fecha);
                                 const diaNum = f.getUTCDate();
