@@ -997,27 +997,9 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
                         </li>
                     </ul>
                     <p style={{ fontWeight: "bold", marginTop: "8px" }}>
-                        2.4 ELECTRODOMÉSTICOS DE COCINA:
+                        2.4 PROMOCIONES ESPECIALES:
                     </p>
-                    <ul style={{ listStyleType: "disc", marginLeft: "40px", marginTop: "5px", marginBottom: "5px", paddingLeft: "0" }}>
-                        <li style={{ marginBottom: "5px" }}>
-                            Refrigerador Samsung de 25 a 27 pies³ French door color
-                            acero.
-                        </li>
-                        <li style={{ marginBottom: "5px" }}>Cooktop eléctrico de 30" Kitchenaid</li>
-                        <li style={{ marginBottom: "5px" }}>
-                            Downdraft extractor de olores Kitchenaid oculto dentro
-                            de gabinete con blower.
-                        </li>
-                        <li style={{ marginBottom: "5px" }}>Horno eléctrico empotrable de 30" Samsung.</li>
-                        <li style={{ marginBottom: "5px" }}>Microondas empotrable con trimkit Samsung.</li>
-                        <li style={{ marginBottom: "5px" }}>Dishwasher de 24" Samsung color acero.</li>
-                        <li style={{ marginBottom: "5px" }}>Instalación de dichos electrodomésticos.</li>
-                        <li style={{ marginBottom: "5px" }}>
-                            Nota: La marca y el color podrían variar por falta de
-                            disponibilidad en el mercado.
-                        </li>
-                    </ul>
+                    <div style={{ height: "120px" }}></div>
                 </div>
                 <p style={{ marginTop: "15px" }}>
                     Los adquirentes tendrán derecho a utilizar las áreas o
