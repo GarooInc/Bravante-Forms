@@ -156,7 +156,7 @@ const Cierre: React.FC = () => {
           </div>
         </div>
 
-        <div className="card bg-gray-900 shadow-2xl">
+        <div className="card bg-gray-900 shadow-2xl" data-theme="dark">
           <div className="card-body">
             <h2 className="card-title md:text-2xl text-xl mb-2">
               Documentos de Cierre de {nameclient}
@@ -212,7 +212,7 @@ const Cierre: React.FC = () => {
             <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-64 border p-4">
               <legend className="fieldset-legend">Hay autorizaciones especiales?</legend>
               <label className="label">
-                <input type="checkbox" className="toggle" onChange={handleCheckboxChange} checked={autorizacionesEspeciales} />
+                <input type="checkbox" className="toggle toggle-primary" onChange={handleCheckboxChange} checked={autorizacionesEspeciales} />
                 <span className="label-text ml-2">Sí, hay autorizaciones especiales</span>
               </label>
             </fieldset>

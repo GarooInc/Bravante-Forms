@@ -137,7 +137,7 @@ const Comprobante: React.FC = () => {
           </div>
         </div>
 
-        <div className="card bg-gray-900 shadow-2xl">
+        <div className="card bg-gray-900 shadow-2xl" data-theme="dark">
           <div className="card-body">
             <h2 className="card-title md:text-2xl text-xl mb-2">
               Comprobante de {nameclient} de la cuota {cuota}

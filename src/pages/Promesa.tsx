@@ -247,7 +247,7 @@ const Promesa: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="card bg-gray-900 shadow-2xl">
+                <div className="card bg-gray-900 shadow-2xl" data-theme="dark">
                     <div className="card-body">
                         <h2 className="card-title md:text-2xl text-xl mb-2">
                             Documentos de Promesa de {nameclient}
@@ -264,7 +264,7 @@ const Promesa: React.FC = () => {
                                 <input
                                     type="radio"
                                     name="radio-1"
-                                    className="radio"
+                                    className="radio radio-primary"
                                     checked={typePerson === 0}
                                     onChange={() => setTypePerson(0)}
                                 />
@@ -274,7 +274,7 @@ const Promesa: React.FC = () => {
                                 <input
                                     type="radio"
                                     name="radio-1"
-                                    className="radio"
+                                    className="radio radio-primary"
                                     checked={typePerson === 1}
                                     onChange={() => setTypePerson(1)}
                                 />
@@ -447,7 +447,7 @@ const Promesa: React.FC = () => {
                                     <label className="label">
                                         <input
                                             type="checkbox"
-                                            className="toggle"
+                                            className="toggle toggle-primary"
                                             onChange={handleCheckboxChange}
                                             checked={contado}
                                         />
