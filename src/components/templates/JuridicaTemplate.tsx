@@ -31,7 +31,21 @@ export const JuridicaTemplate: React.FC<TemplateProps> = ({
         return normalizado
             .trim()
             .split(/\s+/)
-            .map((bloque) => numberToWords(parseInt(bloque, 10)))
+            .map((bloque) => {
+                // Si el bloque empieza en cero, agregar "CERO " por cada cero inicial
+                // seguido del número restante (ej. "0142" → "CERO CIENTO CUARENTA Y DOS")
+                if (bloque.length > 1 && bloque.startsWith("0")) {
+                    let ceros = "";
+                    let i = 0;
+                    while (i < bloque.length && bloque[i] === "0") {
+                        ceros += "CERO ";
+                        i++;
+                    }
+                    if (i === bloque.length) return ceros.trim();
+                    return ceros + numberToWords(parseInt(bloque.slice(i), 10));
+                }
+                return numberToWords(parseInt(bloque, 10));
+            })
             .join(", ");
     };
 
