@@ -34,23 +34,32 @@ Single-page React app for Bravante (real-estate firm). Each route corresponds to
 | `/comprobante/:id/:cuota` | `Comprobante.tsx` | Upload payment receipt |
 | `/cierre/:id` | `Cierre.tsx` | Upload closing documents (check, apartado form, contract) |
 
+### Backend: N8N Workflow (Phase 4.3)
+
+`VITE_API_URL/promesa-document` is served by the n8n workflow **PHASE4.3 - BRAVANTE: LLENAR DOCUMENTO LEGAL** (`xTNw4_8oAxaNDLxiaN0td` on `agentsprod.redtec.ai`). It receives `{ id }`, pulls data from MongoDB + Monday.com + the signed PDF, runs an OpenAI extraction, and returns the `WebhookData` JSON consumed by `DocumentoPromesa.tsx`. Full documentation: **`N8N_PHASE4_3_WORKFLOW.md`**.
+
 ### Document Generation (`src/components/DocumentoPromesa.tsx`)
 
 This is the most complex component. It:
 1. Fetches data from `VITE_API_URL/promesa-document` (POST with `{id}`)
-2. Normalizes a deeply nested/variable webhook payload into the `WebhookData` shape
-3. Adds 7 days to `FechaDocumento` before rendering
+2. Normalizes a deeply nested/variable webhook payload into the `WebhookData` shape — the normalization logic handles several different payload structures (direct object, array wrapper, `document_promesa_firma` nesting)
+3. Adds 7 days to `FechaDocumento` before rendering (stored as `YYYY-MM-DD` top-level on `WebhookData`)
 4. Routes to `JuridicaTemplate` or `IndividualTemplate` based on `TipoPersona`
 5. Exposes helper functions (`getVal`, `getComprador`, `getParqueosDescripcion`, `getFechaFirma`, `getFechaLegalizacion`, `getSaldoFinal`, `getDireccionComprador`, `getPlazoMeses`, `getMesEntrega`) as props to templates
-6. Supports export as Word (`.doc` via HTML blob) and browser print/PDF
+6. Exports as Word via an **HTML-as-MSWord blob** (not the `html-to-docx` library); also supports browser print/PDF
 
 ### Templates (`src/components/templates/`)
 
 - `IndividualTemplate.tsx` — legal document for individual buyers
 - `JuridicaTemplate.tsx` — legal document for corporate buyers
 - `DocumentStyles.tsx` — shared CSS-in-JSX styles for document rendering
-- `types.ts` — canonical `WebhookData`, `TemplateProps`, and sub-interfaces
-- `utils.ts` — number-to-Spanish-words conversion (`numberToWords`, `numberToWordsYear`, `formatCUI`, `cuiToWords`, `idToWords`, `toTitleCase`)
+- `types.ts` — **canonical** `WebhookData`, `TemplateProps`, and sub-interfaces; prefer this over `src/utils/DocumentoHelpers.ts` which duplicates the same interfaces
+- `utils.ts` — number-to-Spanish-words conversion: `numberToWords`, `numberToWordsYear` (hardcoded for years 2025–2030), `yearSuffixToWords`, `formatCUI`, `cuiToWords`, `idToWords`, `toTitleCase`
+
+### Utility files (`src/utils/`)
+
+- `DocumentoHelpers.ts` — duplicates `WebhookData` and re-exports interfaces; also has `numberToWords`, `yearSuffixToWords`, `formatDateToWords`. Treat `templates/types.ts` and `templates/utils.ts` as the source of truth.
+- `promesaUtils.ts` — has `getValProp`, `getCompradorProp` path helpers and a **broken stub** `numberToWords` that just returns `num.toString()`. Do not use its `numberToWords`.
 
 ### Shared Types
 
@@ -62,7 +71,7 @@ This is the most complex component. It:
 
 ### Vite Config
 
-`vite-plugin-node-polyfills` is required because `html-to-docx` (a Node library) is used in the browser. The polyfills include `buffer`, `stream`, `crypto`, and several others — do not remove them.
+`vite-plugin-node-polyfills` is required because `html-to-docx` (a Node library) is in `package.json` and was previously used in the browser. The polyfills include `buffer`, `stream`, `crypto`, and several others — do not remove them even though Word export now uses an HTML blob approach.
 
 ## Document Formatting Rules
 
@@ -72,4 +81,10 @@ When editing legal document templates, follow these conventions (see also `DOCUM
 - DPI/CUI numbers in words use comma-separated blocks: `DOS MIL QUINIENTOS, SETENTA Y NUEVE MIL, MIL CUATROCIENTOS (2500 79000 1400)`
 - Dynamic data fields must be wrapped in `<span className="bold highlight-yellow">`
 - "Persona Jurídica" template must gender-match all legal pronouns to the `RepresentanteNombre` context
-- Payment logic: `Pagos[0]` = reserva, `Pagos[1..n]` = cuotas mensuales; the saldo enganche = `ReservaNumeros - Pagos[0].value`
+- Payment logic:
+  - `Pagos[0]` = reserva (first payment/down payment)
+  - `Pagos[1..n]` = cuotas mensuales (monthly installments)
+  - Saldo enganche = `Condiciones_Economicas.ReservaNumeros - Pagos[0].value`
+  - Monthly payment count = `Pagos.length - 1`
+- `DatosJuridicos` has `ActaFechaDia`, `ActaFechaMes`, `ActaFechaAnio` derived from `ActaNotarialFecha` during normalization
+- `Descripcion_del_Inmueble.Modelo` holds the apartment model name (may be split from `Apartamento` field when formatted as `"NUM / MODEL"`)
