@@ -668,11 +668,16 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
             ests.length === 1 ? "identificada" : "identificadas";
         const ubicadaStr = ests.length === 1 ? "ubicada" : "ubicadas";
 
-        const numeros = ests.map((e) => e.Numero).join(", ");
-        const sotano = ests[0]?.Sotano || "1";
-        const sotanoLetras = ests[0]?.Sotano_Letras || numberToWords(parseInt(sotano)).toUpperCase();
+        const numeros = ests
+            .map((e) => {
+                const rawNum = e.Numero || "0";
+                const spotNum = rawNum.split(/[-\s]/).pop() || rawNum;
+                const letras = e.Numero_Letras || numberToWords(parseInt(spotNum)).toUpperCase();
+                return `${letras} (${spotNum})`;
+            })
+            .join(", ");
 
-        return `${countStr} ${plazaStr} de estacionamiento ${identificadaStr} con los números: ${numeros}, ${ubicadaStr} en el sótano número: ${sotanoLetras} (${sotano})`;
+        return `${countStr} ${plazaStr} de estacionamiento ${identificadaStr} con los números: ${numeros}`;
     };
 
     const getFechaLegalizacion = () => {
@@ -694,9 +699,9 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
             "diciembre",
         ];
         return {
-            dia: f.getUTCDate().toString(),
+            dia: `${numberToWords(f.getUTCDate()).toLowerCase()} (${f.getUTCDate()})`,
             mes: meses[f.getUTCMonth()],
-            anio: numberToWordsYear(f.getUTCFullYear()).toLowerCase(),
+            anio: `${numberToWordsYear(f.getUTCFullYear()).toLowerCase()} (${f.getUTCFullYear()})`,
         };
     };
 
@@ -719,9 +724,9 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
             "diciembre",
         ];
         return {
-            dia: f.getUTCDate().toString(),
+            dia: `${numberToWords(f.getUTCDate()).toLowerCase()} (${f.getUTCDate()})`,
             mes: meses[f.getUTCMonth()],
-            anio: numberToWordsYear(f.getUTCFullYear()).toLowerCase(),
+            anio: `${numberToWordsYear(f.getUTCFullYear()).toLowerCase()} (${f.getUTCFullYear()})`,
         };
     };
 
@@ -741,12 +746,10 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
     const getMesEntrega = () => {
         const dEnt = getVal<any>("Liquidacion_Final_y_Plazos", {});
         const mes = dEnt.MesEntrega || "[FECHA_ENTREGA]";
-        const dia = dEnt.DiaEntrega as number | undefined;
-        const diaLetras = dEnt.DiaEntregaLetras as string | undefined;
         const anio = dEnt.AnioEntrega as number | undefined;
         const anioTexto = anio ? numberToWordsYear(anio).toLowerCase() : "[AÑO]";
-        const diaStr = diaLetras && dia ? `${diaLetras} (${dia}) de ` : "";
-        return `${diaStr}${mes} de ${anioTexto}`;
+        const anioNum = anio ? ` (${anio})` : "";
+        return `${mes} de ${anioTexto}${anioNum}`;
     };
 
 

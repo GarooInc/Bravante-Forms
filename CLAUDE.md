@@ -18,8 +18,6 @@ There are no tests in this project.
 - `VITE_API_URL` — primary backend base URL (used by most pages)
 - `VITE_API_URL_TEST` — alternate test backend URL
 
-> Known issue: `Promesa.tsx` and `Cierre.tsx` use hardcoded webhook URLs (`https://agentsprod.redtec.ai/webhook/promesa` and `.../cierre`) instead of `VITE_API_URL`.
-
 ## Architecture Overview
 
 Single-page React app for Bravante (real-estate firm). Each route corresponds to a step in the property purchase process, and each page collects specific documents from the buyer then POSTs them as `FormData` to the backend.
@@ -53,17 +51,16 @@ This is the most complex component. It:
 - `IndividualTemplate.tsx` — legal document for individual buyers
 - `JuridicaTemplate.tsx` — legal document for corporate buyers
 - `DocumentStyles.tsx` — shared CSS-in-JSX styles for document rendering
-- `types.ts` — **canonical** `WebhookData`, `TemplateProps`, and sub-interfaces; prefer this over `src/utils/DocumentoHelpers.ts` which duplicates the same interfaces
+- `types.ts` — **canonical** `WebhookData`, `TemplateProps`, and sub-interfaces.
 - `utils.ts` — number-to-Spanish-words conversion: `numberToWords`, `numberToWordsYear` (hardcoded for years 2025–2030), `yearSuffixToWords`, `formatCUI`, `cuiToWords`, `idToWords`, `toTitleCase`
 
 ### Utility files (`src/utils/`)
 
-- `DocumentoHelpers.ts` — duplicates `WebhookData` and re-exports interfaces; also has `numberToWords`, `yearSuffixToWords`, `formatDateToWords`. Treat `templates/types.ts` and `templates/utils.ts` as the source of truth.
-- `promesaUtils.ts` — has `getValProp`, `getCompradorProp` path helpers and a **broken stub** `numberToWords` that just returns `num.toString()`. Do not use its `numberToWords`.
+None. All document-related utilities and types have been consolidated into `src/components/templates/`.
 
 ### Shared Types
 
-`src/types/index.ts` exports `FileUpload { file: File | null; preview: string | null }`. This same interface is duplicated inline in several page files — use the shared type when editing.
+`src/types/index.ts` exports the canonical `FileUpload { file: File | null; preview: string | null }` interface used across all upload pages.
 
 ### `UploadBox` Component
 
