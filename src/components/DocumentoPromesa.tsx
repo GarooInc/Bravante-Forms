@@ -292,23 +292,25 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                     dt.RegistroLibro,
                 },
                 Descripcion_del_Inmueble: {
-                  Apartamento:
+                  Apartamento: stripLahar(
                     (inmueble.Apartamento?.includes(" / ")
                       ? inmueble.Apartamento.split(" / ")[0].trim()
                       : inmueble.Apartamento) ||
-                    (dt.Apartamento?.includes(" / ")
-                      ? dt.Apartamento.split(" / ")[0].trim()
-                      : dt.Apartamento) ||
-                    dt.id_inmueble?.split(" ")[0]?.replace("Apt", ""),
-                  Modelo:
+                      (dt.Apartamento?.includes(" / ")
+                        ? dt.Apartamento.split(" / ")[0].trim()
+                        : dt.Apartamento) ||
+                      dt.id_inmueble?.split(" ")[0]?.replace("Apt", ""),
+                  ),
+                  Modelo: stripLahar(
                     (inmueble.Apartamento?.includes(" / ")
                       ? inmueble.Apartamento.split(" / ").slice(1).join(" / ")
                       : undefined) ||
-                    inmueble.Modelo ||
-                    dt.nombre_modelo ||
-                    dt.NombreModelo ||
-                    dt.modelo ||
-                    dt.Modelo,
+                      inmueble.Modelo ||
+                      dt.nombre_modelo ||
+                      dt.NombreModelo ||
+                      dt.modelo ||
+                      dt.Modelo,
+                  ),
                   Torre: inmueble.Torre || dt.Torre || "ETEREA",
                   Nivel: (() => {
                     const raw =
@@ -333,15 +335,16 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                   )?.toString(),
                   Habitaciones_Letras:
                     inmueble.Habitaciones_Letras || dt.Habitaciones_Letras,
-                  DescripcionApartamento:
+                  DescripcionApartamento: stripLahar(
                     (inmueble.Apartamento?.includes(" / ")
                       ? inmueble.Apartamento.split(" / ").slice(1).join(" / ")
                       : undefined) ||
-                    inmueble.DescripcionApartamento ||
-                    dt.nombre_modelo ||
-                    dt.NombreModelo ||
-                    dt.modelo ||
-                    dt.Modelo,
+                      inmueble.DescripcionApartamento ||
+                      dt.nombre_modelo ||
+                      dt.NombreModelo ||
+                      dt.modelo ||
+                      dt.Modelo,
+                  ),
                   NumeroBR: dt.NumeroBR || inmueble.NumeroBR || dt.numeroBR,
                   AreaConstruccionLetras:
                     inmueble.AreaConstruccionLetras ||
