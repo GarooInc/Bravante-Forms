@@ -191,11 +191,7 @@ export const IndividualClause1To2: React.FC<IndividualClause1To2Props> = ({
                                     <span className="highlight-red">
                                         {idToWords(p.Numero || "") || "[NUMERO_LETRAS]"}
                                     </span>{" "}
-                                    (
-                                    <span className="highlight-red">
-                                        {p.Numero}
-                                    </span>
-                                    ), ubicada en el sótano número:{" "}
+                                    ubicada en el sótano número:{" "}
                                     <span className="highlight-red">
                                         {p.Sotano_Letras || "[SOTANO_LETRAS]"}
                                     </span>{" "}
@@ -203,8 +199,7 @@ export const IndividualClause1To2: React.FC<IndividualClause1To2Props> = ({
                                     <span className="highlight-red">
                                         {p.Sotano || "[#]"}
                                     </span>
-                                    )
-                                </p>
+                                    )                                </p>
                             ))}
                         </div>
                     );
@@ -264,8 +259,10 @@ export const IndividualClause1To2: React.FC<IndividualClause1To2Props> = ({
                                         <span className="highlight-red">
                                             {idToWords(b.Numero || "") ||
                                                 "[NUMERO_LETRAS]"}
-                                        </span>
-                                        , ubicada en el sótano número:{" "}
+                                        </span>{" "}
+                                        (<span className="highlight-red">
+                                            {parseInt(b.Numero || "0")}
+                                        </span>), ubicada en el sótano número:{" "}
                                         <span className="highlight-red">
                                             {b.Sotano_Letras ||
                                                 "[SOTANO_LETRAS]"}

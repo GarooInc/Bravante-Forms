@@ -99,6 +99,9 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                   ? str.replace(/\s*(D[OÓ]LARES?|QUETZALES?)\s.*/i, "").trim()
                   : "";
 
+              const stripLahar = (str?: string) =>
+                str ? str.replace(/\s*\(Lahar\)/gi, "").trim() : "";
+
               // Sumar 7 días a la fecha del documento
               if (dt.FechaDocumento) {
                 const dParts = dt.FechaDocumento.split("-");
@@ -289,23 +292,25 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                     dt.RegistroLibro,
                 },
                 Descripcion_del_Inmueble: {
-                  Apartamento:
+                  Apartamento: stripLahar(
                     (inmueble.Apartamento?.includes(" / ")
                       ? inmueble.Apartamento.split(" / ")[0].trim()
                       : inmueble.Apartamento) ||
-                    (dt.Apartamento?.includes(" / ")
-                      ? dt.Apartamento.split(" / ")[0].trim()
-                      : dt.Apartamento) ||
-                    dt.id_inmueble?.split(" ")[0]?.replace("Apt", ""),
-                  Modelo:
+                      (dt.Apartamento?.includes(" / ")
+                        ? dt.Apartamento.split(" / ")[0].trim()
+                        : dt.Apartamento) ||
+                      dt.id_inmueble?.split(" ")[0]?.replace("Apt", ""),
+                  ),
+                  Modelo: stripLahar(
                     (inmueble.Apartamento?.includes(" / ")
                       ? inmueble.Apartamento.split(" / ").slice(1).join(" / ")
                       : undefined) ||
-                    inmueble.Modelo ||
-                    dt.nombre_modelo ||
-                    dt.NombreModelo ||
-                    dt.modelo ||
-                    dt.Modelo,
+                      inmueble.Modelo ||
+                      dt.nombre_modelo ||
+                      dt.NombreModelo ||
+                      dt.modelo ||
+                      dt.Modelo,
+                  ),
                   Torre: inmueble.Torre || dt.Torre || "ETEREA",
                   Nivel: (() => {
                     const raw =
@@ -330,15 +335,16 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                   )?.toString(),
                   Habitaciones_Letras:
                     inmueble.Habitaciones_Letras || dt.Habitaciones_Letras,
-                  DescripcionApartamento:
+                  DescripcionApartamento: stripLahar(
                     (inmueble.Apartamento?.includes(" / ")
                       ? inmueble.Apartamento.split(" / ").slice(1).join(" / ")
                       : undefined) ||
-                    inmueble.DescripcionApartamento ||
-                    dt.nombre_modelo ||
-                    dt.NombreModelo ||
-                    dt.modelo ||
-                    dt.Modelo,
+                      inmueble.DescripcionApartamento ||
+                      dt.nombre_modelo ||
+                      dt.NombreModelo ||
+                      dt.modelo ||
+                      dt.Modelo,
+                  ),
                   NumeroBR: dt.NumeroBR || inmueble.NumeroBR || dt.numeroBR,
                   AreaConstruccionLetras:
                     inmueble.AreaConstruccionLetras ||
@@ -589,10 +595,13 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
     const numeros = ests
       .map((e) => {
         const rawNum = e.Numero || "0";
+        // Extraer solo la parte numérica (ej: "PS-05" -> "05")
         const spotNum = rawNum.split(/[-\s]/).pop() || rawNum;
-        const letras =
-          e.Numero_Letras || numberToWords(parseInt(spotNum)).toUpperCase();
-        return `${letras} (${spotNum})`;
+        const cleanNum = parseInt(spotNum);
+        const letras = e.Numero_Letras
+          ? e.Numero_Letras.replace(/CERO\s+/gi, "").trim()
+          : numberToWords(cleanNum).toUpperCase();
+        return `${letras} (${cleanNum})`;
       })
       .join(", ");
 
@@ -618,9 +627,9 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
       "diciembre",
     ];
     return {
-      dia: `${numberToWords(f.getUTCDate()).toLowerCase()} (${f.getUTCDate()})`,
+      dia: `${numberToWords(f.getUTCDate()).toLowerCase()}`,
       mes: meses[f.getUTCMonth()],
-      anio: `${numberToWordsYear(f.getUTCFullYear()).toLowerCase()} (${f.getUTCFullYear()})`,
+      anio: `${numberToWordsYear(f.getUTCFullYear()).toLowerCase()}`,
     };
   };
 
@@ -643,9 +652,9 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
       "diciembre",
     ];
     return {
-      dia: `${numberToWords(f.getUTCDate()).toLowerCase()} (${f.getUTCDate()})`,
+      dia: `${numberToWords(f.getUTCDate()).toLowerCase()}`,
       mes: meses[f.getUTCMonth()],
-      anio: `${numberToWordsYear(f.getUTCFullYear()).toLowerCase()} (${f.getUTCFullYear()})`,
+      anio: `${numberToWordsYear(f.getUTCFullYear()).toLowerCase()}`,
     };
   };
 

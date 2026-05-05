@@ -40,7 +40,7 @@ export const JuridicaTemplate: React.FC<TemplateProps> = (props) => {
                 }
                 return numberToWords(parseInt(bloque, 10));
             })
-            .join(" COMA ");
+            .join(", ");
     };
 
     return (

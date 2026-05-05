@@ -182,9 +182,11 @@ export const JuridicaClause1To2: React.FC<JuridicaClause1To2Props> = ({
                                 >
                                     o{" "}
                                     <span className="bold highlight-red">
-                                        {idToWords(p.Numero || "")} ({p.Numero})
-                                    </span>
-                                    , ubicada en el sótano número:{" "}
+                                        {idToWords(p.Numero || "")}
+                                    </span>{" "}
+                                    (<span className="bold highlight-red">
+                                        {parseInt(p.Numero || "0")}
+                                    </span>), ubicada en el sótano número:{" "}
                                     <span className="bold highlight-red">
                                         {(p.Sotano_Letras || "").toUpperCase()} ({p.Sotano || "#"})
                                     </span>
@@ -246,9 +248,11 @@ export const JuridicaClause1To2: React.FC<JuridicaClause1To2Props> = ({
                                     >
                                         o{" "}
                                         <span className="bold highlight-red">
-                                            {idToWords(b.Numero || "")} ({b.Numero})
-                                        </span>
-                                        , ubicada en el sótano número:{" "}
+                                            {idToWords(b.Numero || "")}
+                                        </span>{" "}
+                                        (<span className="bold highlight-red">
+                                            {parseInt(b.Numero || "0")}
+                                        </span>), ubicada en el sótano número:{" "}
                                         <span className="bold highlight-red">
                                             {(b.Sotano_Letras || "").toUpperCase()} ({b.Sotano || "#"})
                                         </span>
