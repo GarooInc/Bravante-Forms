@@ -99,6 +99,9 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
                   ? str.replace(/\s*(D[OÓ]LARES?|QUETZALES?)\s.*/i, "").trim()
                   : "";
 
+              const stripLahar = (str?: string) =>
+                str ? str.replace(/\s*\(Lahar\)/gi, "").trim() : "";
+
               // Sumar 7 días a la fecha del documento
               if (dt.FechaDocumento) {
                 const dParts = dt.FechaDocumento.split("-");
@@ -589,10 +592,13 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
     const numeros = ests
       .map((e) => {
         const rawNum = e.Numero || "0";
+        // Extraer solo la parte numérica (ej: "PS-05" -> "05")
         const spotNum = rawNum.split(/[-\s]/).pop() || rawNum;
-        const letras =
-          e.Numero_Letras || numberToWords(parseInt(spotNum)).toUpperCase();
-        return `${letras} (${spotNum})`;
+        const cleanNum = parseInt(spotNum);
+        const letras = e.Numero_Letras
+          ? e.Numero_Letras.replace(/CERO\s+/gi, "").trim()
+          : numberToWords(cleanNum).toUpperCase();
+        return `${letras} (${cleanNum})`;
       })
       .join(", ");
 
@@ -618,9 +624,9 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
       "diciembre",
     ];
     return {
-      dia: `${numberToWords(f.getUTCDate()).toLowerCase()} (${f.getUTCDate()})`,
+      dia: `${numberToWords(f.getUTCDate()).toLowerCase()}`,
       mes: meses[f.getUTCMonth()],
-      anio: `${numberToWordsYear(f.getUTCFullYear()).toLowerCase()} (${f.getUTCFullYear()})`,
+      anio: `${numberToWordsYear(f.getUTCFullYear()).toLowerCase()}`,
     };
   };
 
@@ -643,9 +649,9 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
       "diciembre",
     ];
     return {
-      dia: `${numberToWords(f.getUTCDate()).toLowerCase()} (${f.getUTCDate()})`,
+      dia: `${numberToWords(f.getUTCDate()).toLowerCase()}`,
       mes: meses[f.getUTCMonth()],
-      anio: `${numberToWordsYear(f.getUTCFullYear()).toLowerCase()} (${f.getUTCFullYear()})`,
+      anio: `${numberToWordsYear(f.getUTCFullYear()).toLowerCase()}`,
     };
   };
 

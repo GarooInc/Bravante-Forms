@@ -93,8 +93,8 @@ export const IndividualIntroduction: React.FC<IndividualIntroductionProps> = ({
                     edad, casado, Contador Público y Auditor, guatemalteco, de
                     este domicilio, me identifico con el Documento Personal de
                     Identificación -DPI- con Código Único de Identificación
-                    -CUI- <span className="bold highlight-yellow">DOS MIL QUINIENTOS CUARENTA COMA SETENTA Y NUEVE MIL
-                    DOSCIENTOS VEINTINUEVE COMA MIL CUATROCIENTOS UNO (2540 79229
+                    -CUI- <span className="bold highlight-yellow">DOS MIL QUINIENTOS CUARENTA, SETENTA Y NUEVE MIL
+                    DOSCIENTOS VEINTINUEVE, MIL CUATROCIENTOS UNO (2540 79229
                     1401)</span>, extendido por el Registro Nacional de las Personas de
                     la República de Guatemala, comparezco en mi calidad de{" "}
                     <span className="bold">

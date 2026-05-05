@@ -108,7 +108,7 @@ export const cuiToWords = (cui: string): string => {
     const part2 = parseInt(clean.slice(4, 9));
     const part3 = parseInt(clean.slice(9, 13));
     
-    return `${numberToWords(part1)} COMA ${numberToWords(part2)} COMA ${numberToWords(part3)}`.toUpperCase();
+    return `${numberToWords(part1)}, ${numberToWords(part2)}, ${numberToWords(part3)}`.toUpperCase();
 };
 
 export const idToWords = (id: string): string => {
@@ -125,12 +125,6 @@ export const idToWords = (id: string): string => {
         
         const num = parseInt(p);
         if (isNaN(num)) return p.toUpperCase();
-        
-        // Manejar ceros a la izquierda si es necesario (ej. "05" -> "CERO CINCO")
-        if (p.length > 1 && p.startsWith("0")) {
-             const digits = p.split("").map(d => numberToWords(parseInt(d)));
-             return digits.join(" ");
-        }
         
         return numberToWords(num);
     });

@@ -96,8 +96,8 @@ export const IndividualSignatures: React.FC<IndividualSignaturesProps> = ({
                     identifica con el Documento Personal de Identificación -DPI- con
                     Código Único de Identificación -CUI- número{" "}
                     <span className="bold">
-                        DOS MIL QUINIENTOS CUARENTA COMA SETENTA Y NUEVE MIL DOSCIENTOS
-                        VEINTINUEVE COMA MIL CUATROCIENTOS UNO (2540 79229 1401)
+                        DOS MIL QUINIENTOS CUARENTA, SETENTA Y NUEVE MIL DOSCIENTOS
+                        VEINTINUEVE, MIL CUATROCIENTOS UNO (2540 79229 1401)
                     </span>
                     ;{" "}
                     {compradores.map((c, idx) => (
