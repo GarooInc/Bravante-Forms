@@ -1,6 +1,6 @@
 import React from "react";
 import type { DatosJuridicos } from "../../types";
-import { numberToWords, numberToWordsYear } from "../../utils";
+import { numberToWordsYear } from "../../utils";
 
 interface JuridicaSignaturesProps {
     datosJuridicos: DatosJuridicos;
