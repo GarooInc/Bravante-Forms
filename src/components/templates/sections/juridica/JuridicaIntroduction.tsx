@@ -1,6 +1,6 @@
 import React from "react";
 import type { TemplateProps, DatosJuridicos } from "../../types";
-import { formatCUI, numberToWords, numberToWordsYear, toTitleCase } from "../../utils";
+import { formatCUI, numberToWords, numberToWordsYear, toTitleCase, stripLevelPrefix } from "../../utils";
 
 interface JuridicaIntroductionProps extends TemplateProps {
     datosJuridicos: DatosJuridicos;
@@ -45,10 +45,10 @@ export const JuridicaIntroduction: React.FC<JuridicaIntroductionProps> = ({
                 >
                     APARTAMENTO{" "}
                     <span className="highlight-red">
-                        {getVal(
+                        {stripLevelPrefix(getVal(
                             "Descripcion_del_Inmueble.Apartamento",
                             "[APARTAMENTO]",
-                        )}
+                        ))}
                     </span>{" "}
                     -{" "}
                     <span className="highlight-red">

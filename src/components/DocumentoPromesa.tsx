@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useParams } from "react-router-dom";
 import { IndividualTemplate } from "./templates/IndividualTemplate";
 import { JuridicaTemplate } from "./templates/JuridicaTemplate";
-import { numberToWords, numberToWordsYear, idToWords } from "./templates/utils";
+import { numberToWords, numberToWordsYear, idToWords, stripLevelPrefix } from "./templates/utils";
 import type {
   Comprador,
   WebhookData,
@@ -595,13 +595,14 @@ const DocumentoPromesa: React.FC<DocumentoPromesaProps> = ({
     const numeros = ests
       .map((e) => {
         const rawNum = e.Numero || "0";
-        // Extraer solo la parte numérica (ej: "PS-05" -> "05")
-        const spotNum = rawNum.split(/[-\s]/).pop() || rawNum;
-        const cleanNum = parseInt(spotNum);
+        const numLimpio = stripLevelPrefix(rawNum);
+        const hasDigits = /\d/.test(numLimpio);
+        
         const letras = e.Numero_Letras
           ? e.Numero_Letras.replace(/CERO\s+/gi, "").trim()
-          : numberToWords(cleanNum).toUpperCase();
-        return `${letras} (${cleanNum})`;
+          : idToWords(numLimpio);
+          
+        return hasDigits ? `${letras} (${numLimpio})` : letras;
       })
       .join(", ");
 

@@ -1,6 +1,6 @@
 import React from "react";
 import type { TemplateProps, Comprador } from "../../types";
-import { formatCUI } from "../../utils";
+import { formatCUI, stripLevelPrefix } from "../../utils";
 
 interface IndividualIntroductionProps extends TemplateProps {
     compradores: Comprador[];
@@ -53,10 +53,10 @@ export const IndividualIntroduction: React.FC<IndividualIntroductionProps> = ({
                     }}
                 >
                     <span className="highlight-red">
-                        {getVal(
+                        {stripLevelPrefix(getVal(
                             "Descripcion_del_Inmueble.Apartamento",
                             "[ID]",
-                        )}
+                        ))}
                     </span>{" "}
                     /{" "}
                     <span className="highlight-red">
