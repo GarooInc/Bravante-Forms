@@ -1,6 +1,6 @@
 import React from "react";
 import type { TemplateProps, Estacionamiento, Bodega } from "../../types";
-import { numberToWords, idToWords } from "../../utils";
+import { numberToWords, idToWords, stripLevelPrefix } from "../../utils";
 import { ProjectFinishes } from "../shared/ProjectFinishes";
 
 interface JuridicaClause1To2Props extends TemplateProps {
@@ -118,9 +118,17 @@ export const JuridicaClause1To2: React.FC<JuridicaClause1To2Props> = ({
                     respectivo reglamento, así como estarán sujetos a las servidumbres que la
                     promitente vendedora considere para el proyecto, y del cual formarán parte,
                     entre otros: El apartamento{" "}
-                    <span className="bold highlight-red">
-                        {idToWords(getVal("Descripcion_del_Inmueble.Apartamento", "")) || "[APTO_LETRAS]"} ({getVal("Descripcion_del_Inmueble.Apartamento", "[APTO]")})
-                    </span>{" "}
+                    {(() => {
+                        const apto = getVal("Descripcion_del_Inmueble.Apartamento", "");
+                        const aptoLimpio = stripLevelPrefix(apto);
+                        const hasDigits = /\d/.test(aptoLimpio);
+                        return (
+                            <span className="bold highlight-red">
+                                {idToWords(aptoLimpio) || "[APTO_LETRAS]"}
+                                {hasDigits && ` (${aptoLimpio || "[APTO]"})`}
+                            </span>
+                        );
+                    })()}{" "}
                     Torre{" "}
                     <span className="bold highlight-red">
                         {getVal("Descripcion_del_Inmueble.Torre", "[TORRE]")}
@@ -175,23 +183,34 @@ export const JuridicaClause1To2: React.FC<JuridicaClause1To2Props> = ({
                         return null;
                     return (
                         <div style={{ marginLeft: "20px", marginTop: "10px" }}>
-                            {estacionamientos.map((p, idx) => (
-                                <p
-                                    key={idx}
-                                    style={{ margin: "5px 0", textIndent: "0" }}
-                                >
-                                    o{" "}
-                                    <span className="bold highlight-red">
-                                        {idToWords(p.Numero || "")}
-                                    </span>{" "}
-                                    (<span className="bold highlight-red">
-                                        {parseInt(p.Numero || "0")}
-                                    </span>), ubicada en el sótano número:{" "}
-                                    <span className="bold highlight-red">
-                                        {(p.Sotano_Letras || "").toUpperCase()} ({p.Sotano || "#"})
-                                    </span>
-                                </p>
-                            ))}
+                            {estacionamientos.map((p, idx) => {
+                                const numLimpio = stripLevelPrefix(p.Numero || "");
+                                const hasDigits = /\d/.test(numLimpio);
+                                return (
+                                    <p
+                                        key={idx}
+                                        style={{ margin: "5px 0", textIndent: "0" }}
+                                    >
+                                        o{" "}
+                                        <span className="bold highlight-red">
+                                            {idToWords(numLimpio)}
+                                        </span>{" "}
+                                        {hasDigits ? (
+                                            <>
+                                                (<span className="bold highlight-red">
+                                                    {numLimpio || "0"}
+                                                </span>),{" "}
+                                            </>
+                                        ) : (
+                                            ", "
+                                        )}
+                                        ubicada en el sótano número:{" "}
+                                        <span className="bold highlight-red">
+                                            {(p.Sotano_Letras || "").toUpperCase()} ({p.Sotano || "#"})
+                                        </span>
+                                    </p>
+                                );
+                            })}
                         </div>
                     );
                 })()}
@@ -238,26 +257,37 @@ export const JuridicaClause1To2: React.FC<JuridicaClause1To2Props> = ({
                                     marginTop: "10px",
                                 }}
                             >
-                                {bodegas.map((b, idx) => (
-                                    <p
-                                        key={idx}
-                                        style={{
-                                            margin: "5px 0",
-                                            textIndent: "0",
-                                        }}
-                                    >
-                                        o{" "}
-                                        <span className="bold highlight-red">
-                                            {idToWords(b.Numero || "")}
-                                        </span>{" "}
-                                        (<span className="bold highlight-red">
-                                            {parseInt(b.Numero || "0")}
-                                        </span>), ubicada en el sótano número:{" "}
-                                        <span className="bold highlight-red">
-                                            {(b.Sotano_Letras || "").toUpperCase()} ({b.Sotano || "#"})
-                                        </span>
-                                    </p>
-                                ))}
+                                {bodegas.map((b, idx) => {
+                                    const numLimpio = stripLevelPrefix(b.Numero || "");
+                                    const hasDigits = /\d/.test(numLimpio);
+                                    return (
+                                        <p
+                                            key={idx}
+                                            style={{
+                                                margin: "5px 0",
+                                                textIndent: "0",
+                                            }}
+                                        >
+                                            o{" "}
+                                            <span className="bold highlight-red">
+                                                {idToWords(numLimpio)}
+                                            </span>{" "}
+                                            {hasDigits ? (
+                                                <>
+                                                    (<span className="bold highlight-red">
+                                                        {numLimpio || "0"}
+                                                    </span>),{" "}
+                                                </>
+                                            ) : (
+                                                ", "
+                                            )}
+                                            ubicada en el sótano número:{" "}
+                                            <span className="bold highlight-red">
+                                                {(b.Sotano_Letras || "").toUpperCase()} ({b.Sotano || "#"})
+                                            </span>
+                                        </p>
+                                    );
+                                })}
                             </div>
                         </>
                     );
@@ -284,7 +314,7 @@ export const JuridicaClause1To2: React.FC<JuridicaClause1To2Props> = ({
                     describen así: <span className="bold">a)</span> El
                     apartamento identificado como Apartamento{" "}
                     <span className="highlight-yellow">
-                        {getVal("Descripcion_del_Inmueble.Apartamento")}
+                        {stripLevelPrefix(getVal("Descripcion_del_Inmueble.Apartamento", "")).toUpperCase()}
                     </span>{" "}
                     Torre{" "}
                     <span className="highlight-yellow">
@@ -308,26 +338,19 @@ export const JuridicaClause1To2: React.FC<JuridicaClause1To2Props> = ({
                                 : getVal("Descripcion_del_Inmueble.Habitaciones");
                         })()}
                     </span>{" "}
-                    habitaciones,{" "}
-                    {(() => {
+                    habitaciones{(() => {
                         const br = getVal<string>("Descripcion_del_Inmueble.NumeroBR", "");
-                        if (!br || br === "[DATO_FALTANTE]") return null;
+                        if (!br || br === "[DATO_FALTANTE]") return ".";
                         return (
                             <>
+                                ,{" "}
                                 <span className="highlight-yellow">
                                     {br}
                                 </span>{" "}
-                                baños,{" "}
+                                baños.
                             </>
                         );
                     })()}
-                    <span className="highlight-yellow">
-                        {getVal(
-                            "Descripcion_del_Inmueble.DescripcionApartamento",
-                            "[DESC]",
-                        )}
-                    </span>
-                    .
                 </p>
                 <p>
                     Y contará con un área aproximada de{" "}
@@ -342,8 +365,8 @@ export const JuridicaClause1To2: React.FC<JuridicaClause1To2Props> = ({
                         {getVal(
                             "Descripcion_del_Inmueble.AreaConstruccionNumeros",
                         )}
-                    </span>{" "}
-                    m2) de construcción;{" "}
+                    </span>
+                    ) m2 de construcción;{" "}
                     <span className="bold">b)</span>{" "}
                     <span className="highlight-red">
                         {getParqueosDescripcion()}
@@ -385,7 +408,7 @@ export const JuridicaClause1To2: React.FC<JuridicaClause1To2Props> = ({
                                         <span className="highlight-red">
                                             {idToWords(balcon.toString())} METROS CUADRADOS
                                         </span>{" "}
-                                        (<span className="highlight-red">{balcon}</span> m2)
+                                        (<span className="highlight-red">{balcon}</span>) m2
                                         {lastConditional === "balcon" ? ", y " : "; "}
                                     </>
                                 )}
@@ -395,7 +418,7 @@ export const JuridicaClause1To2: React.FC<JuridicaClause1To2Props> = ({
                                         <span className="highlight-red">
                                             {idToWords(terraza.toString())} METROS CUADRADOS
                                         </span>{" "}
-                                        (<span className="highlight-red">{terraza}</span> m2), y{" "}
+                                        (<span className="highlight-red">{terraza}</span>) m2, y{" "}
                                     </>
                                 )}
                                 <span className="bold">{bienMuebleL})</span> El bien mueble (acción) de la entidad relacionada y pertinente al proyecto.

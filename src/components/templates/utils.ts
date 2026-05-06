@@ -132,6 +132,20 @@ export const idToWords = (id: string): string => {
     return convertedParts.filter(p => p !== "").join(" ").replace(/\s+/g, " ").trim().toUpperCase();
 };
 
+export const stripLevelPrefix = (id: string): string => {
+    if (!id) return "";
+    const parts = id.split('-');
+    if (parts.length > 1) {
+        // Retorna lo que sigue al primer guión, quitando ceros a la izquierda
+        const remaining = parts.slice(1).join('-');
+        const stripped = remaining.replace(/^0+/, '');
+        return stripped || "0";
+    }
+    // Si no hay guión, solo quita ceros a la izquierda
+    const stripped = id.replace(/^0+/, '');
+    return stripped || "0";
+};
+
 export const toTitleCase = (str: string): string => {
     if (!str) return str;
     const minor = new Set(['de', 'del', 'la', 'el', 'los', 'las', 'y', 'e', 'en', 'con', 'a', 'por']);
